@@ -1,9 +1,8 @@
 {
-    "version": 2,
     "builds": [
         {
             "src": "api/index.php",
-            "use": "@vercel/php"
+            "use": "vercel-php@0.5.8"
         }
     ],
     "routes": [
