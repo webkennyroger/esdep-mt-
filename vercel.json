@@ -1,5 +1,7 @@
 {
+    "outputDirectory": "public",
     "rewrites": [
-        { "source": "/assets/(.*)", "destination": "/public/assets/$1" }
+        { "source": "/assets/(.*)", "destination": "/public/assets/$1" },
+        { "source": "/build/(.*)", "destination": "/public/build/$1" }
     ]
 }
