@@ -1,0 +1,33 @@
+.rooms-showcase:has(.room-ipe:hover) .room-horizonte {
+    width: 310px;
+    height: 312px;
+}
+
+.rooms-showcase:has(.room-horizonte:hover) .room-ipe {
+    width: 310px;
+    height: 312px;
+}
+
+.room-horizonte,
+.room-ipe {
+    transition:
+        width 500ms ease,
+        height 500ms ease,
+        transform 500ms ease;
+}
+
+.room-horizonte {
+    width: 378px;
+    height: 388px;
+}
+
+.room-ipe {
+    width: 310px;
+    height: 312px;
+}
+
+.room-ipe:hover,
+.room-horizonte:hover {
+    width: 378px;
+    height: 388px;
+}
