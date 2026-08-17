@@ -1,18 +1,5 @@
 {
-    "builds": [
-        {
-            "src": "api/index.php",
-            "use": "vercel-php@0.5.8"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/assets/(.*)",
-            "dest": "/public/assets/$1"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "api/index.php"
-        }
+    "rewrites": [
+        { "source": "/assets/(.*)", "destination": "/public/assets/$1" }
     ]
 }
