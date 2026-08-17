@@ -4,9 +4,26 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-require __DIR__ . '/../vendor/autoload.php';
+$basePath = dirname(__DIR__);
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+// Ensure .env exists for Vercel serverless
+if (!file_exists($basePath.'/.env')) {
+    if (file_exists($basePath.'/.env.production')) {
+        copy($basePath.'/.env.production', $basePath.'/.env');
+    } elseif (file_exists($basePath.'/.env.example')) {
+        copy($basePath.'/.env.example', $basePath.'/.env');
+    }
+}
+
+// Ensure SQLite database exists
+$dbPath = $basePath.'/database/database.sqlite';
+if (!file_exists($dbPath)) {
+    touch($dbPath);
+}
+
+require $basePath.'/vendor/autoload.php';
+
+$app = require_once $basePath.'/bootstrap/app.php';
 
 $request = Request::capture();
 $response = $app->handle($request);
