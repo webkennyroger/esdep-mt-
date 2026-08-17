@@ -9,13 +9,14 @@ use Illuminate\Support\Facades\Mail;
 
 class RejectReservationAction
 {
-    public function execute(Reservation $reservation): Reservation
+    public function execute(Reservation $reservation, ?string $reason = null): Reservation
     {
         if ($reservation->status === ReservationStatus::REJECTED) {
             throw new \Exception('Esta reserva ja foi rejeitada anteriormente.');
         }
 
         $reservation->status = ReservationStatus::REJECTED->value;
+        $reservation->reject_reason = $reason;
         $reservation->save();
 
         event(new \App\Events\ReservationRejected($reservation));

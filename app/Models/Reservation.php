@@ -15,6 +15,7 @@ class Reservation extends Model
         'room_id',
         'event_name',
         'description',
+        'reject_reason',
         'requester_name',
         'requester_email',
         'date',

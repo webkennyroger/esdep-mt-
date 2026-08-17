@@ -303,6 +303,16 @@
                         </div>
                     @endif
 
+                    {{-- Motivo da Rejeicao --}}
+                    @if($detailReservation->reject_reason)
+                        <div class="mt-5">
+                            <h4 class="mb-2.5 text-xs font-semibold uppercase tracking-wider text-red-400 dark:text-red-400">Motivo da Rejeicao</h4>
+                            <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+                                {!! $detailReservation->reject_reason !!}
+                            </div>
+                        </div>
+                    @endif
+
                     {{-- Footer --}}
                     <div class="mt-6 flex items-center justify-end gap-3 border-t border-slate-200 pt-5 dark:border-[#16352a]">
                         <button wire:click="closeDetailModal"
@@ -349,9 +359,9 @@
 
     {{-- Modal Rejeitar --}}
     @if($showRejectModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center" x-data>
+        <div class="fixed inset-0 z-50 flex items-center justify-center" x-data="{ editor: null }" x-init="$nextTick(() => { editor = document.getElementById('reject-editor'); editor.focus(); })">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" wire:click="closeRejectModal"></div>
-            <div class="relative mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl dark:border dark:border-[#16352a] dark:bg-[#0c221a]">
+            <div class="relative mx-4 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl dark:border dark:border-[#16352a] dark:bg-[#0c221a]">
                 <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/50">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -361,6 +371,42 @@
                 <p class="mt-2 text-sm text-slate-500 dark:text-[#8aa39a]">
                     Tem certeza que deseja rejeitar a reserva <strong class="text-slate-700 dark:text-[#e6f2ec]">{{ $selectedName }}</strong>?
                 </p>
+
+                <div class="mt-4">
+                    <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">
+                        Motivo da rejeicao <span class="text-slate-400">(opcional)</span>
+                    </label>
+
+                    <div class="overflow-hidden rounded-lg border border-slate-200 dark:border-[#16352a]">
+                        <div class="flex items-center gap-1 border-b border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-[#16352a] dark:bg-[#0a1a14]">
+                            <button type="button" onclick="document.execCommand('bold')" title="Negrito"
+                                class="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg>
+                            </button>
+                            <button type="button" onclick="document.execCommand('italic')" title="Italico"
+                                class="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 4h4m-2 0l-4 16m-2 0h4m2-16l4 16"/></svg>
+                            </button>
+                            <button type="button" onclick="document.execCommand('underline')" title="Sublinhado"
+                                class="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v7a5 5 0 0010 0V4M5 21h14"/></svg>
+                            </button>
+                            <div class="mx-1 h-4 w-px bg-slate-300 dark:bg-[#2c4a3e]"></div>
+                            <button type="button" onclick="document.execCommand('insertUnorderedList')" title="Lista"
+                                class="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
+                            </button>
+                        </div>
+                        <div id="reject-editor"
+                            contenteditable="true"
+                            wire:model="rejectReason"
+                            data-placeholder="Descreva o motivo da rejeicao..."
+                            class="min-h-[100px] max-h-[200px] overflow-y-auto px-3 py-2.5 text-sm text-slate-900 outline-none empty:before:text-slate-400 empty:before:content-[attr(data-placeholder)] dark:text-[#e6f2ec] dark:empty:before:text-[#5a7068]"
+                            oninput="document.getElementById('reject-reason-hidden').value = this.innerText"></div>
+                    </div>
+                    <input type="hidden" wire:model="rejectReason" id="reject-reason-hidden">
+                </div>
+
                 <div class="mt-6 flex justify-end gap-3">
                     <button wire:click="closeRejectModal"
                         class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-[#2c4a3e] dark:text-[#8aa39a] dark:hover:bg-[#16352a]">

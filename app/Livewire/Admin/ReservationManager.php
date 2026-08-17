@@ -23,6 +23,7 @@ class ReservationManager extends Component
     public bool $showRejectModal = false;
     public int $selectedId = 0;
     public string $selectedName = '';
+    public string $rejectReason = '';
 
     public bool $showDetailModal = false;
     public ?Reservation $detailReservation = null;
@@ -95,6 +96,7 @@ class ReservationManager extends Component
     {
         $this->selectedId = $id;
         $this->selectedName = $name;
+        $this->rejectReason = '';
         $this->showRejectModal = true;
     }
 
@@ -103,6 +105,7 @@ class ReservationManager extends Component
         $this->showRejectModal = false;
         $this->selectedId = 0;
         $this->selectedName = '';
+        $this->rejectReason = '';
     }
 
     public function confirmReject(): void
@@ -110,7 +113,7 @@ class ReservationManager extends Component
         try {
             $reservation = Reservation::findOrFail($this->selectedId);
             $action = new RejectReservationAction();
-            $action->execute($reservation);
+            $action->execute($reservation, $this->rejectReason ?: null);
             session()->flash('success', 'Reserva rejeitada com sucesso.');
             $this->dispatch('reservationRejected');
         } catch (\Exception $e) {
