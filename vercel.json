@@ -2,10 +2,38 @@
     "builds": [
         {
             "src": "api/index.php",
-            "use": "vercel-php@0.5.8"
+            "use": "vercel-php@0.8.0"
         }
     ],
     "routes": [
+        {
+            "src": "/build/(.*)",
+            "dest": "/public/build/$1"
+        },
+        {
+            "src": "/assets/(.*)",
+            "dest": "/public/assets/$1"
+        },
+        {
+            "src": "/favicon.ico",
+            "dest": "/public/favicon.ico"
+        },
+        {
+            "src": "/favicon.svg",
+            "dest": "/public/favicon.svg"
+        },
+        {
+            "src": "/android-chrome-(.*)",
+            "dest": "/public/android-chrome-$1"
+        },
+        {
+            "src": "/apple-touch-icon.png",
+            "dest": "/public/apple-touch-icon.png"
+        },
+        {
+            "src": "/favicon-(.*).png",
+            "dest": "/public/favicon-$1.png"
+        },
         {
             "src": "/(.*)",
             "dest": "api/index.php"
