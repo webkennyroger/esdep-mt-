@@ -8,7 +8,7 @@ use Livewire\Component;
 
 class BookingForm extends Component
 {
-    public string $roomId = '';
+    public string $roomId = '1';
     public string $eventName = '';
     public string $description = '';
     public string $requesterName = '';

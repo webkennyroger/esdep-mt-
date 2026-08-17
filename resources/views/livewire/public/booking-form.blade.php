@@ -45,9 +45,9 @@
         <fieldset>
             <legend class="mb-4 text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Escolha a sala</legend>
 
-            <div class="grid grid-cols-2 gap-4">
-                <label class="flex items-center gap-4 border border-[#008b5c] bg-[#eef7f2] p-5 cursor-pointer dark:border-[#00a477] dark:bg-[#0c221a]">
-                    <input wire:model="roomId" value="1" type="radio" name="room" checked class="accent-[#008b5c] dark:accent-[#4fd1a5]">
+            <div class="grid grid-cols-3 gap-4">
+                <label class="room-card group flex items-center gap-4 border border-[#d2ded9] bg-white p-5 cursor-pointer transition-all duration-200 hover:border-[#008b5c] hover:bg-[#eef7f2] has-[:checked]:border-[#008b5c] has-[:checked]:bg-[#eef7f2] has-[:checked]:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:hover:border-[#00a477] dark:hover:bg-[#16352a] dark:has-[:checked]:border-[#00a477] dark:has-[:checked]:bg-[#0c221a]">
+                    <input wire:model="roomId" value="1" type="radio" name="room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
                     <span class="flex flex-1 flex-col">
                         <strong class="text-[13px] text-[#003f32] dark:text-[#e6f2ec]">Sala Horizonte</strong>
                         <small class="mt-1 text-[11px] text-[#70847d] dark:text-[#8aa39a]">Capacidade para 60 pessoas</small>
@@ -55,13 +55,22 @@
                     <b class="text-[13px] text-[#008b5c] dark:text-[#4fd1a5]">60</b>
                 </label>
 
-                <label class="flex items-center gap-4 border border-[#d2ded9] bg-white p-5 cursor-pointer dark:border-[#16352a] dark:bg-[#0c221a]">
+                <label class="room-card group flex items-center gap-4 border border-[#d2ded9] bg-white p-5 cursor-pointer transition-all duration-200 hover:border-[#008b5c] hover:bg-[#eef7f2] has-[:checked]:border-[#008b5c] has-[:checked]:bg-[#eef7f2] has-[:checked]:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:hover:border-[#00a477] dark:hover:bg-[#16352a] dark:has-[:checked]:border-[#00a477] dark:has-[:checked]:bg-[#0c221a]">
                     <input wire:model="roomId" value="2" type="radio" name="room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
                     <span class="flex flex-1 flex-col">
                         <strong class="text-[13px] text-[#003f32] dark:text-[#e6f2ec]">Sala Ipê</strong>
                         <small class="mt-1 text-[11px] text-[#70847d] dark:text-[#8aa39a]">Capacidade para 30 pessoas</small>
                     </span>
                     <b class="text-[13px] text-[#008b5c] dark:text-[#4fd1a5]">30</b>
+                </label>
+
+                <label class="room-card group flex items-center gap-4 border border-[#d2ded9] bg-white p-5 cursor-pointer transition-all duration-200 hover:border-[#008b5c] hover:bg-[#eef7f2] has-[:checked]:border-[#008b5c] has-[:checked]:bg-[#eef7f2] has-[:checked]:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:hover:border-[#00a477] dark:hover:bg-[#16352a] dark:has-[:checked]:border-[#00a477] dark:has-[:checked]:bg-[#0c221a]">
+                    <input wire:model="roomId" value="3" type="radio" name="room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
+                    <span class="flex flex-1 flex-col">
+                        <strong class="text-[13px] text-[#003f32] dark:text-[#e6f2ec]">Sala 165</strong>
+                        <small class="mt-1 text-[11px] text-[#70847d] dark:text-[#8aa39a]">Capacidade para 10 pessoas</small>
+                    </span>
+                    <b class="text-[13px] text-[#008b5c] dark:text-[#4fd1a5]">10</b>
                 </label>
             </div>
         </fieldset>
@@ -108,7 +117,7 @@
                 <small class="ml-2 font-normal text-[#70847d] dark:text-[#8aa39a]">resposta obrigatória</small>
             </legend>
 
-            <div class="grid grid-cols-3 gap-5">
+            <div class="grid grid-cols-4 gap-5">
                 <fieldset class="border border-[#d6e1dc] p-5 dark:border-[#16352a] dark:bg-[#0c221a]/40">
                     <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Coffee break</legend>
                     <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
@@ -130,6 +139,14 @@
                     <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
                         <label class="flex items-center gap-2 cursor-pointer"><input wire:model="transmissao" type="radio" name="streaming" value="1" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Sim</label>
                         <label class="flex items-center gap-2 cursor-pointer"><input wire:model="transmissao" type="radio" name="streaming" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Não</label>
+                    </div>
+                </fieldset>
+
+                 <fieldset class="border border-[#d6e1dc] p-5 dark:border-[#16352a] dark:bg-[#0c221a]/40">
+                    <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Projetor</legend>
+                    <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
+                        <label class="flex items-center gap-2 cursor-pointer"><input wire:model="apenasProjetor" type="radio" name="only_projector" value="1" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Sim</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input wire:model="apenasProjetor" type="radio" name="only_projector" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Não</label>
                     </div>
                 </fieldset>
             </div>

@@ -25,6 +25,14 @@ class RoomSeeder extends Seeder
                 'theme_color' => '#0066aa',
                 'is_active'   => true,
             ],
+            [
+                'name'        => 'Sala 165',
+                'code'        => 'SALA-165',
+                'capacity'    => 10,
+                'description' => 'Sala de reuniao pequena',
+                'theme_color' => '#7c3aed',
+                'is_active'   => true,
+            ],
         ];
 
         foreach ($rooms as $room) {
