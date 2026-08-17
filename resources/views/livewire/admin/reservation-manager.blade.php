@@ -149,6 +149,10 @@
                                                 class="rounded-lg bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-950/50 dark:text-[#4fd1a5] dark:hover:bg-emerald-900/50">
                                                 Autorizar
                                             </button>
+                                            <button wire:click="reopenReservation({{ $reservation->id }})"
+                                                class="rounded-lg bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:hover:bg-amber-900/50">
+                                                Reabrir
+                                            </button>
                                         @endif
                                     </div>
                                 </td>

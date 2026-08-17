@@ -123,6 +123,20 @@ class ReservationManager extends Component
         $this->closeRejectModal();
     }
 
+    public function reopenReservation(int $id): void
+    {
+        try {
+            $reservation = Reservation::findOrFail($id);
+            $reservation->status = \App\Enums\ReservationStatus::PENDING->value;
+            $reservation->reject_reason = null;
+            $reservation->save();
+            session()->flash('success', 'Reserva reaberta como pendente.');
+            $this->dispatch('reservationRejected');
+        } catch (\Exception $e) {
+            session()->flash('error', $e->getMessage());
+        }
+    }
+
     public function openAnnounceModal(int $id, string $name): void
     {
         $this->announceReservationId = $id;
