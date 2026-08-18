@@ -10,6 +10,11 @@ class Contact extends Model
     protected $fillable = [
         'name',
         'email',
+        'cpf',
+        'tipo',
+        'setor',
+        'autorizado_at',
+        'last_login_at',
         'is_active',
         'subscribed_at',
         'unsubscribed_at',
@@ -17,6 +22,8 @@ class Contact extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'autorizado_at' => 'datetime',
+        'last_login_at' => 'datetime',
         'subscribed_at' => 'datetime',
         'unsubscribed_at' => 'datetime',
     ];

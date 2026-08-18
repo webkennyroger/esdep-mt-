@@ -24,6 +24,8 @@ class ReservationEditor extends Component
     public bool $coffeeBreak = false;
     public bool $sonorizacao = false;
     public bool $transmissao = false;
+    public bool $projetor = false;
+    public string $conflictError = '';
 
     protected function rules(): array
     {
@@ -40,6 +42,7 @@ class ReservationEditor extends Component
             'coffeeBreak'    => 'boolean',
             'sonorizacao'    => 'boolean',
             'transmissao'    => 'boolean',
+            'projetor' => 'boolean',
         ];
     }
 
@@ -63,6 +66,45 @@ class ReservationEditor extends Component
         'openReservationEditor' => 'open',
     ];
 
+    public function updatedDate(): void
+    {
+        $this->validate(['date' => $this->rules()['date']]);
+        $this->checkConflict();
+    }
+
+    public function updatedStartTime(): void
+    {
+        $this->validate(['startTime' => $this->rules()['startTime']]);
+        $this->checkConflict();
+    }
+
+    public function updatedEndTime(): void
+    {
+        $this->validate(['endTime' => $this->rules()['endTime']]);
+        $this->checkConflict();
+    }
+
+    public function updatedRoomId(): void
+    {
+        $this->checkConflict();
+    }
+
+    private function checkConflict(): void
+    {
+        $this->conflictError = '';
+
+        if (empty($this->date) || empty($this->startTime) || empty($this->endTime) || empty($this->roomId)) {
+            return;
+        }
+
+        try {
+            $conflictChecker = new \App\Services\ConflictCheckerService();
+            $conflictChecker->check($this->roomId, $this->date, $this->startTime, $this->endTime, $this->reservationId);
+        } catch (\Exception $e) {
+            $this->conflictError = $e->getMessage();
+        }
+    }
+
     public function open(int $id): void
     {
         $reservation = Reservation::with('room')->findOrFail($id);
@@ -80,6 +122,7 @@ class ReservationEditor extends Component
         $this->coffeeBreak    = (bool) $reservation->coffee_break;
         $this->sonorizacao    = (bool) $reservation->sonorizacao;
         $this->transmissao    = (bool) $reservation->transmissao;
+        $this->projetor = (bool) $reservation->projetor;
 
         $this->resetValidation();
         $this->showModal = true;
@@ -112,13 +155,14 @@ class ReservationEditor extends Component
                 'coffee_break'    => $this->coffeeBreak,
                 'sonorizacao'     => $this->sonorizacao,
                 'transmissao'     => $this->transmissao,
+                'projetor' => $this->projetor,
             ]);
 
-            session()->flash('success', 'Reserva atualizada com sucesso.');
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva atualizada com sucesso.' } }))");
             $this->dispatch('reservationUpdated');
             $this->close();
         } catch (\Exception $e) {
-            session()->flash('error', $e->getMessage());
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '" . addslashes($e->getMessage()) . "' } }))");
         }
     }
 

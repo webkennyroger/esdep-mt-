@@ -20,10 +20,9 @@ class BookingForm extends Component
     public bool $coffeeBreak = false;
     public bool $sonorizacao = false;
     public bool $transmissao = false;
-    public bool $showSuccess = false;
-    public bool $showError = false;
-    public string $errorMessage = '';
+    public bool $projetor = false;
     public bool $isLoading = false;
+    public string $conflictError = '';
 
     protected $rules = [
         'eventName' => 'required|string|max:255',
@@ -52,12 +51,50 @@ class BookingForm extends Component
         'roomId.exists' => 'A sala selecionada não existe.',
     ];
 
+    public function updatedDate(): void
+    {
+        $this->validate(['date' => $this->rules['date']]);
+        $this->checkConflict();
+    }
+
+    public function updatedStartTime(): void
+    {
+        $this->validate(['startTime' => $this->rules['startTime']]);
+        $this->checkConflict();
+    }
+
+    public function updatedEndTime(): void
+    {
+        $this->validate(['endTime' => $this->rules['endTime']]);
+        $this->checkConflict();
+    }
+
+    public function updatedRoomId(): void
+    {
+        $this->checkConflict();
+    }
+
+    private function checkConflict(): void
+    {
+        $this->conflictError = '';
+
+        if (empty($this->date) || empty($this->startTime) || empty($this->endTime) || empty($this->roomId)) {
+            return;
+        }
+
+        try {
+            $conflictChecker = new \App\Services\ConflictCheckerService();
+            $conflictChecker->check((int) $this->roomId, $this->date, $this->startTime, $this->endTime);
+        } catch (\Exception $e) {
+            $this->conflictError = $e->getMessage();
+        }
+    }
+
     public function submit(): void
     {
         $this->validate();
 
         $this->isLoading = true;
-        $this->showError = false;
 
         try {
             $action = new CreateReservationAction();
@@ -74,20 +111,20 @@ class BookingForm extends Component
                 'coffee_break' => $this->coffeeBreak,
                 'sonorizacao' => $this->sonorizacao,
                 'transmissao' => $this->transmissao,
+                'projetor' => $this->projetor,
             ]);
 
-            $this->showSuccess = true;
+            $this->dispatch('toast', type: 'success', title: 'Reserva enviada com sucesso!', message: 'Aguarde aprovacao do administrador.');
             $this->dispatch('reservationCreated');
             $this->reset([
                 'roomId', 'eventName', 'description', 'requesterName',
-                'requesterEmail', 'date', 'coffeeBreak', 'sonorizacao', 'transmissao',
+                'requesterEmail', 'date', 'coffeeBreak', 'sonorizacao', 'transmissao', 'projetor',
             ]);
             $this->startTime = '09:00';
             $this->endTime = '10:00';
             $this->attendeesCount = 1;
         } catch (\Exception $e) {
-            $this->showError = true;
-            $this->errorMessage = $e->getMessage();
+            $this->dispatch('toast', type: 'error', title: 'Erro ao enviar reserva', message: $e->getMessage());
         } finally {
             $this->isLoading = false;
         }
@@ -95,10 +132,8 @@ class BookingForm extends Component
 
     public function render()
     {
-        $room = Room::find($this->roomId);
-
         return view('livewire.public.booking-form', [
-            'room' => $room,
+            'rooms' => Room::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 }

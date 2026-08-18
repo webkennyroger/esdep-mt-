@@ -24,7 +24,7 @@ class ApproveReservationAction
             $reservation->id
         );
 
-        $reservation->status = ReservationStatus::AUTHORIZED->value;
+        $reservation->status = ReservationStatus::AUTHORIZED;
         $reservation->save();
 
         event(new \App\Events\ReservationApproved($reservation));

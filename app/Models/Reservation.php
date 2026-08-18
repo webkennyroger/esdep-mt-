@@ -26,6 +26,7 @@ class Reservation extends Model
         'coffee_break',
         'sonorizacao',
         'transmissao',
+        'projetor',
     ];
 
     protected $casts = [
@@ -35,6 +36,7 @@ class Reservation extends Model
         'coffee_break' => 'boolean',
         'sonorizacao' => 'boolean',
         'transmissao' => 'boolean',
+        'projetor' => 'boolean',
     ];
 
     public function room(): BelongsTo

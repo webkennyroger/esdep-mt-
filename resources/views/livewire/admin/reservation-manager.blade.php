@@ -10,18 +10,6 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-[#4fd1a5]">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-400">
-            {{ session('error') }}
-        </div>
-    @endif
-
     <div class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
         <div class="border-b border-slate-200 px-6 py-4 dark:border-[#16352a]">
             <div class="flex flex-wrap items-center gap-3">
@@ -99,7 +87,10 @@
                                         @if($reservation->transmissao)
                                             <span title="Transmissao" class="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-950/50 dark:text-purple-400">Transm</span>
                                         @endif
-                                        @if(!$reservation->coffee_break && !$reservation->sonorizacao && !$reservation->transmissao)
+                                        @if($reservation->projetor)
+                                            <span title="Projetor" class="inline-flex items-center rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-medium text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-400">Proj</span>
+                                        @endif
+                                        @if(!$reservation->coffee_break && !$reservation->sonorizacao && !$reservation->transmissao && !$reservation->projetor)
                                             <span class="text-[11px] text-slate-400 italic dark:text-[#5a7068]">Nenhum servico</span>
                                         @endif
                                     </div>
@@ -291,7 +282,13 @@
                                     Transmissao
                                 </span>
                             @endif
-                            @if(!$detailReservation->coffee_break && !$detailReservation->sonorizacao && !$detailReservation->transmissao)
+                            @if($detailReservation->projetor)
+                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-cyan-100 px-3 py-2 text-sm font-medium text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                    Projetor
+                                </span>
+                            @endif
+                            @if(!$detailReservation->coffee_break && !$detailReservation->sonorizacao && !$detailReservation->transmissao && !$detailReservation->projetor)
                                 <span class="text-sm text-slate-400 italic dark:text-[#5a7068]">Nenhum servico solicitado</span>
                             @endif
                         </div>
@@ -324,9 +321,24 @@
                             Fechar
                         </button>
                         <button wire:click="$dispatch('openReservationEditor', { id: {{ $detailReservation->id }} })"
-                            class="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
+                            class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600">
                             Editar Reserva
                         </button>
+                        @if($detailReservation->status === \App\Enums\ReservationStatus::PENDING)
+                            @if($detailConflictError)
+                                <div class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                    </svg>
+                                    Conflito de horario detectado
+                                </div>
+                            @endif
+                            <button wire:click="closeDetailModal; openApproveModal({{ $detailReservation->id }}, '{{ addslashes($detailReservation->event_name) }}')"
+                                @if($detailConflictError) disabled @endif
+                                class="rounded-lg px-4 py-2 text-sm font-semibold text-white @if($detailConflictError) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-emerald-600 hover:bg-emerald-700 dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
+                                Autorizar
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>

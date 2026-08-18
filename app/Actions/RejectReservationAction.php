@@ -15,7 +15,7 @@ class RejectReservationAction
             throw new \Exception('Esta reserva ja foi rejeitada anteriormente.');
         }
 
-        $reservation->status = ReservationStatus::REJECTED->value;
+        $reservation->status = ReservationStatus::REJECTED;
         $reservation->reject_reason = $reason;
         $reservation->save();
 

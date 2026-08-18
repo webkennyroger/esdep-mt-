@@ -53,7 +53,7 @@ class AdminCalendar extends Component
                 'attendees_count' => $row->attendees_count,
                 'start_time' => Carbon::parse($row->start_time)->format('H:i'),
                 'end_time' => Carbon::parse($row->end_time)->format('H:i'),
-                'room_name' => $row->room?->name ?? '-',
+                'room_name' => $row->room->name ?? '-',
                 'coffee_break' => (bool) $row->coffee_break,
                 'sonorizacao' => (bool) $row->sonorizacao,
                 'transmissao' => (bool) $row->transmissao,

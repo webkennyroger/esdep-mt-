@@ -37,6 +37,7 @@ class ReservationManager extends Component
     public array $announceSelectedContactIds = [];
     public $announceGroups = [];
     public $announceContacts = [];
+    public string $detailConflictError = '';
 
     protected $listeners = [
         'reservationCreated' => '$refresh',
@@ -54,6 +55,23 @@ class ReservationManager extends Component
     public function openDetailModal(int $id): void
     {
         $this->detailReservation = Reservation::with('room')->find($id);
+        $this->detailConflictError = '';
+
+        if ($this->detailReservation && $this->detailReservation->status === \App\Enums\ReservationStatus::PENDING) {
+            try {
+                $conflictChecker = new \App\Services\ConflictCheckerService();
+                $conflictChecker->check(
+                    $this->detailReservation->room_id,
+                    $this->detailReservation->date,
+                    $this->detailReservation->start_time,
+                    $this->detailReservation->end_time,
+                    $this->detailReservation->id
+                );
+            } catch (\Exception $e) {
+                $this->detailConflictError = $e->getMessage();
+            }
+        }
+
         $this->showDetailModal = true;
     }
 
@@ -83,10 +101,10 @@ class ReservationManager extends Component
             $reservation = Reservation::findOrFail($this->selectedId);
             $action = new ApproveReservationAction();
             $action->execute($reservation);
-            session()->flash('success', 'Reserva autorizada com sucesso.');
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva autorizada com sucesso.' } }))");
             $this->dispatch('reservationApproved');
         } catch (\Exception $e) {
-            session()->flash('error', $e->getMessage());
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '" . addslashes($e->getMessage()) . "' } }))");
         }
 
         $this->closeApproveModal();
@@ -114,10 +132,10 @@ class ReservationManager extends Component
             $reservation = Reservation::findOrFail($this->selectedId);
             $action = new RejectReservationAction();
             $action->execute($reservation, $this->rejectReason ?: null);
-            session()->flash('success', 'Reserva rejeitada com sucesso.');
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva rejeitada com sucesso.' } }))");
             $this->dispatch('reservationRejected');
         } catch (\Exception $e) {
-            session()->flash('error', $e->getMessage());
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '" . addslashes($e->getMessage()) . "' } }))");
         }
 
         $this->closeRejectModal();
@@ -127,13 +145,13 @@ class ReservationManager extends Component
     {
         try {
             $reservation = Reservation::findOrFail($id);
-            $reservation->status = \App\Enums\ReservationStatus::PENDING->value;
+            $reservation->status = \App\Enums\ReservationStatus::PENDING;
             $reservation->reject_reason = null;
             $reservation->save();
-            session()->flash('success', 'Reserva reaberta como pendente.');
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva reaberta como pendente.' } }))");
             $this->dispatch('reservationRejected');
         } catch (\Exception $e) {
-            session()->flash('error', $e->getMessage());
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '" . addslashes($e->getMessage()) . "' } }))");
         }
     }
 
@@ -176,10 +194,10 @@ class ReservationManager extends Component
                 'contact_ids' => $this->announceRecipientType === 'contacts' ? $this->announceSelectedContactIds : [],
             ], auth()->user());
 
-            session()->flash('success', "Evento divulgado com sucesso! ({$announcement->total_recipients} destinatarios)");
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Evento divulgado com sucesso! ({$announcement->total_recipients} destinatarios)' } }))");
             $this->closeAnnounceModal();
         } catch (\Exception $e) {
-            session()->flash('error', $e->getMessage());
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '" . addslashes($e->getMessage()) . "' } }))");
         }
     }
 

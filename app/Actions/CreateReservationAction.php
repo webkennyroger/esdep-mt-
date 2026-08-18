@@ -31,6 +31,7 @@ class CreateReservationAction
             'coffee_break' => $data['coffee_break'] ?? false,
             'sonorizacao' => $data['sonorizacao'] ?? false,
             'transmissao' => $data['transmissao'] ?? false,
+            'projetor' => $data['projetor'] ?? false,
         ]);
 
         event(new \App\Events\ReservationRequested($reservation));

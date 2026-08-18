@@ -13,7 +13,8 @@
     @livewireStyles
 </head>
 
-<body class="bg-[#f4f8f5] text-[#003f32] antialiased dark:bg-[#081712] dark:text-[#e6f2ec]">
+<body class="overflow-x-hidden bg-[#f4f8f5] text-[#003f32] antialiased dark:bg-[#081712] dark:text-[#e6f2ec]">
+    <x-toast />
     <main class="min-h-screen">
         <!-- HEADER -->
         <header
@@ -61,7 +62,7 @@
 
         <!-- HERO -->
         <section id="inicio"
-            class="relative min-h-[585px] overflow-hidden border-b-[3px] border-[#008b5c] px-4 sm:px-[3.75vw]">
+            class="relative min-h-[320px] overflow-hidden border-b-[3px] border-[#008b5c] px-4 sm:px-[3.75vw] lg:min-h-[585px]">
 
             <div
                 class="pointer-events-none absolute -left-[110px] -top-[180px] -z-10 h-[410px] w-[410px] rounded-full border-2 border-[#dceee7] dark:border-[#16352a]">
@@ -107,7 +108,7 @@
                 </div>
 
                 <!-- ROOMS -->
-                <div class="rooms-showcase flex w-full items-center justify-center gap-[17px] pr-0 lg:w-[47%] lg:justify-end lg:pr-1">
+                <div class="rooms-showcase hidden w-full items-center justify-center gap-[17px] pr-0 lg:flex lg:w-[47%] lg:justify-end lg:pr-1">
 
                     <!-- HORIZONTE -->
                     <button type="button"
@@ -198,7 +199,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-[60px] xl:gap-[80px] pt-[45px]">
+            <div class="grid grid-cols-1 gap-8 pt-[45px] xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-[80px]">
 
                 <!-- FORM -->
                 <div>
@@ -243,6 +244,7 @@
             }
         })();
     </script>
+    @livewireScripts
 </body>
 
 </html>

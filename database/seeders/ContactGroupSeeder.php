@@ -10,11 +10,12 @@ class ContactGroupSeeder extends Seeder
     public function run(): void
     {
         $groups = [
-            ['name' => 'Defensores',  'description' => 'Defensores Publicos do Estado',     'color' => '#059669'],
-            ['name' => 'Servidores',  'description' => 'Servidores administrativos da ESDEP-MT', 'color' => '#2563eb'],
-            ['name' => 'Estagiarios', 'description' => 'Estagiarios da Defensoria Publica',  'color' => '#d97706'],
-            ['name' => 'Gestores',    'description' => 'Gestores e coordenadores',           'color' => '#7c3aed'],
-            ['name' => 'Convidados',  'description' => 'Convidados externos para eventos',   'color' => '#dc2626'],
+            ['name' => 'ESDEP', 'description' => 'Escola Superior da Defensoria Pública do Estado de Mato Grosso', 'color' => '#0066aa'],
+            ['name' => 'CDI',  'description' => 'Coordenardoria de Desenvolvimento e Inovação', 'color' => '#059669'],
+            ['name' => 'DGE',  'description' => 'Diretoria de Gestão Estratégica', 'color' => '#2563eb'],
+            ['name' => 'DJ', 'description' => 'Diretoria Jurídica',  'color' => '#d97706'],
+            ['name' => 'INTITUCIONAL',    'description' => 'Institucional/Geral',           'color' => '#7c3aed'],
+            ['name' => 'OUVIDORIA',  'description' => 'Ouvidoria',   'color' => '#dc2626'],
         ];
 
         foreach ($groups as $group) {

@@ -33,6 +33,31 @@ class RoomSeeder extends Seeder
                 'theme_color' => '#7c3aed',
                 'is_active'   => true,
             ],
+            [
+                'name'        => 'Sede Auditório ',
+                'code'        => 'SEDE-AUD',
+                'capacity'    => 350,
+                'description' => 'Sala Auditório Sede',
+                'theme_color' => '#0f2d4f',
+                'is_active'   => true,
+            ],
+            [
+                'name'        => 'Sede reuniões  ',
+                'code'        => 'REUN-SEDE',
+                'capacity'    => 350,
+                'description' => 'Sala de reuniões Sede',
+                'theme_color' => '#0f2d4f',
+                'is_active'   => true,
+            ],
+            [
+                'name'        => 'Sala Conselho  ',
+                'code'        => 'CONSELHO',
+                'capacity'    => 15,
+                'description' => 'Sala de conselho',
+                'theme_color' => '#c27ba0',
+                'is_active'   => true,
+            ],
+
         ];
 
         foreach ($rooms as $room) {
