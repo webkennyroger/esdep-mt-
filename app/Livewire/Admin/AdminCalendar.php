@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Admin;
 
+use App\Enums\ReservationStatus;
 use App\Models\Reservation;
-use Livewire\Component;
-use Livewire\Attributes\Layout;
 use Carbon\Carbon;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('components.layouts.app')]
 class AdminCalendar extends Component
@@ -38,7 +39,7 @@ class AdminCalendar extends Component
         $rows = Reservation::with('room')
             ->whereDate('date', '>=', $start)
             ->whereDate('date', '<=', $end)
-            ->where('status', 'authorized')
+            ->where('status', ReservationStatus::AUTHORIZED)
             ->get();
 
         $this->reservations = [];

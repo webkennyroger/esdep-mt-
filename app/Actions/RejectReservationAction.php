@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Models\Reservation;
 use App\Enums\ReservationStatus;
 use App\Mail\ReservationRejectedMail;
+use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\Mail;
 
 class RejectReservationAction
@@ -18,6 +19,15 @@ class RejectReservationAction
         $reservation->status = ReservationStatus::REJECTED;
         $reservation->reject_reason = $reason;
         $reservation->save();
+
+        // Registrar no historico de atividades
+        ActivityLogger::reservationRejected($reservation, $reason);
+
+        $reservation->logs()->create([
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
+            'action'  => 'rejected',
+            'reason'  => $reason ?? 'Reserva rejeitada pelo administrador',
+        ]);
 
         event(new \App\Events\ReservationRejected($reservation));
 

@@ -6,39 +6,52 @@ use App\Models\Contact;
 use App\Models\EventAnnouncement;
 use App\Models\Reservation;
 use App\Models\User;
-use App\Jobs\SendEventAnnouncementEmailJob;
-use Illuminate\Support\Facades\DB;
+use App\Mail\EventAnnouncementMail;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class SendEventAnnouncementAction
 {
     public function execute(Reservation $reservation, array $data, User $creator): EventAnnouncement
     {
         $contacts = $this->resolveContacts($data);
+        $total = $contacts->count();
 
         $announcement = EventAnnouncement::create([
-            'reservation_id' => $reservation->id,
-            'created_by' => $creator->id,
-            'message' => $data['message'] ?? null,
-            'recipient_type' => $data['recipient_type'] ?? 'all',
-            'total_recipients' => $contacts->count(),
-            'sent_count' => 0,
-            'failed_count' => 0,
-            'status' => 'sending',
+            'reservation_id'   => $reservation->id,
+            'created_by'       => $creator->id,
+            'message'          => $data['message'] ?? null,
+            'recipient_type'   => $data['recipient_type'] ?? 'all',
+            'total_recipients' => $total,
+            'sent_count'       => 0,
+            'failed_count'     => 0,
+            'status'           => 'sending',
+            'sent_at'          => null,
         ]);
 
         foreach ($contacts as $contact) {
-            SendEventAnnouncementEmailJob::dispatch(
-                $announcement->id,
-                $reservation->id,
-                $contact->email,
-                $contact->name
-            );
+            try {
+                Mail::to($contact->email)->send(
+                    new EventAnnouncementMail($reservation, $contact->name, $announcement->message)
+                );
+
+                $announcement->increment('sent_count');
+            } catch (\Exception $e) {
+                $announcement->increment('failed_count');
+                Log::error("Erro ao enviar email para {$contact->email}: " . $e->getMessage());
+            }
         }
+
+        $announcement->update([
+            'status'  => 'completed',
+            'sent_at' => now(),
+        ]);
 
         return $announcement;
     }
 
-    protected function resolveContacts(array $data): \Illuminate\Support\Collection
+    protected function resolveContacts(array $data): Collection
     {
         if (!empty($data['contact_ids'])) {
             return Contact::whereIn('id', $data['contact_ids'])->active()->get();

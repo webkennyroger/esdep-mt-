@@ -1,0 +1,235 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Auth;
+
+class ActivityLogger
+{
+    public static function log(
+        string $action,
+        string $description,
+        ?object $subject = null,
+        ?array $changes = null,
+        ?array $metadata = null
+    ): ActivityLog {
+        return ActivityLog::create([
+            'action' => $action,
+            'description' => $description,
+            'subject_type' => $subject ? get_class($subject) : null,
+            'subject_id' => $subject?->id,
+            'user_id' => Auth::id(),
+            'changes' => $changes,
+            'metadata' => $metadata,
+        ]);
+    }
+
+    public static function created(object $subject, ?string $description = null): ActivityLog
+    {
+        $modelName = class_basename(get_class($subject));
+        $desc = $description ?? "{$modelName} criado(a) com sucesso";
+
+        return self::log('created', $desc, $subject, $subject->toArray());
+    }
+
+    public static function updated(object $subject, array $oldValues, array $newValues, ?string $description = null): ActivityLog
+    {
+        $modelName = class_basename(get_class($subject));
+        $desc = $description ?? "{$modelName} atualizado(a)";
+
+        $changes = [];
+        foreach ($newValues as $key => $value) {
+            if (isset($oldValues[$key]) && $oldValues[$key] != $value) {
+                $changes[$key] = [
+                    'old' => $oldValues[$key],
+                    'new' => $value,
+                ];
+            }
+        }
+
+        return self::log('updated', $desc, $subject, $changes ?: $newValues);
+    }
+
+    public static function deleted(object $subject, ?string $description = null): ActivityLog
+    {
+        $modelName = class_basename(get_class($subject));
+        $desc = $description ?? "{$modelName} excluido(a)";
+
+        return self::log('deleted', $desc, $subject, $subject->toArray());
+    }
+
+    public static function reservationCreated(object $reservation): ActivityLog
+    {
+        return self::log(
+            'created',
+            "Reserva \"{$reservation->event_name}\" solicitada por {$reservation->requester_name}",
+            $reservation,
+            [
+                'event_name' => $reservation->event_name,
+                'date' => $reservation->date->format('d/m/Y'),
+                'room' => $reservation->room?->name,
+            ]
+        );
+    }
+
+    public static function reservationApproved(object $reservation): ActivityLog
+    {
+        return self::log(
+            'approved',
+            "Reserva \"{$reservation->event_name}\" aprovada",
+            $reservation,
+            ['status' => ['old' => 'pending', 'new' => 'authorized']]
+        );
+    }
+
+    public static function reservationRejected(object $reservation, ?string $reason = null): ActivityLog
+    {
+        return self::log(
+            'rejected',
+            "Reserva \"{$reservation->event_name}\" rejeitada" . ($reason ? ": {$reason}" : ''),
+            $reservation,
+            ['status' => ['old' => 'pending', 'new' => 'rejected'], 'reason' => $reason]
+        );
+    }
+
+    public static function reservationUpdated(object $reservation, array $changes): ActivityLog
+    {
+        $labels = [
+            'event_name'      => ['Nome do evento', 'alterado'],
+            'description'     => ['Descricao', 'alterada'],
+            'date'            => ['Data', 'alterada'],
+            'start_time'      => ['Horario inicial', 'alterado'],
+            'end_time'        => ['Horario final', 'alterado'],
+            'room_id'         => ['Sala', 'alterada'],
+            'requester_name'  => ['Solicitante', 'alterado'],
+            'requester_email' => ['Email do solicitante', 'alterado'],
+            'attendees_count' => ['Numero de participantes', 'alterado'],
+            'coffee_break'    => ['Coffee break', 'alterado'],
+            'sonorizacao'     => ['Sonorizacao', 'alterada'],
+            'transmissao'     => ['Transmissao', 'alterada'],
+            'projetor'        => ['Projetor', 'alterado'],
+        ];
+
+        $descriptions = [];
+
+        foreach ($changes as $field => $oldValue) {
+            $newValue = $reservation->{$field};
+
+            // So gera descricao para campos que realmente mudaram
+            if (self::normalizeReservationValue($field, $oldValue) == self::normalizeReservationValue($field, $newValue)) {
+                continue;
+            }
+
+            [$label, $verb] = $labels[$field] ?? [ucfirst(str_replace('_', ' ', $field)), 'alterado'];
+            $oldLabel = self::formatReservationValue($field, $oldValue);
+            $newLabel = self::formatReservationValue($field, $newValue);
+
+            $descriptions[] = "{$label} {$verb} de \"{$oldLabel}\" para \"{$newLabel}\"";
+        }
+
+        $desc = count($descriptions) > 0
+            ? "Reserva \"{$reservation->event_name}\": " . implode('; ', $descriptions)
+            : "Reserva \"{$reservation->event_name}\" atualizada";
+
+        return self::log(
+            'updated',
+            $desc,
+            $reservation,
+            $changes
+        );
+    }
+
+    private static function normalizeReservationValue(string $field, mixed $value): mixed
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return match ($field) {
+            'date' => $value instanceof \Carbon\Carbon
+                ? $value->format('Y-m-d')
+                : \Carbon\Carbon::parse($value)->format('Y-m-d'),
+            'coffee_break', 'sonorizacao', 'transmissao', 'projetor' => (bool) $value,
+            'attendees_count' => (int) $value,
+            default => $value,
+        };
+    }
+
+    private static function formatReservationValue(string $field, mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return 'nao definido';
+        }
+
+        return match ($field) {
+            'room_id' => \App\Models\Room::find((int) $value)?->name ?? 'Sala #' . $value,
+            'date' => $value instanceof \Carbon\Carbon
+                ? $value->format('d/m/Y')
+                : \Carbon\Carbon::parse($value)->format('d/m/Y'),
+            'coffee_break', 'sonorizacao', 'transmissao', 'projetor' => $value ? 'Sim' : 'Nao',
+            'start_time', 'end_time' => substr((string) $value, 0, 5),
+            default => (string) $value,
+        };
+    }
+
+    public static function userCreated(object $user): ActivityLog
+    {
+        return self::log(
+            'created',
+            "Usuario \"{$user->name}\" criado",
+            $user,
+            ['name' => $user->name, 'email' => $user->email, 'role' => $user->role]
+        );
+    }
+
+    public static function userUpdated(object $user, array $oldValues, array $newValues): ActivityLog
+    {
+        return self::log(
+            'updated',
+            "Usuario \"{$user->name}\" atualizado",
+            $user,
+            $newValues
+        );
+    }
+
+    public static function userDeleted(object $user): ActivityLog
+    {
+        return self::log(
+            'deleted',
+            "Usuario \"{$user->name}\" excluido",
+            $user,
+            ['name' => $user->name, 'email' => $user->email]
+        );
+    }
+
+    public static function roomCreated(object $room): ActivityLog
+    {
+        return self::log(
+            'created',
+            "Sala \"{$room->name}\" criada",
+            $room,
+            ['name' => $room->name, 'capacity' => $room->capacity]
+        );
+    }
+
+    public static function roomUpdated(object $room, array $changes): ActivityLog
+    {
+        return self::log(
+            'updated',
+            "Sala \"{$room->name}\" atualizada",
+            $room,
+            $changes
+        );
+    }
+
+    public static function roomDeleted(object $room): ActivityLog
+    {
+        return self::log(
+            'deleted',
+            "Sala \"{$room->name}\" excluida",
+            $room,
+            ['name' => $room->name]
+        );
+    }
+}

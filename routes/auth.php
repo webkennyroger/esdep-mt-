@@ -12,11 +12,11 @@ Route::get('login', function () {
 
 Route::post('login', function () {
     $credentials = request()->validate([
-        'email' => 'required|email',
+        'email'    => 'required|email',
         'password' => 'required',
     ]);
 
-    if (Auth::attempt($credentials)) {
+    if (Auth::attempt($credentials, request()->boolean('remember'))) {
         request()->session()->regenerate();
         return redirect()->intended(route('dashboard'));
     }
@@ -24,11 +24,12 @@ Route::post('login', function () {
     return back()->withErrors([
         'email' => 'Credenciais inválidas.',
     ])->onlyInput('email');
-})->name('login.post');
+})->name('login.post')->middleware('throttle:5,1');
 
 Route::post('logout', function () {
     Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
     return redirect()->route('home');
-})->name('logout');
+})->name('logout')->middleware('auth');
+

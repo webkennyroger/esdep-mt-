@@ -1,159 +1,153 @@
 <?php
 
-namespace Tests\Feature;
-
+use App\Enums\ReservationStatus;
+use App\Livewire\Admin\ReservationManager;
+use App\Livewire\Public\BookingForm;
+use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\User;
-use App\Models\Reservation;
-use App\Enums\ReservationStatus;
+use Carbon\Carbon;
 use Livewire\Livewire;
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class BookingFormTest extends TestCase
+function createBookingRoom(): Room
 {
-    use RefreshDatabase;
-
-    private Room $room;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->room = Room::factory()->create(['capacity' => 60]);
-    }
-
-    private function createAdmin(): User
-    {
-        return User::factory()->create([
-            'email' => 'admin@esdep.mt.gov.br',
-            'password' => bcrypt('password'),
-            'role' => 'admin',
-        ]);
-    }
-
-    public function test_submit_booking_saves_to_database(): void
-    {
-        $futureDate = now()->addDays(7)->format('Y-m-d');
-
-        Livewire::test(\App\Livewire\Public\BookingForm::class)
-            ->set('requesterName', 'Joao da Silva')
-            ->set('requesterEmail', 'joao@exemplo.gov.br')
-            ->set('eventName', 'Reuniao de Trabalho')
-            ->set('roomId', (string) $this->room->id)
-            ->set('date', $futureDate)
-            ->set('startTime', '09:00')
-            ->set('endTime', '11:00')
-            ->set('attendeesCount', 25)
-            ->set('coffeeBreak', true)
-            ->set('sonorizacao', false)
-            ->set('transmissao', true)
-            ->call('submit')
-            ->assertSet('showSuccess', true);
-
-        $reservation = Reservation::latest()->first();
-        $this->assertNotNull($reservation);
-        $this->assertEquals('Reuniao de Trabalho', $reservation->event_name);
-        $this->assertEquals('Joao da Silva', $reservation->requester_name);
-        $this->assertEquals('joao@exemplo.gov.br', $reservation->requester_email);
-        $this->assertEquals($this->room->id, $reservation->room_id);
-        $this->assertEquals($futureDate, $reservation->date->format('Y-m-d'));
-        $this->assertEquals('09:00', $reservation->start_time);
-        $this->assertEquals('11:00', $reservation->end_time);
-        $this->assertEquals(25, $reservation->attendees_count);
-        $this->assertTrue($reservation->coffee_break);
-        $this->assertFalse($reservation->sonorizacao);
-        $this->assertTrue($reservation->transmissao);
-        $this->assertEquals(ReservationStatus::PENDING, $reservation->status);
-    }
-
-    public function test_reservation_appears_in_admin_manager(): void
-    {
-        $futureDate = now()->addDays(10)->format('Y-m-d');
-
-        $reservation = Reservation::factory()->create([
-            'room_id' => $this->room->id,
-            'event_name' => 'Workshop de Capacitacao',
-            'requester_name' => 'Maria Santos',
-            'requester_email' => 'maria@exemplo.gov.br',
-            'date' => $futureDate,
-            'start_time' => '14:00',
-            'end_time' => '17:00',
-            'attendees_count' => 40,
-            'status' => ReservationStatus::PENDING,
-        ]);
-
-        $admin = $this->createAdmin();
-
-        $this->actingAs($admin);
-
-        Livewire::test(\App\Livewire\Admin\ReservationManager::class)
-            ->assertSee('Workshop de Capacitacao')
-            ->assertSee('Maria Santos');
-    }
-
-    public function test_all_services_saved_correctly(): void
-    {
-        $futureDate = now()->addDays(5)->format('Y-m-d');
-
-        Livewire::test(\App\Livewire\Public\BookingForm::class)
-            ->set('requesterName', 'Pedro Almeida')
-            ->set('requesterEmail', 'pedro@exemplo.gov.br')
-            ->set('eventName', 'Seminario de Direitos')
-            ->set('roomId', (string) $this->room->id)
-            ->set('date', $futureDate)
-            ->set('startTime', '08:30')
-            ->set('endTime', '12:30')
-            ->set('attendeesCount', 50)
-            ->set('coffeeBreak', true)
-            ->set('sonorizacao', true)
-            ->set('transmissao', false)
-            ->call('submit')
-            ->assertSet('showSuccess', true);
-
-        $reservation = Reservation::latest()->first();
-        $this->assertTrue($reservation->coffee_break);
-        $this->assertTrue($reservation->sonorizacao);
-        $this->assertFalse($reservation->transmissao);
-    }
-
-    public function test_admin_sees_pending_reservations(): void
-    {
-        $admin = $this->createAdmin();
-
-        $reservation = Reservation::factory()->create([
-            'room_id' => $this->room->id,
-            'status' => ReservationStatus::PENDING,
-            'event_name' => 'Reuniao Teste Visibilidade',
-            'requester_name' => 'Carlos Teste',
-        ]);
-
-        $this->actingAs($admin);
-
-        Livewire::test(\App\Livewire\Admin\ReservationManager::class)
-            ->set('activeFilter', 'pending')
-            ->assertSee('Reuniao Teste Visibilidade')
-            ->assertSee('Carlos Teste')
-            ->assertSee('Pendente');
-    }
-
-    public function test_admin_can_approve_reservation(): void
-    {
-        $admin = $this->createAdmin();
-
-        $reservation = Reservation::factory()->create([
-            'room_id' => $this->room->id,
-            'status' => ReservationStatus::PENDING,
-        ]);
-
-        $this->actingAs($admin);
-
-        Livewire::test(\App\Livewire\Admin\ReservationManager::class)
-            ->call('openApproveModal', $reservation->id, $reservation->event_name)
-            ->assertSet('showApproveModal', true)
-            ->call('confirmApprove')
-            ->assertSet('showApproveModal', false);
-
-        $reservation->refresh();
-        $this->assertEquals(ReservationStatus::AUTHORIZED, $reservation->status);
-    }
+    return Room::factory()->create(['capacity' => 60]);
 }
+
+function createAdminForBooking(): User
+{
+    return User::factory()->create([
+        'email' => 'admin@esdep.mt.gov.br',
+        'password' => bcrypt('password'),
+        'role' => 'admin',
+    ]);
+}
+
+test('submit booking saves to database', function () {
+    $room = createBookingRoom();
+    $futureDate = now()->addDays(7)->format('Y-m-d');
+
+    Livewire::test(BookingForm::class)
+        ->set('requesterName', 'Joao da Silva')
+        ->set('requesterEmail', 'joao@exemplo.gov.br')
+        ->set('eventName', 'Reuniao de Trabalho')
+        ->set('roomId', (string) $room->id)
+        ->set('date', $futureDate)
+        ->set('startTime', '09:00')
+        ->set('endTime', '11:00')
+        ->set('attendeesCount', 25)
+        ->set('coffeeBreak', true)
+        ->set('sonorizacao', false)
+        ->set('transmissao', true)
+        ->set('termsAccepted', true)
+        ->call('submit')
+        ->assertHasNoErrors()
+        ->assertDispatched('reservationCreated');
+
+    $reservation = Reservation::latest()->first();
+    expect($reservation)->not->toBeNull();
+    expect($reservation->event_name)->toBe('Reuniao de Trabalho');
+    expect($reservation->requester_name)->toBe('Joao da Silva');
+    expect($reservation->requester_email)->toBe('joao@exemplo.gov.br');
+    expect($reservation->room_id)->toBe($room->id);
+    expect(Carbon::parse($reservation->date)->format('Y-m-d'))->toBe($futureDate);
+    expect($reservation->start_time)->toBe('09:00');
+    expect($reservation->end_time)->toBe('11:00');
+    expect($reservation->attendees_count)->toBe(25);
+    expect($reservation->coffee_break)->toBeTrue();
+    expect($reservation->sonorizacao)->toBeFalse();
+    expect($reservation->transmissao)->toBeTrue();
+    expect($reservation->status)->toBe(ReservationStatus::PENDING);
+});
+
+test('reservation appears in admin manager', function () {
+    $room = createBookingRoom();
+    $futureDate = now()->addDays(10)->format('Y-m-d');
+
+    Reservation::factory()->create([
+        'room_id' => $room->id,
+        'event_name' => 'Workshop de Capacitacao',
+        'requester_name' => 'Maria Santos',
+        'requester_email' => 'maria@exemplo.gov.br',
+        'date' => $futureDate,
+        'start_time' => '14:00',
+        'end_time' => '17:00',
+        'attendees_count' => 40,
+        'status' => ReservationStatus::PENDING,
+    ]);
+
+    $admin = createAdminForBooking();
+    $this->actingAs($admin);
+
+    Livewire::test(ReservationManager::class)
+        ->assertSee('Workshop de Capacitacao')
+        ->assertSee('Maria Santos');
+});
+
+test('all services saved correctly', function () {
+    $room = createBookingRoom();
+    $futureDate = now()->addDays(5)->format('Y-m-d');
+
+    Livewire::test(BookingForm::class)
+        ->set('requesterName', 'Pedro Almeida')
+        ->set('requesterEmail', 'pedro@exemplo.gov.br')
+        ->set('eventName', 'Seminario de Direitos')
+        ->set('roomId', (string) $room->id)
+        ->set('date', $futureDate)
+        ->set('startTime', '08:30')
+        ->set('endTime', '12:30')
+        ->set('attendeesCount', 50)
+        ->set('coffeeBreak', true)
+        ->set('sonorizacao', true)
+        ->set('transmissao', false)
+        ->set('termsAccepted', true)
+        ->call('submit')
+        ->assertHasNoErrors()
+        ->assertDispatched('reservationCreated');
+
+    $reservation = Reservation::latest()->first();
+    expect($reservation->coffee_break)->toBeTrue();
+    expect($reservation->sonorizacao)->toBeTrue();
+    expect($reservation->transmissao)->toBeFalse();
+});
+
+test('admin sees pending reservations', function () {
+    $room = createBookingRoom();
+    $admin = createAdminForBooking();
+
+    Reservation::factory()->create([
+        'room_id' => $room->id,
+        'status' => ReservationStatus::PENDING,
+        'event_name' => 'Reuniao Teste Visibilidade',
+        'requester_name' => 'Carlos Teste',
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test(ReservationManager::class)
+        ->set('activeFilter', 'pending')
+        ->assertSee('Reuniao Teste Visibilidade')
+        ->assertSee('Carlos Teste')
+        ->assertSee('Pendente');
+});
+
+test('admin can approve reservation', function () {
+    $room = createBookingRoom();
+    $admin = createAdminForBooking();
+
+    $reservation = Reservation::factory()->create([
+        'room_id' => $room->id,
+        'status' => ReservationStatus::PENDING,
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test(ReservationManager::class)
+        ->call('openApproveModal', $reservation->id, $reservation->event_name)
+        ->assertSet('showApproveModal', true)
+        ->call('confirmApprove')
+        ->assertSet('showApproveModal', false);
+
+    $reservation->refresh();
+    expect($reservation->status)->toBe(ReservationStatus::AUTHORIZED);
+});

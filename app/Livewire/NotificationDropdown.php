@@ -2,8 +2,10 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
+use App\Enums\ReservationStatus;
 use App\Models\Reservation;
+use Carbon\Carbon;
+use Livewire\Component;
 
 class NotificationDropdown extends Component
 {
@@ -24,7 +26,7 @@ class NotificationDropdown extends Component
 
     public function loadData(): void
     {
-        $this->pendingCount = Reservation::where('status', 'pending')->count();
+        $this->pendingCount = Reservation::where('status', ReservationStatus::PENDING)->count();
 
         $this->notifications = Reservation::with('room')
             ->latest()
@@ -40,6 +42,11 @@ class NotificationDropdown extends Component
                 ];
             })
             ->toArray();
+    }
+
+    public function goToReservation(int $id): void
+    {
+        $this->redirect(route('admin.reservations.index'));
     }
 
     public function render()

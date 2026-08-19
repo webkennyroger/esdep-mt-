@@ -4,57 +4,35 @@ namespace App\Livewire\Public;
 
 use App\Enums\ReservationStatus;
 use App\Models\Reservation;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithPagination;
 
+#[Layout('components.layouts.public')]
 class Timeline extends Component
 {
-    public int $currentPage = 1;
-    public int $perPage = 7;
+    use WithPagination;
 
-    public function nextPage(): void
-    {
-        $totalPages = $this->getTotalPages();
-        if ($this->currentPage < $totalPages) {
-            $this->currentPage++;
-        }
-    }
+    public int $perPage = 7;
 
     public function prevPage(): void
     {
-        if ($this->currentPage > 1) {
-            $this->currentPage--;
-        }
-    }
-
-    public function getTotalPages(): int
-    {
-        $total = Reservation::where('status', ReservationStatus::AUTHORIZED->value)
-            ->where('date', '>=', now()->toDateString())
-            ->count();
-
-        return (int) ceil($total / $this->perPage);
+        $this->previousPage();
     }
 
     public function render()
     {
-        $query = Reservation::with('room')
-            ->where('status', ReservationStatus::AUTHORIZED->value)
+        $reservations = Reservation::with('room')
+            ->where('status', ReservationStatus::AUTHORIZED)
             ->where('date', '>=', now()->toDateString())
             ->orderBy('date')
-            ->orderBy('start_time');
-
-        $totalPages = $this->getTotalPages();
-
-        if ($this->currentPage > 1) {
-            $query->skip(($this->currentPage - 1) * $this->perPage);
-        }
-
-        $reservations = $query->limit($this->perPage)->get();
+            ->orderBy('start_time')
+            ->paginate($this->perPage);
 
         return view('livewire.public.timeline', [
             'reservations' => $reservations,
-            'currentPage' => $this->currentPage,
-            'totalPages' => $totalPages,
+            'currentPage'  => $reservations->currentPage(),
+            'totalPages'   => $reservations->lastPage(),
         ]);
     }
 }

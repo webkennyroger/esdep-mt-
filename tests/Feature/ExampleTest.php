@@ -1,38 +1,26 @@
 <?php
 
-namespace Tests\Feature;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+test('the application returns a successful response', function () {
+    $response = $this->get('/');
 
-class ExampleTest extends TestCase
-{
-    use RefreshDatabase;
+    $response->assertStatus(200);
+});
 
-    /**
-     * A basic test example.
-     */
-    public function test_the_application_returns_a_successful_response(): void
-    {
-        $response = $this->get('/');
+test('admin can login', function () {
+    User::factory()->create([
+        'email' => 'admin@esdep.mt.gov.br',
+        'password' => Hash::make('password'),
+        'role' => 'admin',
+    ]);
 
-        $response->assertStatus(200);
-    }
+    $response = $this->post('/login', [
+        'email' => 'admin@esdep.mt.gov.br',
+        'password' => 'password',
+    ]);
 
-    public function test_admin_can_login(): void
-    {
-        \App\Models\User::factory()->create([
-            'email' => 'admin@esdep.mt.gov.br',
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
-            'role' => 'admin',
-        ]);
-
-        $response = $this->post('/login', [
-            'email' => 'admin@esdep.mt.gov.br',
-            'password' => 'password',
-        ]);
-
-        $response->assertRedirect('/dashboard');
-        $this->assertAuthenticated();
-    }
-}
+    $response->assertRedirect('/dashboard');
+    $this->assertAuthenticated();
+});

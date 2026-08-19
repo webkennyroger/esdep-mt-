@@ -9,12 +9,11 @@
                 <span class="text-[10px] uppercase leading-tight">{{ $date->format('M') }}</span>
             </div>
             <div class="min-w-0 flex-1">
-                <h3 class="truncate text-sm font-semibold text-slate-900 dark:text-white">{{ $res->event_name }}</h3>
-                <p class="mt-0.5 text-xs text-slate-500 dark:text-[#70847d]">{{ $res->room?->name ?? '-' }}</p>
-                <p class="mt-0.5 text-xs text-slate-400 dark:text-[#70847d]"></p>
+                <h3 class="truncate text-sm font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $res->event_name }}</h3>
+                <p class="mt-0.5 text-xs text-slate-500 dark:text-[#8aa39a]">{{ $res->room?->name ?? '-' }}</p>
             </div>
            
-            <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-[#16352a] dark:text-slate-300">
+            <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-[#16352a] dark:text-[#e6f2ec]">
                 <span class="text-xs font-semibold leading-tight">{{ $res->start_time }}</span>
                 <span class="text-xs font-semibold leading-tight">-</span>
                 <span class="text-xs font-semibold leading-tight">{{ $res->end_time }}</span>

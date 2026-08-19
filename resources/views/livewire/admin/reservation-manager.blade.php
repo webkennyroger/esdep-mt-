@@ -1,4 +1,4 @@
-<div class="p-6">
+<div>
     <div class="mb-6 flex items-center justify-between">
         <div>
             <h1 class="text-2xl font-bold text-slate-900 dark:text-[#e6f2ec]">Gerenciar Reservas</h1>
@@ -314,6 +314,54 @@
                         </div>
                     @endif
 
+                    {{-- Historico de Alteracoes --}}
+                    @if($detailReservation->logs->isNotEmpty())
+                        <div class="mt-5">
+                            <h4 class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#5a7068]">Historico de Alteracoes</h4>
+                            <div class="space-y-3">
+                                @foreach($detailReservation->logs as $log)
+                                    @php
+                                        $actionConfig = match($log->action) {
+                                            'created' => ['icon' => 'M12 6v6m0 0v6m0-6h6m-6 0H6', 'color' => 'text-blue-500 bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400'],
+                                            'approved' => ['icon' => 'M5 13l4 4L19 7', 'color' => 'text-emerald-500 bg-emerald-100 dark:bg-emerald-950/50 dark:text-[#4fd1a5]'],
+                                            'rejected' => ['icon' => 'M6 18L18 6M6 6l12 12', 'color' => 'text-red-500 bg-red-100 dark:bg-red-950/50 dark:text-red-400'],
+                                            'updated' => ['icon' => 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15', 'color' => 'text-amber-500 bg-amber-100 dark:bg-amber-950/50 dark:text-amber-400'],
+                                            default => ['icon' => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'text-slate-500 bg-slate-100 dark:bg-slate-800 dark:text-slate-400'],
+                                        };
+                                    @endphp
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {{ $actionConfig['color'] }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $actionConfig['icon'] }}" />
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm font-medium text-slate-900 dark:text-[#e6f2ec]">{{ $log->action_label }}</span>
+                                                <span class="text-xs text-slate-400 dark:text-[#5a7068]">{{ $log->created_at->format('d/m/Y H:i') }}</span>
+                                            </div>
+                                            @if($log->user)
+                                                <p class="text-xs text-slate-500 dark:text-[#8aa39a]">por {{ $log->user->name }}</p>
+                                            @endif
+                                            @if($log->reason)
+                                                <p class="mt-1 text-sm text-slate-600 dark:text-[#8aa39a]">{!! $log->reason !!}</p>
+                                            @endif
+                                            @if($log->changes && count($log->changes) > 0)
+                                                <div class="mt-1.5 flex flex-wrap gap-1.5">
+                                                    @foreach($log->changes as $field => $value)
+                                                        <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-[#16352a] dark:text-[#8aa39a]">
+                                                            {{ $field }}: {{ is_array($value) ? json_encode($value) : $value }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     {{-- Footer --}}
                     <div class="mt-6 flex items-center justify-end gap-3 border-t border-slate-200 pt-5 dark:border-[#16352a]">
                         <button wire:click="closeDetailModal"
@@ -392,35 +440,8 @@
                     <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">
                         Motivo da rejeicao <span class="text-slate-400">(opcional)</span>
                     </label>
-
-                    <div class="overflow-hidden rounded-lg border border-slate-200 dark:border-[#16352a]">
-                        <div class="flex items-center gap-1 border-b border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-[#16352a] dark:bg-[#0a1a14]">
-                            <button type="button" onclick="document.execCommand('bold')" title="Negrito"
-                                class="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg>
-                            </button>
-                            <button type="button" onclick="document.execCommand('italic')" title="Italico"
-                                class="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 4h4m-2 0l-4 16m-2 0h4m2-16l4 16"/></svg>
-                            </button>
-                            <button type="button" onclick="document.execCommand('underline')" title="Sublinhado"
-                                class="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v7a5 5 0 0010 0V4M5 21h14"/></svg>
-                            </button>
-                            <div class="mx-1 h-4 w-px bg-slate-300 dark:bg-[#2c4a3e]"></div>
-                            <button type="button" onclick="document.execCommand('insertUnorderedList')" title="Lista"
-                                class="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
-                            </button>
-                        </div>
-                        <div id="reject-editor"
-                            contenteditable="true"
-                            wire:model="rejectReason"
-                            data-placeholder="Descreva o motivo da rejeicao..."
-                            class="min-h-[100px] max-h-[200px] overflow-y-auto px-3 py-2.5 text-sm text-slate-900 outline-none empty:before:text-slate-400 empty:before:content-[attr(data-placeholder)] dark:text-[#e6f2ec] dark:empty:before:text-[#5a7068]"
-                            oninput="document.getElementById('reject-reason-hidden').value = this.innerText"></div>
-                    </div>
-                    <input type="hidden" wire:model="rejectReason" id="reject-reason-hidden">
+                    <textarea wire:model="rejectReason" rows="4" placeholder="Descreva o motivo da rejeicao..."
+                        class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]"></textarea>
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3">
@@ -475,7 +496,7 @@
                                     @foreach($announceGroups as $group)
                                         <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-[#8aa39a]">
                                             <input type="checkbox" wire:model="announceSelectedGroupIds" value="{{ $group->id }}" class="rounded text-blue-600 focus:ring-blue-500" />
-                                            {{ $group->name }} ({{ $group->contacts_count }})
+                                            {{ $group->name }}
                                         </label>
                                     @endforeach
                                 </div>

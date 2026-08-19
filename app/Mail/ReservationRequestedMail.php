@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
 
 class ReservationRequestedMail extends Mailable
@@ -18,7 +19,19 @@ class ReservationRequestedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Nova Solicitação de Reserva - {$this->reservation->event_name}",
+            subject: "Nova Solicitacao de Reserva - {$this->reservation->event_name}",
+        );
+    }
+
+    public function headers(): Headers
+    {
+        return new Headers(
+            text: [
+                'Precedence: transactional',
+                'X-Mailer: ESDEP-MT/1.0',
+                'Return-Path: ' . config('mail.from.address'),
+                'Sender: ' . config('mail.from.address'),
+            ],
         );
     }
 

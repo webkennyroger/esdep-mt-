@@ -3,8 +3,11 @@
 namespace App\Livewire\Admin;
 
 use App\Actions\UpdateReservationAction;
+use App\Exceptions\ConflictException;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Services\ConflictCheckerService;
+use Carbon\Carbon;
 use Livewire\Component;
 
 class ReservationEditor extends Component
@@ -42,23 +45,23 @@ class ReservationEditor extends Component
             'coffeeBreak'    => 'boolean',
             'sonorizacao'    => 'boolean',
             'transmissao'    => 'boolean',
-            'projetor' => 'boolean',
+            'projetor'       => 'boolean',
         ];
     }
 
     protected $messages = [
-        'eventName.required'      => 'O nome do evento e obrigatorio.',
+        'eventName.required'      => 'O nome do evento é obrigatório.',
         'roomId.required'         => 'Selecione uma sala.',
-        'roomId.exists'           => 'A sala selecionada nao existe.',
-        'date.required'           => 'A data e obrigatoria.',
+        'roomId.exists'           => 'A sala selecionada não existe.',
+        'date.required'           => 'A data é obrigatória.',
         'date.after_or_equal'     => 'A data deve ser hoje ou futura.',
-        'startTime.required'      => 'O horario de inicio e obrigatorio.',
-        'endTime.required'        => 'O horario de fim e obrigatorio.',
-        'endTime.after'           => 'O horario de fim deve ser posterior ao horario de inicio.',
-        'requesterName.required'  => 'O nome do solicitante e obrigatorio.',
-        'requesterEmail.required' => 'O e-mail e obrigatorio.',
-        'requesterEmail.email'    => 'Insira um e-mail valido.',
-        'attendeesCount.required' => 'O numero de participantes e obrigatorio.',
+        'startTime.required'      => 'O horário de início é obrigatório.',
+        'endTime.required'        => 'O horário de fim é obrigatório.',
+        'endTime.after'           => 'O horário de fim deve ser posterior ao horário de início.',
+        'requesterName.required'  => 'O nome do solicitante é obrigatório.',
+        'requesterEmail.required' => 'O e-mail é obrigatório.',
+        'requesterEmail.email'    => 'Insira um e-mail válido.',
+        'attendeesCount.required' => 'O número de participantes é obrigatório.',
         'attendeesCount.min'      => 'Deve haver pelo menos 1 participante.',
     ];
 
@@ -98,9 +101,8 @@ class ReservationEditor extends Component
         }
 
         try {
-            $conflictChecker = new \App\Services\ConflictCheckerService();
-            $conflictChecker->check($this->roomId, $this->date, $this->startTime, $this->endTime, $this->reservationId);
-        } catch (\Exception $e) {
+            app(ConflictCheckerService::class)->check($this->roomId, $this->date, $this->startTime, $this->endTime, $this->reservationId);
+        } catch (ConflictException $e) {
             $this->conflictError = $e->getMessage();
         }
     }
@@ -113,16 +115,16 @@ class ReservationEditor extends Component
         $this->eventName      = $reservation->event_name;
         $this->description    = $reservation->description ?? '';
         $this->roomId         = $reservation->room_id;
-        $this->date           = \Carbon\Carbon::parse($reservation->date)->format('Y-m-d');
-        $this->startTime      = \Carbon\Carbon::parse($reservation->start_time)->format('H:i');
-        $this->endTime        = \Carbon\Carbon::parse($reservation->end_time)->format('H:i');
+        $this->date           = Carbon::parse($reservation->date)->format('Y-m-d');
+        $this->startTime      = Carbon::parse($reservation->start_time)->format('H:i');
+        $this->endTime        = Carbon::parse($reservation->end_time)->format('H:i');
         $this->requesterName  = $reservation->requester_name;
         $this->requesterEmail = $reservation->requester_email;
         $this->attendeesCount = $reservation->attendees_count;
         $this->coffeeBreak    = (bool) $reservation->coffee_break;
         $this->sonorizacao    = (bool) $reservation->sonorizacao;
         $this->transmissao    = (bool) $reservation->transmissao;
-        $this->projetor = (bool) $reservation->projetor;
+        $this->projetor       = (bool) $reservation->projetor;
 
         $this->resetValidation();
         $this->showModal = true;
@@ -141,8 +143,7 @@ class ReservationEditor extends Component
         $reservation = Reservation::findOrFail($this->reservationId);
 
         try {
-            $action = new UpdateReservationAction();
-            $action->execute($reservation, [
+            app(UpdateReservationAction::class)->execute($reservation, [
                 'event_name'      => $this->eventName,
                 'description'     => $this->description ?: null,
                 'room_id'         => $this->roomId,
@@ -155,14 +156,15 @@ class ReservationEditor extends Component
                 'coffee_break'    => $this->coffeeBreak,
                 'sonorizacao'     => $this->sonorizacao,
                 'transmissao'     => $this->transmissao,
-                'projetor' => $this->projetor,
+                'projetor'        => $this->projetor,
             ]);
 
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva atualizada com sucesso.' } }))");
             $this->dispatch('reservationUpdated');
             $this->close();
         } catch (\Exception $e) {
-            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '" . addslashes($e->getMessage()) . "' } }))");
+            $safeMsg = addslashes(strip_tags($e->getMessage()));
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '{$safeMsg}' } }))");
         }
     }
 

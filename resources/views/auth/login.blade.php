@@ -6,15 +6,23 @@
     <title>Login | ESDEP-MT</title>
     <link rel="shortcut icon" href="{{ asset('favicon.svg') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script>
+        (function () {
+            var stored = localStorage.getItem('esdep-theme');
+            if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
 </head>
-<body class="min-h-screen bg-slate-50 flex items-center justify-center">
-    <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+<body class="min-h-screen bg-slate-50 flex items-center justify-center dark:bg-[#081712]">
+    <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
         <div class="mb-6 text-center">
-            <img src="{{ asset('assets/images/logo-esdep.png') }}" alt="ESDEP-MT" class="mx-auto mb-3 h-16 w-auto">
+            <img src="{{ asset('assets/images/logo-esdep.png') }}" alt="ESDEP-MT" class="mx-auto mb-3 h-16 w-auto dark:brightness-0 dark:invert">
         </div>
 
         @if($errors->any())
-            <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/50 dark:text-red-400">
                 {{ $errors->first() }}
             </div>
         @endif
@@ -22,26 +30,26 @@
         <form method="POST" action="{{ route('login.post') }}" class="space-y-4">
             @csrf
             <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">E-mail</label>
+                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">E-mail</label>
                 <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                    class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none"
+                    class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:focus:ring-[#4fd1a5]"
                     placeholder="seu.email@esdep.mt.gov.br">
             </div>
 
             <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">Senha</label>
+                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Senha</label>
                 <input type="password" name="password" required
-                    class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none"
+                    class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:focus:ring-[#4fd1a5]"
                     placeholder="Sua senha">
             </div>
 
-            <button type="submit" class="w-full rounded-lg bg-green-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-800">
+            <button type="submit" class="w-full rounded-lg bg-[#003f32] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#008b5c] dark:bg-[#008b5c] dark:hover:bg-[#4fd1a5] dark:hover:text-[#003f32]">
                 Entrar
             </button>
         </form>
 
         <div class="mt-6 text-center">
-            <a href="{{ route('home') }}" class="text-sm text-slate-500 hover:text-slate-700">Voltar para o início</a>
+            <a href="{{ route('home') }}" class="text-sm text-slate-500 hover:text-slate-700 dark:text-[#8aa39a] dark:hover:text-[#4fd1a5]">Voltar para o inicio</a>
         </div>
     </div>
 </body>

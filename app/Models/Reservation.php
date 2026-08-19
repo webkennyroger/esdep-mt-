@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Enums\ReservationStatus;
 
 class Reservation extends Model
@@ -12,6 +13,7 @@ class Reservation extends Model
     use HasFactory;
 
     protected $fillable = [
+        'protocol',
         'room_id',
         'event_name',
         'description',
@@ -27,6 +29,11 @@ class Reservation extends Model
         'sonorizacao',
         'transmissao',
         'projetor',
+        'attachment_path',
+        'attachment_name',
+        'reminder_sent_at',
+        'terms_accepted',
+        'terms_accepted_at',
     ];
 
     protected $casts = [
@@ -37,10 +44,18 @@ class Reservation extends Model
         'sonorizacao' => 'boolean',
         'transmissao' => 'boolean',
         'projetor' => 'boolean',
+        'reminder_sent_at' => 'datetime',
+        'terms_accepted' => 'boolean',
+        'terms_accepted_at' => 'datetime',
     ];
 
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
+    }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(ReservationLog::class)->latest();
     }
 }

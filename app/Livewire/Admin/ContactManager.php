@@ -4,9 +4,9 @@ namespace App\Livewire\Admin;
 
 use App\Models\Contact;
 use App\Models\ContactGroup;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
 
 #[Layout('components.layouts.app')]
 class ContactManager extends Component
@@ -15,61 +15,75 @@ class ContactManager extends Component
 
     public string $search = '';
     public ?int $filterGroupId = null;
+
+    // Contact Modals
     public bool $showCreateModal = false;
     public bool $showEditModal = false;
     public bool $showViewModal = false;
-    public bool $showImportModal = false;
+    public bool $showDeleteContactModal = false;
+    public int $deleteContactId = 0;
+    public string $deleteContactName = '';
+
+    // Group Modals
     public bool $showGroupModal = false;
     public bool $showEditGroupModal = false;
     public bool $showDeleteGroupModal = false;
     public int $deleteGroupId = 0;
     public string $deleteGroupName = '';
 
-    // Create contact
+    // Import Modal
+    public bool $showImportModal = false;
+    public string $importCsv = '';
+
+    // Create contact fields
     public string $newName = '';
     public string $newEmail = '';
+    public string $newPassword = '';
     public string $newCpf = '';
     public string $newTipo = '';
     public string $newSetor = '';
     public bool $newAutorizado = false;
     public array $newGroupIds = [];
+    public array $newResponsibleGroupIds = [];
 
-    // Edit contact
+    // Edit contact fields
     public int $editContactId = 0;
     public string $editName = '';
     public string $editEmail = '';
+    public string $editPassword = '';
     public string $editCpf = '';
     public string $editTipo = '';
     public string $editSetor = '';
     public bool $editAutorizado = false;
     public array $editGroupIds = [];
+    public array $editResponsibleGroupIds = [];
 
     // View contact
     public ?Contact $viewContact = null;
 
-    // Group
+    // Create Group fields
     public string $groupName = '';
     public string $groupDescription = '';
     public string $groupColor = '#059669';
 
+    // Edit Group fields
     public int $editGroupId = 0;
     public string $editGroupName = '';
     public string $editGroupDescription = '';
     public string $editGroupColor = '#059669';
 
-    public string $importCsv = '';
-
     protected $listeners = [
         'contactCreated' => '$refresh',
+        'contactUpdated' => '$refresh',
         'contactDeleted' => '$refresh',
-        'groupCreated' => '$refresh',
+        'groupCreated'   => '$refresh',
     ];
 
     // ─── Contact CRUD ────────────────────────────────
 
     public function openCreateModal(): void
     {
-        $this->reset(['newName', 'newEmail', 'newCpf', 'newTipo', 'newSetor', 'newAutorizado', 'newGroupIds']);
+        $this->reset(['newName', 'newEmail', 'newPassword', 'newCpf', 'newTipo', 'newSetor', 'newAutorizado', 'newGroupIds', 'newResponsibleGroupIds']);
         $this->showCreateModal = true;
     }
 
@@ -81,23 +95,29 @@ class ContactManager extends Component
     public function createContact(): void
     {
         $this->validate([
-            'newName' => 'required|string|max:255',
+            'newName'  => 'required|string|max:255',
             'newEmail' => 'required|email|max:255|unique:contacts,email',
         ]);
 
         $contact = Contact::create([
-            'name' => $this->newName,
-            'email' => $this->newEmail,
-            'cpf' => $this->newCpf ?: null,
-            'tipo' => $this->newTipo ?: null,
-            'setor' => $this->newSetor ?: null,
+            'name'          => $this->newName,
+            'email'         => $this->newEmail,
+            'password'      => $this->newPassword ? bcrypt($this->newPassword) : null,
+            'cpf'           => $this->newCpf ?: null,
+            'tipo'          => $this->newTipo ?: null,
+            'setor'         => $this->newSetor ?: null,
             'autorizado_at' => $this->newAutorizado ? now() : null,
-            'is_active' => true,
+            'is_active'     => true,
             'subscribed_at' => now(),
         ]);
 
         if (!empty($this->newGroupIds)) {
-            $contact->groups()->sync($this->newGroupIds);
+            $responsibleIds = array_intersect($this->newGroupIds, $this->newResponsibleGroupIds);
+            $syncData = [];
+            foreach ($this->newGroupIds as $groupId) {
+                $syncData[$groupId] = ['is_responsible' => in_array($groupId, $this->newResponsibleGroupIds)];
+            }
+            $contact->groups()->sync($syncData);
         }
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Contato criado com sucesso.' } }))");
@@ -108,15 +128,17 @@ class ContactManager extends Component
     public function openEditModal(int $id): void
     {
         $contact = Contact::with('groups')->findOrFail($id);
-        $this->editContactId = $contact->id;
-        $this->editName = $contact->name;
-        $this->editEmail = $contact->email;
-        $this->editCpf = $contact->cpf ?? '';
-        $this->editTipo = $contact->tipo ?? '';
-        $this->editSetor = $contact->setor ?? '';
-        $this->editAutorizado = $contact->autorizado_at !== null;
-        $this->editGroupIds = $contact->groups->pluck('id')->toArray();
-        $this->showEditModal = true;
+        $this->editContactId   = $contact->id;
+        $this->editName        = $contact->name;
+        $this->editEmail       = $contact->email;
+        $this->editPassword    = '';
+        $this->editCpf         = $contact->cpf ?? '';
+        $this->editTipo        = $contact->tipo ?? '';
+        $this->editSetor       = $contact->setor ?? '';
+        $this->editAutorizado  = $contact->autorizado_at !== null;
+        $this->editGroupIds    = $contact->groups->pluck('id')->toArray();
+        $this->editResponsibleGroupIds = $contact->groups->filter->pivot->is_responsible->pluck('id')->toArray();
+        $this->showEditModal   = true;
     }
 
     public function closeEditModal(): void
@@ -127,37 +149,48 @@ class ContactManager extends Component
     public function updateContact(): void
     {
         $this->validate([
-            'editName' => 'required|string|max:255',
+            'editName'  => 'required|string|max:255',
             'editEmail' => 'required|email|max:255|unique:contacts,email,' . $this->editContactId,
         ]);
 
         $contact = Contact::findOrFail($this->editContactId);
-        $contact->update([
-            'name' => $this->editName,
-            'email' => $this->editEmail,
-            'cpf' => $this->editCpf ?: null,
-            'tipo' => $this->editTipo ?: null,
-            'setor' => $this->editSetor ?: null,
-            'autorizado_at' => $this->editAutorizado ? ($contact->autorizado_at ?? now()) : null,
-        ]);
 
-        $contact->groups()->sync($this->editGroupIds);
+        $data = [
+            'name'          => $this->editName,
+            'email'         => $this->editEmail,
+            'cpf'           => $this->editCpf ?: null,
+            'tipo'          => $this->editTipo ?: null,
+            'setor'         => $this->editSetor ?: null,
+            'autorizado_at' => $this->editAutorizado ? ($contact->autorizado_at ?? now()) : null,
+        ];
+
+        if ($this->editPassword) {
+            $data['password'] = bcrypt($this->editPassword);
+        }
+
+        $contact->update($data);
+
+        $syncData = [];
+        foreach ($this->editGroupIds as $groupId) {
+            $syncData[$groupId] = ['is_responsible' => in_array($groupId, $this->editResponsibleGroupIds)];
+        }
+        $contact->groups()->sync($syncData);
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Contato atualizado com sucesso.' } }))");
-        $this->dispatch('contactCreated');
+        $this->dispatch('contactUpdated');
         $this->closeEditModal();
     }
 
     public function openViewModal(int $id): void
     {
-        $this->viewContact = Contact::with('groups')->findOrFail($id);
+        $this->viewContact   = Contact::with('groups')->findOrFail($id);
         $this->showViewModal = true;
     }
 
     public function closeViewModal(): void
     {
         $this->showViewModal = false;
-        $this->viewContact = null;
+        $this->viewContact   = null;
     }
 
     public function toggleActive(int $id): void
@@ -170,15 +203,22 @@ class ContactManager extends Component
             $contact->subscribe();
         }
 
-        $this->dispatch('contactCreated');
+        $this->dispatch('contactUpdated');
     }
 
     public function confirmDeleteContact(int $id): void
     {
         $contact = Contact::findOrFail($id);
-        $this->deleteGroupId = $contact->id;
-        $this->deleteGroupName = $contact->name;
-        $this->showDeleteGroupModal = true;
+        $this->deleteContactId   = $contact->id;
+        $this->deleteContactName = $contact->name;
+        $this->showDeleteContactModal = true;
+    }
+
+    public function closeDeleteContactModal(): void
+    {
+        $this->showDeleteContactModal = false;
+        $this->deleteContactId   = 0;
+        $this->deleteContactName = '';
     }
 
     public function deleteContact(int $id): void
@@ -187,7 +227,7 @@ class ContactManager extends Component
         $contact->groups()->detach();
         $contact->delete();
 
-        $this->showDeleteGroupModal = false;
+        $this->closeDeleteContactModal();
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Contato removido com sucesso.' } }))");
         $this->dispatch('contactDeleted');
     }
@@ -197,7 +237,7 @@ class ContactManager extends Component
     public function openGroupModal(): void
     {
         $this->reset(['groupName', 'groupDescription', 'groupColor']);
-        $this->groupColor = '#059669';
+        $this->groupColor     = '#059669';
         $this->showGroupModal = true;
     }
 
@@ -209,14 +249,14 @@ class ContactManager extends Component
     public function createGroup(): void
     {
         $this->validate([
-            'groupName' => 'required|string|max:255|unique:contact_groups,name',
+            'groupName'  => 'required|string|max:255|unique:contact_groups,name',
             'groupColor' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
         ]);
 
         ContactGroup::create([
-            'name' => $this->groupName,
+            'name'        => $this->groupName,
             'description' => $this->groupDescription,
-            'color' => $this->groupColor,
+            'color'       => $this->groupColor,
         ]);
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Grupo criado com sucesso.' } }))");
@@ -237,11 +277,11 @@ class ContactManager extends Component
     public function openEditGroupModal(int $id): void
     {
         $group = ContactGroup::findOrFail($id);
-        $this->editGroupId = $group->id;
-        $this->editGroupName = $group->name;
+        $this->editGroupId          = $group->id;
+        $this->editGroupName        = $group->name;
         $this->editGroupDescription = $group->description ?? '';
-        $this->editGroupColor = $group->color;
-        $this->showEditGroupModal = true;
+        $this->editGroupColor       = $group->color;
+        $this->showEditGroupModal   = true;
     }
 
     public function closeEditGroupModal(): void
@@ -252,15 +292,15 @@ class ContactManager extends Component
     public function updateGroup(): void
     {
         $this->validate([
-            'editGroupName' => 'required|string|max:255|unique:contact_groups,name,' . $this->editGroupId,
+            'editGroupName'  => 'required|string|max:255|unique:contact_groups,name,' . $this->editGroupId,
             'editGroupColor' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
         ]);
 
         $group = ContactGroup::findOrFail($this->editGroupId);
         $group->update([
-            'name' => $this->editGroupName,
+            'name'        => $this->editGroupName,
             'description' => $this->editGroupDescription,
-            'color' => $this->editGroupColor,
+            'color'       => $this->editGroupColor,
         ]);
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Grupo atualizado com sucesso.' } }))");
@@ -271,7 +311,7 @@ class ContactManager extends Component
     public function confirmDeleteGroup(int $id): void
     {
         $group = ContactGroup::findOrFail($id);
-        $this->deleteGroupId = $group->id;
+        $this->deleteGroupId   = $group->id;
         $this->deleteGroupName = $group->name;
         $this->showDeleteGroupModal = true;
     }
@@ -279,6 +319,8 @@ class ContactManager extends Component
     public function closeDeleteGroupModal(): void
     {
         $this->showDeleteGroupModal = false;
+        $this->deleteGroupId   = 0;
+        $this->deleteGroupName = '';
     }
 
     public function deleteGroup(int $id): void
@@ -291,7 +333,7 @@ class ContactManager extends Component
             $this->filterGroupId = null;
         }
 
-        $this->showDeleteGroupModal = false;
+        $this->closeDeleteGroupModal();
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Grupo excluido com sucesso.' } }))");
         $this->dispatch('groupCreated');
     }
@@ -308,19 +350,26 @@ class ContactManager extends Component
 
     public function openImportModal(): void
     {
-        $this->importCsv = '';
-        $this->showImportModal = true;
+        $this->importCsv        = '';
+        $this->showImportModal  = true;
+    }
+
+    public function closeImportModal(): void
+    {
+        $this->showImportModal = false;
+        $this->importCsv       = '';
     }
 
     public function importContacts(): void
     {
         $this->validate([
-            'importCsv' => 'required|string',
+            'importCsv' => 'required|string|max:102400',
         ]);
 
-        $lines = explode("\n", $this->importCsv);
+        $lines    = explode("\n", $this->importCsv);
         $imported = 0;
-        $skipped = 0;
+        $skipped  = 0;
+        $invalid  = 0;
 
         foreach ($lines as $line) {
             $line = trim($line);
@@ -329,31 +378,39 @@ class ContactManager extends Component
             $parts = str_getcsv($line);
             if (count($parts) < 2) continue;
 
-            $name = trim($parts[0]);
-            $email = trim($parts[1]);
+            $name  = trim($parts[0]);
+            $email = strtolower(trim($parts[1]));
 
             if (empty($name) || empty($email)) continue;
 
-            $exists = Contact::where('email', $email)->exists();
-            if ($exists) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $invalid++;
+                continue;
+            }
+
+            if (Contact::where('email', $email)->exists()) {
                 $skipped++;
                 continue;
             }
 
             Contact::create([
-                'name' => $name,
-                'email' => $email,
-                'is_active' => true,
+                'name'          => $name,
+                'email'         => $email,
+                'is_active'     => true,
                 'subscribed_at' => now(),
             ]);
 
             $imported++;
         }
 
-        $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: '{$imported} contatos importados. {$skipped} ignorados (ja existentes).' } }))");
+        $msg = "{$imported} contatos importados. {$skipped} ignorados (ja existentes).";
+        if ($invalid > 0) {
+            $msg .= " {$invalid} com e-mail invalido ignorados.";
+        }
+
+        $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: '{$msg}' } }))");
         $this->dispatch('contactCreated');
-        $this->showImportModal = false;
-        $this->importCsv = '';
+        $this->closeImportModal();
     }
 
     // ─── Render ──────────────────────────────────────
@@ -376,9 +433,9 @@ class ContactManager extends Component
 
         return view('livewire.admin.contact-manager', [
             'contacts' => $query->paginate(15),
-            'groups' => ContactGroup::withCount('contacts')->orderBy('name')->get(),
-            'sectors' => ['CDI', 'DGE', 'DJ', 'DGDI', 'OUVIDORIA', 'INTITUCIONAL'],
-            'tipos' => ['Defensor', 'Servidor', 'Estagiario', 'Gestor', 'Convidado'],
+            'groups'   => ContactGroup::withCount('contacts')->orderBy('name')->get(),
+            'sectors'  => ['CDI', 'DGE', 'DJ', 'DGDI', 'OUVIDORIA', 'INTITUCIONAL'],
+            'tipos'    => ['Defensor', 'Servidor', 'Estagiario', 'Gestor', 'Convidado'],
         ]);
     }
 }

@@ -1,100 +1,85 @@
 <?php
 
-namespace Tests\Feature;
-
-use Tests\TestCase;
+use App\Livewire\Admin\ContactManager;
 use App\Models\Contact;
 use App\Models\ContactGroup;
 use Livewire\Livewire;
-use App\Livewire\Admin\ContactManager;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class ContactTest extends TestCase
-{
-    use RefreshDatabase;
+test('create contact', function () {
+    Livewire::test(ContactManager::class)
+        ->set('newName', 'Carlos Souza')
+        ->set('newEmail', 'carlos@test.com')
+        ->call('createContact')
+        ->assertHasNoErrors();
 
-    public function test_create_contact(): void
-    {
-        Livewire::test(ContactManager::class)
-            ->set('newName', 'Carlos Souza')
-            ->set('newEmail', 'carlos@test.com')
-            ->call('createContact')
-            ->assertHasNoErrors();
+    $this->assertDatabaseHas('contacts', [
+        'name' => 'Carlos Souza',
+        'email' => 'carlos@test.com',
+        'is_active' => true,
+    ]);
+});
 
-        $this->assertDatabaseHas('contacts', [
-            'name' => 'Carlos Souza',
-            'email' => 'carlos@test.com',
-            'is_active' => true,
-        ]);
-    }
+test('cannot create duplicate email', function () {
+    Contact::create([
+        'name' => 'Carlos',
+        'email' => 'carlos@test.com',
+        'is_active' => true,
+    ]);
 
-    public function test_cannot_create_duplicate_email(): void
-    {
-        Contact::create([
-            'name' => 'Carlos',
-            'email' => 'carlos@test.com',
-            'is_active' => true,
-        ]);
+    Livewire::test(ContactManager::class)
+        ->set('newName', 'Outro Carlos')
+        ->set('newEmail', 'carlos@test.com')
+        ->call('createContact')
+        ->assertHasErrors(['newEmail']);
+});
 
-        Livewire::test(ContactManager::class)
-            ->set('newName', 'Outro Carlos')
-            ->set('newEmail', 'carlos@test.com')
-            ->call('createContact')
-            ->assertHasErrors(['newEmail']);
-    }
+test('toggle contact active', function () {
+    $contact = Contact::create([
+        'name' => 'Carlos',
+        'email' => 'carlos@test.com',
+        'is_active' => true,
+        'subscribed_at' => now(),
+    ]);
 
-    public function test_toggle_contact_active(): void
-    {
-        $contact = Contact::create([
-            'name' => 'Carlos',
-            'email' => 'carlos@test.com',
-            'is_active' => true,
-            'subscribed_at' => now(),
-        ]);
+    Livewire::test(ContactManager::class)
+        ->call('toggleActive', $contact->id);
 
-        Livewire::test(ContactManager::class)
-            ->call('toggleActive', $contact->id);
+    $contact->refresh();
+    expect($contact->is_active)->toBeFalse();
+    expect($contact->unsubscribed_at)->not->toBeNull();
+});
 
-        $contact->refresh();
-        $this->assertFalse($contact->is_active);
-        $this->assertNotNull($contact->unsubscribed_at);
-    }
+test('create group', function () {
+    Livewire::test(ContactManager::class)
+        ->set('groupName', 'Defensores')
+        ->set('groupDescription', 'Grupo de defensores')
+        ->call('createGroup')
+        ->assertHasNoErrors();
 
-    public function test_create_group(): void
-    {
-        Livewire::test(ContactManager::class)
-            ->set('groupName', 'Defensores')
-            ->set('groupDescription', 'Grupo de defensores')
-            ->call('createGroup')
-            ->assertHasNoErrors();
+    $this->assertDatabaseHas('contact_groups', ['name' => 'DEFENSORES']);
+});
 
-        $this->assertDatabaseHas('contact_groups', ['name' => 'Defensores']);
-    }
+test('import contacts', function () {
+    $csv = "nome,email\nCarlos Souza,carlos@test.com\nMaria Silva,maria@test.com";
 
-    public function test_import_contacts(): void
-    {
-        $csv = "nome,email\nCarlos Souza,carlos@test.com\nMaria Silva,maria@test.com";
+    Livewire::test(ContactManager::class)
+        ->set('importCsv', $csv)
+        ->call('importContacts')
+        ->assertHasNoErrors();
 
-        Livewire::test(ContactManager::class)
-            ->set('importCsv', $csv)
-            ->call('importContacts')
-            ->assertHasNoErrors();
+    $this->assertDatabaseHas('contacts', ['email' => 'carlos@test.com']);
+    $this->assertDatabaseHas('contacts', ['email' => 'maria@test.com']);
+});
 
-        $this->assertDatabaseHas('contacts', ['email' => 'carlos@test.com']);
-        $this->assertDatabaseHas('contacts', ['email' => 'maria@test.com']);
-    }
+test('delete contact', function () {
+    $contact = Contact::create([
+        'name' => 'Carlos',
+        'email' => 'carlos@test.com',
+        'is_active' => true,
+    ]);
 
-    public function test_delete_contact(): void
-    {
-        $contact = Contact::create([
-            'name' => 'Carlos',
-            'email' => 'carlos@test.com',
-            'is_active' => true,
-        ]);
+    Livewire::test(ContactManager::class)
+        ->call('deleteContact', $contact->id);
 
-        Livewire::test(ContactManager::class)
-            ->call('deleteContact', $contact->id);
-
-        $this->assertDatabaseMissing('contacts', ['id' => $contact->id]);
-    }
-}
+    $this->assertDatabaseMissing('contacts', ['id' => $contact->id]);
+});

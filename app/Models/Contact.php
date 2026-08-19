@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Contact extends Model
+class Contact extends Authenticatable
 {
     protected $fillable = [
         'name',
         'email',
+        'password',
         'cpf',
         'tipo',
         'setor',
@@ -20,7 +22,13 @@ class Contact extends Model
         'unsubscribed_at',
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected $casts = [
+        'password' => 'hashed',
         'is_active' => 'boolean',
         'autorizado_at' => 'datetime',
         'last_login_at' => 'datetime',
@@ -30,12 +38,27 @@ class Contact extends Model
 
     public function groups(): BelongsToMany
     {
-        return $this->belongsToMany(ContactGroup::class);
+        return $this->belongsToMany(ContactGroup::class, 'contact_contact_group')->withPivot('is_responsible');
     }
 
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function isResponsibleForGroup(ContactGroup $group): bool
+    {
+        return $this->groups()
+            ->where('contact_contact_group.contact_group_id', $group->id)
+            ->where('contact_contact_group.is_responsible', true)
+            ->exists();
+    }
+
+    public function responsibleGroups()
+    {
+        return $this->belongsToMany(ContactGroup::class, 'contact_contact_group')
+            ->wherePivot('is_responsible', true)
+            ->withPivot('is_responsible');
     }
 
     public function subscribe(): void
