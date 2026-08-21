@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Contact extends Authenticatable
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'sort_order',
@@ -70,15 +73,23 @@ class Contact extends Authenticatable
         )->select('rooms.id');
     }
 
+    public function responsibleRoomIds()
+    {
+        return Room::query()->whereIn(
+            'contact_group_id',
+            $this->responsibleGroups()->select('contact_groups.id')
+        )->select('rooms.id');
+    }
+
     public function canManageReservation(Reservation $reservation): bool
     {
-        return $this->managedRoomIds()->whereKey($reservation->room_id)->exists();
+        return $this->responsibleRoomIds()->whereKey($reservation->room_id)->exists();
     }
 
     public function accessibleReservations(): Builder
     {
         return Reservation::query()->where(function (Builder $query): void {
-            $query->whereRaw('LOWER(requester_email) = ?', [strtolower($this->email)])
+            $query->where('requester_email', strtolower($this->email))
                 ->orWhereIn('room_id', $this->managedRoomIds());
         });
     }

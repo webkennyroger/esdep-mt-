@@ -40,13 +40,12 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-[#16352a]" x-data="dragDrop($wire, 'reorderRooms')">
                         @foreach($rooms as $room)
-                            <tr draggable="false" data-sort-id="{{ $room->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30">
+                            <tr wire:key="room-{{ $room->id }}" draggable="false" data-sort-id="{{ $room->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30">
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-3"><x-drag-handle />
                                         <span class="h-3.5 w-3.5 shrink-0 rounded-full" style="background-color: {{ $room->theme_color ?? '#008b5c' }};"></span>
                                         <div>
                                             <p class="font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $room->name }}</p>
-                                            <p class="font-mono text-xs text-slate-400 dark:text-[#70847d]">{{ $room->code }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -123,12 +122,6 @@
                                 class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
                             @error('name') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                         </div>
-                        <div>
-                            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Código Único *</label>
-                            <input type="text" wire:model.live="code" placeholder="Ex: AUD-01"
-                                class="w-full font-mono uppercase rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
-                            @error('code') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-                        </div>
                     </div>
 
                     <div>
@@ -137,7 +130,7 @@
                             <option value="">Não atribuído</option>
                             @foreach($contactGroups as $group)<option value="{{ $group->id }}">{{ $group->name }}</option>@endforeach
                         </select>
-                        @error('administrativeGroupId') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                        @error('contactGroupId') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -153,15 +146,6 @@
                                 <span class="text-sm text-slate-700 dark:text-[#8aa39a]">Sala Ativa para Reservas</span>
                             </label>
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Grupo responsável</label>
-                        <select wire:model="editContactGroupId" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm dark:border-[#16352a] dark:bg-[#0a1a14]">
-                            <option value="">Não atribuído</option>
-                            @foreach($contactGroups as $group)<option value="{{ $group->id }}">{{ $group->name }}</option>@endforeach
-                        </select>
-                        @error('editContactGroupId') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -212,12 +196,15 @@
                                 class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
                             @error('editName') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                         </div>
-                        <div>
-                            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Código Único *</label>
-                            <input type="text" wire:model.live="editCode"
-                                class="w-full font-mono uppercase rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
-                            @error('editCode') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-                        </div>
+                    </div>
+
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Grupo responsável</label>
+                        <select wire:model="editContactGroupId" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm dark:border-[#16352a] dark:bg-[#0a1a14]">
+                            <option value="">Não atribuído</option>
+                            @foreach($contactGroups as $group)<option value="{{ $group->id }}">{{ $group->name }}</option>@endforeach
+                        </select>
+                        @error('editContactGroupId') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">

@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('contact_id')->constrained()->cascadeOnDelete();
             $table->foreignId('contact_group_id')->constrained()->cascadeOnDelete();
+            $table->boolean('is_responsible')->default(false);
+            $table->unsignedInteger('sort_order')->default(0)->index();
             $table->timestamps();
 
             $table->unique(['contact_id', 'contact_group_id']);

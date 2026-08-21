@@ -92,10 +92,9 @@ class UserProfile extends Component
     {
         $user = auth()->user();
 
-        ActivityLogger::userDeleted($user);
-
-        auth()->logout();
         $user->delete();
+        ActivityLogger::userDeleted($user);
+        auth()->logout();
 
         $this->js("window.location.href = '{{ route('login') }}'");
     }

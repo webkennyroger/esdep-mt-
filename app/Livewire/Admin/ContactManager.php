@@ -4,12 +4,14 @@ namespace App\Livewire\Admin;
 
 use App\Models\Contact;
 use App\Models\ContactGroup;
+use App\Models\Reservation;
 use App\Models\Room;
 use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rule;
 
 #[Layout('components.layouts.app')]
 class ContactManager extends Component
@@ -69,8 +71,10 @@ class ContactManager extends Component
 
     public bool $newAutorizado = false;
 
+    /** @deprecated Mantido apenas para compatibilidade com chamadas antigas. */
     public array $newGroupIds = [];
 
+    /** @deprecated Mantido apenas para compatibilidade com chamadas antigas. */
     public array $newResponsibleGroupIds = [];
 
     // Edit contact fields
@@ -90,8 +94,10 @@ class ContactManager extends Component
 
     public bool $editAutorizado = false;
 
+    /** @deprecated Mantido apenas para compatibilidade com chamadas antigas. */
     public array $editGroupIds = [];
 
+    /** @deprecated Mantido apenas para compatibilidade com chamadas antigas. */
     public array $editResponsibleGroupIds = [];
 
     // View contact
@@ -129,11 +135,13 @@ class ContactManager extends Component
     public function openCreateModal(): void
     {
         $this->reset(['newName', 'newEmail', 'newPassword', 'newCpf', 'newTipo', 'newSetor', 'newAutorizado', 'newGroupIds', 'newResponsibleGroupIds']);
+        $this->resetValidation();
         $this->showCreateModal = true;
     }
 
     public function closeCreateModal(): void
     {
+        $this->resetValidation();
         $this->showCreateModal = false;
     }
 
@@ -142,6 +150,8 @@ class ContactManager extends Component
         $this->validate([
             'newName' => 'required|string|max:255',
             'newEmail' => 'required|email|max:255|unique:contacts,email',
+            'newPassword' => 'nullable|string|min:8',
+            'newSetor' => ['nullable', 'string', Rule::exists('contact_groups', 'name')->whereNull('owner_contact_id')],
         ]);
 
         $contact = Contact::create([
@@ -156,13 +166,10 @@ class ContactManager extends Component
             'subscribed_at' => now(),
         ]);
 
-        if (! empty($this->newGroupIds)) {
-            $responsibleIds = array_intersect($this->newGroupIds, $this->newResponsibleGroupIds);
-            $syncData = [];
-            foreach ($this->newGroupIds as $groupId) {
-                $syncData[$groupId] = ['is_responsible' => in_array($groupId, $this->newResponsibleGroupIds)];
-            }
-            $contact->groups()->sync($syncData);
+        if ($this->newSetor !== '') {
+            $this->syncContactSector($contact, $this->newSetor);
+        } elseif ($this->newGroupIds !== []) {
+            $this->syncLegacyGroups($contact, $this->newGroupIds, $this->newResponsibleGroupIds);
         }
 
         ActivityLogger::created($contact, "Contato \"{$contact->name}\" criado");
@@ -175,7 +182,6 @@ class ContactManager extends Component
     public function openEditModal(int $id): void
     {
         $contact = Contact::with('groups')->findOrFail($id);
-        $globalGroupIds = ContactGroup::whereNull('owner_contact_id')->pluck('id');
         $this->editContactId = $contact->id;
         $this->editName = $contact->name;
         $this->editEmail = $contact->email;
@@ -184,16 +190,17 @@ class ContactManager extends Component
         $this->editTipo = $contact->tipo ?? '';
         $this->editSetor = $contact->setor ?? '';
         $this->editAutorizado = $contact->autorizado_at !== null;
+        $globalGroupIds = ContactGroup::whereNull('owner_contact_id')->pluck('id');
         $this->editGroupIds = $contact->groups->pluck('id')->intersect($globalGroupIds)->values()->all();
-        $this->editResponsibleGroupIds = $contact->groups
-            ->whereIn('id', $globalGroupIds)
-            ->filter(fn ($group) => (bool) $group->getRelation('pivot')->getAttribute('is_responsible'))
-            ->pluck('id')->toArray();
+        $this->editResponsibleGroupIds = $contact->groups->whereIn('id', $globalGroupIds)
+            ->filter(fn ($group) => (bool) $group->getRelation('pivot')->getAttribute('is_responsible'))->pluck('id')->all();
+        $this->resetValidation();
         $this->showEditModal = true;
     }
 
     public function closeEditModal(): void
     {
+        $this->resetValidation();
         $this->showEditModal = false;
     }
 
@@ -202,6 +209,7 @@ class ContactManager extends Component
         $this->validate([
             'editName' => 'required|string|max:255',
             'editEmail' => 'required|email|max:255|unique:contacts,email,'.$this->editContactId,
+            'editSetor' => ['nullable', 'string', Rule::exists('contact_groups', 'name')->whereNull('owner_contact_id')],
         ]);
 
         $contact = Contact::findOrFail($this->editContactId);
@@ -221,18 +229,14 @@ class ContactManager extends Component
             $data['password'] = bcrypt($this->editPassword);
         }
 
-        $globalGroupIds = ContactGroup::whereNull('owner_contact_id')->pluck('id');
-        $selectedGroupIds = collect($this->editGroupIds)->map(fn ($id) => (int) $id)->unique();
-        abort_if($selectedGroupIds->diff($globalGroupIds)->isNotEmpty(), 403);
-
-        $syncData = $selectedGroupIds->mapWithKeys(fn ($groupId) => [
-            $groupId => ['is_responsible' => in_array($groupId, $this->editResponsibleGroupIds)],
-        ])->all();
-
-        DB::transaction(function () use ($contact, $data, $globalGroupIds, $syncData): void {
+        $legacyGroupsChanged = $this->editSetor === '' && ($this->editGroupIds !== [] || $contact->groups->whereNull('owner_contact_id')->isNotEmpty());
+        DB::transaction(function () use ($contact, $data, $legacyGroupsChanged): void {
             $contact->update($data);
-            $contact->groups()->detach($globalGroupIds->all());
-            $contact->groups()->syncWithoutDetaching($syncData);
+            if ($this->editSetor !== '') {
+                $this->syncContactSector($contact, $this->editSetor);
+            } elseif ($legacyGroupsChanged) {
+                $this->syncLegacyGroups($contact, $this->editGroupIds, $this->editResponsibleGroupIds);
+            }
         });
 
         ActivityLogger::updated($contact, $oldValues, $contact->fresh()->toArray(), "Contato \"{$contact->name}\" atualizado");
@@ -240,6 +244,31 @@ class ContactManager extends Component
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Contato atualizado com sucesso.' } }))");
         $this->dispatch('contactUpdated');
         $this->closeEditModal();
+    }
+
+    private function syncContactSector(Contact $contact, ?string $sector): void
+    {
+        $globalGroups = ContactGroup::whereNull('owner_contact_id')->get(['id', 'name']);
+        $contact->groups()->detach($globalGroups->pluck('id')->all());
+
+        if ($sector === null || $sector === '') {
+            return;
+        }
+
+        $group = $globalGroups->firstWhere('name', $sector);
+        if ($group) {
+            $contact->groups()->syncWithoutDetaching([$group->id => ['is_responsible' => true]]);
+        }
+    }
+
+    protected function syncLegacyGroups(Contact $contact, array $groupIds, array $responsibleIds = []): void
+    {
+        $globalGroupIds = ContactGroup::whereNull('owner_contact_id')->pluck('id');
+        $selected = collect($groupIds)->map(fn ($id) => (int) $id)->intersect($globalGroupIds);
+        $contact->groups()->detach($globalGroupIds->all());
+        $contact->groups()->syncWithoutDetaching($selected->mapWithKeys(fn ($id) => [
+            $id => ['is_responsible' => in_array($id, $responsibleIds)],
+        ])->all());
     }
 
     public function openViewModal(int $id): void
@@ -287,6 +316,18 @@ class ContactManager extends Component
     public function deleteContact(int $id): void
     {
         $contact = Contact::findOrFail($id);
+        if (Reservation::where('requester_email', strtolower($contact->email))->exists()) {
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Não é possível excluir um contato com histórico de reservas. Desative-o.' } }))");
+            $this->closeDeleteContactModal();
+
+            return;
+        }
+        if (ContactGroup::where('owner_contact_id', $contact->id)->exists()) {
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Não é possível excluir um contato responsável por um grupo. Transfira ou exclua o grupo primeiro.' } }))");
+            $this->closeDeleteContactModal();
+
+            return;
+        }
         $name = $contact->name;
         $contact->groups()->detach();
         $contact->delete();
@@ -303,11 +344,13 @@ class ContactManager extends Component
     {
         $this->reset(['groupName', 'groupDescription', 'groupColor', 'groupRoomIds']);
         $this->groupColor = '#059669';
+        $this->resetValidation();
         $this->showGroupModal = true;
     }
 
     public function closeGroupModal(): void
     {
+        $this->resetValidation();
         $this->showGroupModal = false;
     }
 
@@ -350,16 +393,19 @@ class ContactManager extends Component
         $this->editGroupDescription = $group->description ?? '';
         $this->editGroupColor = $group->color;
         $this->editGroupRoomIds = $group->rooms->pluck('id')->all();
+        $this->resetValidation();
         $this->showEditGroupModal = true;
     }
 
     public function closeEditGroupModal(): void
     {
+        $this->resetValidation();
         $this->showEditGroupModal = false;
     }
 
     public function updateGroup(): void
     {
+        $group = ContactGroup::whereNull('owner_contact_id')->findOrFail($this->editGroupId);
         $this->validate([
             'editGroupName' => 'required|string|max:255|unique:contact_groups,name,'.$this->editGroupId,
             'editGroupColor' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
@@ -367,16 +413,17 @@ class ContactManager extends Component
             'editGroupRoomIds.*' => 'integer|exists:rooms,id',
         ]);
 
-        $group = ContactGroup::whereNull('owner_contact_id')->findOrFail($this->editGroupId);
-        $group->update([
-            'name' => $this->editGroupName,
-            'description' => $this->editGroupDescription,
-            'color' => $this->editGroupColor,
-        ]);
-        Room::where('contact_group_id', $group->id)
-            ->whereNotIn('id', $this->editGroupRoomIds)
-            ->update(['contact_group_id' => null]);
-        Room::whereIn('id', $this->editGroupRoomIds)->update(['contact_group_id' => $group->id]);
+        DB::transaction(function () use ($group): void {
+            $group->update([
+                'name' => $this->editGroupName,
+                'description' => $this->editGroupDescription,
+                'color' => $this->editGroupColor,
+            ]);
+            Room::where('contact_group_id', $group->id)
+                ->whereNotIn('id', $this->editGroupRoomIds)
+                ->update(['contact_group_id' => null]);
+            Room::whereIn('id', $this->editGroupRoomIds)->update(['contact_group_id' => $group->id]);
+        });
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Grupo atualizado com sucesso.' } }))");
         $this->dispatch('groupCreated');
@@ -401,6 +448,12 @@ class ContactManager extends Component
     public function deleteGroup(int $id): void
     {
         $group = ContactGroup::whereNull('owner_contact_id')->findOrFail($id);
+        if ($group->rooms()->exists()) {
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Não é possível excluir um grupo com salas vinculadas. Desvincule as salas primeiro.' } }))");
+            $this->closeDeleteGroupModal();
+
+            return;
+        }
         $group->contacts()->detach();
         $group->delete();
 
@@ -517,7 +570,12 @@ class ContactManager extends Component
 
     public function render()
     {
-        $query = Contact::with('groups')->orderBy('sort_order')->orderBy('name');
+        $query = Contact::with('groups')
+            ->addSelect([
+                'reservations_count' => Reservation::selectRaw('count(*)')
+                    ->whereColumn('reservations.requester_email', 'contacts.email'),
+            ])
+            ->orderBy('sort_order')->orderBy('name');
 
         if (! empty($this->search)) {
             $query->where(function ($q) {
@@ -531,11 +589,13 @@ class ContactManager extends Component
             $query->whereHas('groups', fn ($q) => $q->where('contact_groups.id', $this->filterGroupId));
         }
 
+        $groups = ContactGroup::whereNull('owner_contact_id')->withCount(['contacts', 'rooms'])->orderBy('sort_order')->orderBy('name')->get();
+
         return view('livewire.admin.contact-manager', [
             'contacts' => $query->paginate(15),
-            'groups' => ContactGroup::whereNull('owner_contact_id')->withCount(['contacts', 'rooms'])->orderBy('sort_order')->orderBy('name')->get(),
+            'groups' => $groups,
             'rooms' => Room::with('contactGroup')->where(fn ($rooms) => $rooms->whereNull('contact_group_id')->orWhereHas('contactGroup', fn ($groups) => $groups->whereNull('owner_contact_id')))->orderBy('name')->get(),
-            'sectors' => ['CDI', 'DGE', 'DJ', 'DGDI', 'OUVIDORIA', 'INTITUCIONAL'],
+            'sectors' => $groups->pluck('name')->values()->all(),
             'cargos' => ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiario'],
         ]);
     }

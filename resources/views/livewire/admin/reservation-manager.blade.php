@@ -59,7 +59,7 @@
                                 $isPending = $reservation->status === \App\Enums\ReservationStatus::PENDING;
                                 $isAuthorized = $reservation->status === \App\Enums\ReservationStatus::AUTHORIZED;
                             @endphp
-                            <tr draggable="false" data-sort-id="{{ $reservation->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30 {{ $isRejected ? 'opacity-60' : '' }}">
+                            <tr wire:key="reservation-{{ $reservation->id }}" draggable="false" data-sort-id="{{ $reservation->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30 {{ $isRejected ? 'opacity-60' : '' }}">
                                 <td class="px-6 py-4 text-sm font-medium">
                                     <div class="flex items-center gap-2"><x-drag-handle /><button wire:click="openDetailModal({{ $reservation->id }})"
                                         class="text-left text-green-700 hover:text-green-900 hover:underline dark:text-[#4fd1a5] dark:hover:text-[#7de8c8] {{ $isRejected ? 'line-through text-slate-400 dark:text-[#5a7068]' : '' }}">
@@ -122,7 +122,7 @@
                                             Editar
                                         </button>
                                         @endif
-                                        @if($isAuthorized)
+                                        @if($isAuthorized || $isRejected)
                                             <button wire:click="openAnnounceModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
                                                 class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800">
                                                 Divulgar
@@ -316,7 +316,7 @@
                         <div class="mt-5">
                             <h4 class="mb-2.5 text-xs font-semibold uppercase tracking-wider text-red-400 dark:text-red-400">Motivo da Rejeicao</h4>
                             <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
-                                {!! $detailReservation->reject_reason !!}
+                                {{ $detailReservation->reject_reason }}
                             </div>
                         </div>
                     @endif

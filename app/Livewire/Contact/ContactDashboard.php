@@ -21,12 +21,13 @@ class ContactDashboard extends Component
     {
         $contact = auth('contact')->user();
         $reservations = Reservation::query()->whereIn('room_id', $contact->managedRoomIds());
+        $statusCounts = (clone $reservations)->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
 
         return view('livewire.admin.dashboard', [
             'roomsCount' => $contact->managedRoomIds()->count(),
-            'pendingCount' => (clone $reservations)->where('status', ReservationStatus::PENDING)->count(),
-            'authorizedCount' => (clone $reservations)->where('status', ReservationStatus::AUTHORIZED)->count(),
-            'rejectedCount' => (clone $reservations)->where('status', ReservationStatus::REJECTED)->count(),
+            'pendingCount' => $statusCounts[ReservationStatus::PENDING->value] ?? 0,
+            'authorizedCount' => $statusCounts[ReservationStatus::AUTHORIZED->value] ?? 0,
+            'rejectedCount' => $statusCounts[ReservationStatus::REJECTED->value] ?? 0,
             'upcomingReservations' => (clone $reservations)->with('room')
                 ->where('status', ReservationStatus::AUTHORIZED)
                 ->where('date', '>=', now()->toDateString())

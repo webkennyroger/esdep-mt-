@@ -40,6 +40,9 @@
                         <td style="padding: 20px 40px 15px;">
                             <p style="margin: 0; color: #003f32; font-size: 15px;">Ola, <strong>{{ $reservation->requester_name }}</strong>,</p>
                             <p style="margin: 8px 0 0; color: #64748b; font-size: 13px;">Segue abaixo as confirmacoes do seu evento:</p>
+                            @if($reservation->google_meet_url)
+                                <p style="margin: 12px 0 0;"><a href="{{ $reservation->google_meet_url }}" style="color: #047857; font-size: 13px; font-weight: 700;">Entrar na reuniao do Google Meet</a></p>
+                            @endif
                         </td>
                     </tr>
 

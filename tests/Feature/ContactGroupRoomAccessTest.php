@@ -3,6 +3,7 @@
 use App\Livewire\Admin\AdminCalendar;
 use App\Livewire\Admin\ContactManager;
 use App\Livewire\Admin\Dashboard;
+use App\Livewire\Admin\ReservationManager;
 use App\Livewire\Contact\ContactCalendar;
 use App\Livewire\Contact\ContactDashboard;
 use App\Livewire\Contact\ContactGroups;
@@ -11,6 +12,8 @@ use App\Livewire\Contact\ContactReservationEdit;
 use App\Livewire\Contact\ContactReservations;
 use App\Livewire\Contact\ContactRooms;
 use App\Mail\EventAnnouncementMail;
+use App\Mail\ReservationApprovedMail;
+use App\Mail\ReservationRejectedMail;
 use App\Models\Contact;
 use App\Models\ContactGroup;
 use App\Models\EventAnnouncement;
@@ -73,6 +76,36 @@ test('responsible contact sees and can edit every reservation from group rooms',
         ->assertHasNoErrors();
 
     expect($reservation->fresh()->event_name)->toBe('Reserva atualizada pelo responsável');
+});
+
+test('contact cannot manage rooms from a group where they are not responsible', function () {
+    $group = ContactGroup::create(['name' => 'GRUPO SEM GESTAO', 'color' => '#008b5c']);
+    $room = Room::factory()->create(['contact_group_id' => $group->id]);
+    $contact = Contact::create(['name' => 'Membro', 'email' => 'membro@example.com', 'password' => 'password', 'is_active' => true]);
+    $contact->groups()->attach($group, ['is_responsible' => false]);
+
+    Livewire::actingAs($contact, 'contact')->test(ContactRooms::class)->assertDontSee($room->name);
+    expect($contact->canManageReservation(managedReservation($room, 'Reserva protegida')))->toBeFalse();
+});
+
+test('contact reservations includes reservations owned by the logged contact', function () {
+    $room = Room::factory()->create();
+    $contact = Contact::create(['name' => 'Solicitante', 'email' => 'proprio@example.com', 'password' => 'password', 'is_active' => true]);
+    Reservation::create([
+        'room_id' => $room->id,
+        'event_name' => 'Minha reserva',
+        'requester_name' => $contact->name,
+        'requester_email' => $contact->email,
+        'date' => now()->addDays(2),
+        'start_time' => '09:00',
+        'end_time' => '10:00',
+        'attendees_count' => 5,
+        'status' => 'pending',
+    ]);
+
+    Livewire::actingAs($contact, 'contact')
+        ->test(ContactReservations::class)
+        ->assertSee('Minha reserva');
 });
 
 test('responsible contact can approve own group reservation but not another group reservation', function () {
@@ -148,7 +181,7 @@ test('group user can announce an authorized reservation only to contacts from ow
     $manager = Contact::create(['name' => 'Gestor', 'email' => 'gestor@example.com', 'password' => 'password', 'is_active' => true]);
     $recipient = Contact::create(['name' => 'Destinatário', 'email' => 'destinatario@example.com', 'password' => 'password', 'is_active' => true]);
     $outsider = Contact::create(['name' => 'Externo', 'email' => 'externo@example.com', 'password' => 'password', 'is_active' => true]);
-    $manager->groups()->attach($group);
+    $manager->groups()->attach($group, ['is_responsible' => true]);
     $recipient->groups()->attach($group);
     $outsider->groups()->attach($otherGroup);
 
@@ -162,8 +195,30 @@ test('group user can announce an authorized reservation only to contacts from ow
     expect($announcement->created_by)->toBeNull()
         ->and($announcement->created_by_contact_id)->toBe($manager->id)
         ->and($announcement->total_recipients)->toBe(2);
-    Mail::assertSentCount(2);
+    Mail::assertOutgoingCount(3);
+    Mail::assertQueued(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo($reservation->requester_email));
     Mail::assertNotSent(fn (EventAnnouncementMail $mail) => $mail->hasTo($outsider->email));
+});
+
+test('status changes do not send email before the reservation is disclosed', function () {
+    Mail::fake();
+    $room = Room::factory()->create();
+    $reservation = managedReservation($room, 'Reserva sem notificação automática');
+    $admin = User::factory()->create(['role' => 'super_admin']);
+
+    Livewire::actingAs($admin)->test(ReservationManager::class)
+        ->call('openApproveModal', $reservation->id, $reservation->event_name)
+        ->call('confirmApprove');
+
+    Mail::assertNothingSent();
+
+    $reservation->refresh();
+    $reservation->update(['status' => 'rejected']);
+    Livewire::actingAs($admin)->test(ReservationManager::class)
+        ->call('openAnnounceModal', $reservation->id, $reservation->event_name)
+        ->call('sendAnnouncement');
+
+    Mail::assertQueued(ReservationRejectedMail::class, fn (ReservationRejectedMail $mail) => $mail->hasTo($reservation->requester_email));
 });
 
 test('group user can manage own rooms but cannot act on a room from another group', function () {
@@ -172,7 +227,7 @@ test('group user can manage own rooms but cannot act on a room from another grou
     $room = Room::factory()->create(['contact_group_id' => $group->id, 'is_active' => true]);
     $foreignRoom = Room::factory()->create(['contact_group_id' => $otherGroup->id]);
     $contact = Contact::create(['name' => 'Gestor da sala', 'email' => 'salas@example.com', 'password' => 'password', 'is_active' => true]);
-    $contact->groups()->attach($group);
+    $contact->groups()->attach($group, ['is_responsible' => true]);
 
     Livewire::actingAs($contact, 'contact')->test(ContactRooms::class)
         ->assertSee('Nova Sala')
@@ -191,7 +246,7 @@ test('group user has full contact tools scoped to own groups', function () {
     $manager = Contact::create(['name' => 'Gestor de contatos', 'email' => 'gestor-contatos@example.com', 'password' => 'password', 'is_active' => true]);
     $local = Contact::create(['name' => 'Contato local', 'email' => 'local@example.com', 'password' => 'password', 'is_active' => true]);
     $foreign = Contact::create(['name' => 'Contato externo', 'email' => 'externo-grupo@example.com', 'password' => 'password', 'is_active' => true]);
-    $manager->groups()->attach($group);
+    $manager->groups()->attach($group, ['is_responsible' => true]);
     $local->groups()->attach($group);
     $foreign->groups()->attach($foreignGroup);
     $group->update(['owner_contact_id' => $manager->id]);
@@ -216,6 +271,42 @@ test('group user has full contact tools scoped to own groups', function () {
         ->and(Contact::where('email', 'importado@example.com')->firstOrFail()->groups()->whereKey($group->id)->exists())->toBeTrue()
         ->and(fn () => Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)->call('openEditModal', $foreign->id))
         ->toThrow(ModelNotFoundException::class);
+});
+
+test('group user cannot delete a contact that owns another private group', function () {
+    $manager = Contact::create(['name' => 'Gestor', 'email' => 'gestor-dono@example.com', 'password' => 'password', 'is_active' => true]);
+    $ownedGroup = ContactGroup::create(['name' => 'GRUPO PRIMARIO', 'color' => '#008b5c']);
+    $manager->groups()->attach($ownedGroup, ['is_responsible' => true]);
+
+    $secondaryOwner = Contact::create(['name' => 'Contato dono de outro grupo', 'email' => 'dono-secundario@example.com', 'password' => 'password', 'is_active' => true]);
+    $secondaryGroup = ContactGroup::create(['owner_contact_id' => $secondaryOwner->id, 'name' => 'GRUPO SECUNDARIO', 'color' => '#2563eb']);
+    $secondaryOwner->groups()->attach($ownedGroup);
+
+    Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
+        ->call('deleteContact', $secondaryOwner->id);
+
+    expect(Contact::find($secondaryOwner->id))->not->toBeNull()
+        ->and(ContactGroup::find($secondaryGroup->id))->not->toBeNull();
+});
+
+test('group user cannot delete a contact with reservation history', function () {
+    $manager = Contact::create(['name' => 'Gestor', 'email' => 'gestor-historico@example.com', 'password' => 'password', 'is_active' => true]);
+    $group = ContactGroup::create(['name' => 'GRUPO HISTORICO', 'color' => '#008b5c']);
+    $manager->groups()->attach($group, ['is_responsible' => true]);
+
+    $requester = Contact::create(['name' => 'Solicitante com historico', 'email' => 'com-historico@example.com', 'password' => 'password', 'is_active' => true]);
+    $requester->groups()->attach($group);
+    $room = Room::factory()->create();
+    Reservation::create([
+        'room_id' => $room->id, 'event_name' => 'Evento antigo', 'requester_name' => 'Solicitante com historico',
+        'requester_email' => 'com-historico@example.com', 'date' => now()->subDays(10),
+        'start_time' => '09:00', 'end_time' => '10:00', 'attendees_count' => 5, 'status' => 'authorized',
+    ]);
+
+    Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
+        ->call('deleteContact', $requester->id);
+
+    expect(Contact::find($requester->id))->not->toBeNull();
 });
 
 test('group user can move a contact between groups owned by their account', function () {
@@ -364,7 +455,7 @@ test('group user can persist drag and drop order only inside own scope', functio
     $manager = Contact::create(['name' => 'Gestor ordem', 'email' => 'ordem@example.com', 'password' => 'password', 'is_active' => true]);
     $contactA = Contact::create(['name' => 'Contato A', 'email' => 'ordem-a@example.com', 'password' => 'password', 'is_active' => true]);
     $contactB = Contact::create(['name' => 'Contato B', 'email' => 'ordem-b@example.com', 'password' => 'password', 'is_active' => true]);
-    $manager->groups()->attach($group);
+    $manager->groups()->attach($group, ['is_responsible' => true]);
     $contactA->groups()->attach($group);
     $contactB->groups()->attach($group);
     $group->update(['owner_contact_id' => $manager->id]);

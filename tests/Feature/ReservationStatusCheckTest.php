@@ -15,6 +15,15 @@ beforeEach(function () {
     ]);
 });
 
+test('reservation route redirects to the single public booking form', function () {
+    $this->get(route('reservations.create'))
+        ->assertRedirect('/#nova-reserva');
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('nova-reserva');
+});
+
 test('public user can access consultation page', function () {
     $this->get(route('reservations.check'))
         ->assertStatus(200)

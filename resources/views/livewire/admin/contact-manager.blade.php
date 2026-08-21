@@ -1,4 +1,4 @@
-<div @if(auth('contact')->check()) wire:poll.5s @endif>
+<div>
     @php
         $colors = [
             '#059669' => 'Esmeralda',

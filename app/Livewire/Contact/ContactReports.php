@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Contact;
 
+use App\Enums\ReservationStatus;
 use App\Models\Reservation;
 use App\Models\Room;
 use Carbon\Carbon;
@@ -47,8 +48,8 @@ class ContactReports extends Component
         $ids = auth('contact')->user()->managedRoomIds();
         $query = Reservation::whereIn('room_id', $ids)->whereBetween('date', [$this->startDate, $this->endDate])->when($this->roomId, fn ($q) => $q->where('room_id', $this->roomId));
         $total = (clone $query)->count();
-        $approved = (clone $query)->where('status', 'authorized')->count();
-        $stats = ['total' => $total, 'approved' => $approved, 'rejected' => (clone $query)->where('status', 'rejected')->count(), 'pending' => (clone $query)->where('status', 'pending')->count(), 'totalAttendees' => (clone $query)->sum('attendees_count'),
+        $approved = (clone $query)->where('status', ReservationStatus::AUTHORIZED)->count();
+        $stats = ['total' => $total, 'approved' => $approved, 'rejected' => (clone $query)->where('status', ReservationStatus::REJECTED)->count(), 'pending' => (clone $query)->where('status', ReservationStatus::PENDING)->count(), 'totalAttendees' => (clone $query)->sum('attendees_count'),
             'byRoom' => Room::whereIn('id', $ids)->withCount(['reservations as total' => fn ($q) => $q->whereBetween('date', [$this->startDate, $this->endDate])])->get()->map(fn ($r) => ['name' => $r->name, 'total' => (int) $r->getAttribute('total')])->filter(fn ($r) => $r['total'] > 0)->toArray(),
             'byService' => ['coffee_break' => (clone $query)->where('coffee_break', true)->count(), 'sonorizacao' => (clone $query)->where('sonorizacao', true)->count(), 'transmissao' => (clone $query)->where('transmissao', true)->count(), 'projetor' => (clone $query)->where('projetor', true)->count()],
             'occupancyRate' => $total ? round($approved / $total * 100, 1) : 0];

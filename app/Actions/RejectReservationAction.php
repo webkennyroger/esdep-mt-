@@ -4,11 +4,9 @@ namespace App\Actions;
 
 use App\Enums\ReservationStatus;
 use App\Events\ReservationRejected;
-use App\Mail\ReservationRejectedMail;
 use App\Models\Reservation;
 use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 
 class RejectReservationAction
 {
@@ -32,12 +30,6 @@ class RejectReservationAction
         ]);
 
         event(new ReservationRejected($reservation));
-
-        try {
-            Mail::to($reservation->requester_email)->send(new ReservationRejectedMail($reservation));
-        } catch (\Exception $e) {
-            \Log::error('Erro ao enviar email de rejeicao: '.$e->getMessage());
-        }
 
         return $reservation;
     }

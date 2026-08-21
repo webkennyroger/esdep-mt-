@@ -221,7 +221,7 @@ class ContactReservations extends Component
 
     public function reorderReservations(array $ids): void
     {
-        $query = Reservation::whereIn('room_id', auth('contact')->user()->managedRoomIds());
+        $query = Reservation::whereIn('room_id', auth('contact')->user()->responsibleRoomIds());
         abort_if((clone $query)->whereIn('id', $ids)->count() !== count(array_unique($ids)), 403);
         foreach ($ids as $position => $id) {
             (clone $query)->whereKey($id)->update(['sort_order' => $position]);
@@ -230,7 +230,7 @@ class ContactReservations extends Component
 
     private function managedReservation(int $id): Reservation
     {
-        return Reservation::whereKey($id)->whereIn('room_id', auth('contact')->user()->managedRoomIds())->firstOrFail();
+        return Reservation::whereKey($id)->whereIn('room_id', auth('contact')->user()->responsibleRoomIds())->firstOrFail();
     }
 
     private function toast(string $message, string $type = 'success'): void
@@ -241,7 +241,11 @@ class ContactReservations extends Component
 
     public function render()
     {
-        $query = Reservation::whereIn('room_id', auth('contact')->user()->managedRoomIds())->with('room')->orderBy('sort_order')->latest('created_at');
+        $contact = auth('contact')->user();
+        $query = Reservation::where(function ($reservations) use ($contact): void {
+            $reservations->where('requester_email', strtolower($contact->email))
+            ->orWhereIn('room_id', $contact->responsibleRoomIds());
+        })->with('room')->orderBy('sort_order')->latest('created_at');
         if ($this->activeFilter !== 'all') {
             $query->where('status', $this->activeFilter);
         }

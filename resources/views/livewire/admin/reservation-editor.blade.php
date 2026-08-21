@@ -47,7 +47,7 @@
                         @foreach($rooms as $index => $room)
                             <div class="w-full shrink-0 px-1 sm:w-1/3">
                                 <label class="flex items-center gap-3 border border-[#d2ded9] bg-white p-4 cursor-pointer transition-all duration-200 hover:border-[#008b5c] hover:bg-[#eef7f2] has-[:checked]:border-[#008b5c] has-[:checked]:bg-[#eef7f2] has-[:checked]:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:hover:border-[#00a477] dark:hover:bg-[#16352a] dark:has-[:checked]:border-[#00a477] dark:has-[:checked]:bg-[#0c221a]">
-                                    <input wire:model="roomId" value="{{ $room->id }}" type="radio" name="admin_room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
+                                    <input wire:model.live="roomId" value="{{ $room->id }}" type="radio" name="admin_room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
                                     <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style="background-color: {{ $room->theme_color }}20;">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" style="color: {{ $room->theme_color }};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -75,19 +75,19 @@
             <div class="grid grid-cols-3 gap-4">
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Data do evento <span class="text-red-500">*</span></label>
-                    <input wire:model="date" type="date"
+                    <input wire:model.live="date" type="date"
                         class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:[color-scheme:dark]">
                     @error('date') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horario de inicio <span class="text-red-500">*</span></label>
-                    <input wire:model="startTime" type="time"
+                    <input wire:model.live="startTime" type="time"
                         class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:[color-scheme:dark]">
                     @error('startTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horario de termino <span class="text-red-500">*</span></label>
-                    <input wire:model="endTime" type="time"
+                    <input wire:model.live="endTime" type="time"
                         class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:[color-scheme:dark]">
                     @error('endTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>

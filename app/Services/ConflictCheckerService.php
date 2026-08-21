@@ -16,7 +16,7 @@ class ConflictCheckerService
         $endStr = is_string($endTime) ? $endTime : $endTime->format('H:i');
 
         $overlapping = Reservation::where('room_id', $roomId)
-            ->whereRaw('date(date) = ?', [$dateStr])
+            ->whereDate('date', $dateStr)
             ->where(function ($query) use ($startStr, $endStr) {
                 $query->where('start_time', '<', $endStr)
                     ->where('end_time', '>', $startStr);

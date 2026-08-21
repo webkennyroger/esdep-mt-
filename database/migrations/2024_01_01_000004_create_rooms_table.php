@@ -10,12 +10,14 @@ return new class extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('contact_group_id')->nullable()->constrained('contact_groups')->nullOnDelete();
             $table->string('name');
             $table->string('code')->unique();
             $table->integer('capacity');
             $table->string('theme_color')->nullable();
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->unsignedInteger('sort_order')->default(0)->index();
             $table->timestamps();
         });
     }

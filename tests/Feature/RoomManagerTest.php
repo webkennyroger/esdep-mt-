@@ -20,33 +20,40 @@ test('admin can create a new room', function () {
     Livewire::actingAs($this->admin)
         ->test(RoomManager::class)
         ->set('name', 'Nova Sala de Treinamento')
-        ->set('code', 'TREIN-01')
         ->set('capacity', 25)
         ->set('theme_color', '#2563eb')
         ->set('description', 'Sala equipada com 25 computadores')
         ->call('createRoom')
         ->assertHasNoErrors();
 
-    expect(Room::where('code', 'TREIN-01')->exists())->toBeTrue();
+    expect(Room::where('name', 'Nova Sala de Treinamento')->value('code'))
+        ->toBe('NOVA-SALA-DE-TREINAMENTO');
 });
 
-test('room code must be unique', function () {
+test('room code is generated uniquely', function () {
     Room::create([
         'name' => 'Sala Existente',
-        'code' => 'SALA-01',
         'capacity' => 10,
         'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 
+    $secondRoom = Room::create([
+        'name' => 'Sala Existente',
+        'capacity' => 15,
+        'theme_color' => '#008b5c',
+        'is_active' => true,
+    ]);
+
+    expect($secondRoom->code)->toBe('SALA-EXISTENTE-001');
+
     Livewire::actingAs($this->admin)
         ->test(RoomManager::class)
         ->set('name', 'Outra Sala')
-        ->set('code', 'SALA-01')
         ->set('capacity', 15)
         ->set('theme_color', '#008b5c')
         ->call('createRoom')
-        ->assertHasErrors(['code']);
+        ->assertHasNoErrors();
 });
 
 test('admin can update a room', function () {
@@ -132,4 +139,34 @@ test('can delete room without reservations', function () {
         ->call('deleteRoom');
 
     expect(Room::where('id', $room->id)->exists())->toBeFalse();
+});
+
+test('admin can define any valid room capacity when editing', function () {
+    $room = Room::create([
+        'name' => 'Sala com capacidade reservada',
+        'code' => 'CAP-01',
+        'capacity' => 50,
+        'theme_color' => '#008b5c',
+        'is_active' => true,
+    ]);
+    Reservation::create([
+        'room_id' => $room->id,
+        'event_name' => 'Evento grande',
+        'requester_name' => 'Solicitante',
+        'requester_email' => 'solicitante@esdep.mt.gov.br',
+        'date' => now()->addDays(5)->toDateString(),
+        'start_time' => '09:00',
+        'end_time' => '10:00',
+        'attendees_count' => 40,
+        'status' => 'pending',
+    ]);
+
+    Livewire::actingAs($this->admin)
+        ->test(RoomManager::class)
+        ->call('openEditModal', $room->id)
+        ->set('editCapacity', 20)
+        ->call('updateRoom')
+        ->assertHasNoErrors();
+
+    expect($room->fresh()->capacity)->toBe(20);
 });

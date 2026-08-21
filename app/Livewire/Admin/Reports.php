@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Enums\ReservationStatus;
 use App\Models\Reservation;
 use App\Models\Room;
 use Carbon\Carbon;
@@ -35,9 +36,9 @@ class Reports extends Component
         }
 
         $total = (clone $query)->count();
-        $approved = (clone $query)->where('status', 'authorized')->count();
-        $rejected = (clone $query)->where('status', 'rejected')->count();
-        $pending = (clone $query)->where('status', 'pending')->count();
+        $approved = (clone $query)->where('status', ReservationStatus::AUTHORIZED)->count();
+        $rejected = (clone $query)->where('status', ReservationStatus::REJECTED)->count();
+        $pending = (clone $query)->where('status', ReservationStatus::PENDING)->count();
         $totalAttendees = (clone $query)->sum('attendees_count');
 
         $byRoom = Room::accessibleTo(auth()->user())

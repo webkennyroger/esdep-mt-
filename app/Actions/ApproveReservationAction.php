@@ -4,13 +4,11 @@ namespace App\Actions;
 
 use App\Enums\ReservationStatus;
 use App\Events\ReservationApproved;
-use App\Mail\ReservationApprovedMail;
+use App\Jobs\SyncGoogleCalendarJob;
 use App\Models\Reservation;
 use App\Services\ActivityLogger;
 use App\Services\ConflictCheckerService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class ApproveReservationAction
 {
@@ -38,6 +36,10 @@ class ApproveReservationAction
         $reservation->status = ReservationStatus::AUTHORIZED;
         $reservation->save();
 
+        if (config('services.google_calendar.enabled')) {
+            SyncGoogleCalendarJob::dispatch($reservation->id);
+        }
+
         // Registrar no historico de atividades
         ActivityLogger::reservationApproved($reservation);
 
@@ -48,12 +50,6 @@ class ApproveReservationAction
         ]);
 
         event(new ReservationApproved($reservation));
-
-        try {
-            Mail::to($reservation->requester_email)->send(new ReservationApprovedMail($reservation));
-        } catch (\Exception $e) {
-            Log::error('Erro ao enviar email de aprovacao: '.$e->getMessage());
-        }
 
         return $reservation;
     }

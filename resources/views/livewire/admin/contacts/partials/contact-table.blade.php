@@ -10,14 +10,15 @@
                         <th class="px-4 py-3">E-mail</th>
                         <th class="px-4 py-3">Grupos</th>
                         <th class="px-4 py-3">Cargo</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">Autorizado</th>
+                        <th class="px-4 py-3">Reservas</th>
+                        <th class="px-4 py-3">Acesso ao sistema</th>
+                        <th class="px-4 py-3">Cadastro autorizado</th>
                         <th class="px-4 py-3 text-right">Acoes</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-[#16352a]" x-data="dragDrop($wire, 'reorderContacts')">
                     @foreach($contacts as $contact)
-                        <tr draggable="false" data-sort-id="{{ $contact->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30">
+                        <tr wire:key="contact-{{ $contact->id }}" draggable="false" data-sort-id="{{ $contact->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2"><x-drag-handle /><div class="flex flex-col">
                                     <span class="font-mono text-xs font-medium text-slate-900 dark:text-[#e6f2ec]">{{ $contact->cpf ?? '-' }}</span>
@@ -41,14 +42,17 @@
                                 @if($contact->last_login_at)
                                     <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
                                         <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                                        Ja logou
+                                        Login realizado
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                                         <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-                                        Aguardando login
+                                        Aguardando primeiro login
                                     </span>
                                 @endif
+                            </td>
+                            <td class="px-4 py-3 text-xs font-semibold text-slate-600 dark:text-[#8aa39a]">
+                                {{ $contact->reservations_count ?? 0 }}
                             </td>
                             <td class="px-4 py-3">
                                 @if($contact->autorizado_at)

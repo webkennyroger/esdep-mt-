@@ -40,7 +40,7 @@ class ContactProfile extends Component
                 'name' => $data['name'], 'email' => $newEmail,
                 'password' => $data['password'] ?: null,
             ], fn ($value) => $value !== null));
-            Reservation::whereRaw('LOWER(requester_email) = ?', [strtolower($oldEmail)])
+            Reservation::where('requester_email', strtolower($oldEmail))
                 ->update(['requester_email' => $newEmail]);
         });
         $this->email = $newEmail;

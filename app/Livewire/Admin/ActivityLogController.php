@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -91,13 +92,13 @@ class ActivityLogController extends Component
             $query->whereDate('created_at', '<=', $this->dateTo);
         }
 
-        // Estatisticas
-        $stats = [
-            'total' => (clone $query)->count(),
+        // Estatisticas (today/thisWeek/reservations nao dependem dos filtros da tela, entao ficam em cache curto)
+        $fixedStats = Cache::remember('activity-log-fixed-stats', now()->addMinutes(5), fn () => [
             'today' => ActivityLog::whereDate('created_at', today())->count(),
             'thisWeek' => ActivityLog::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
             'reservations' => ActivityLog::where('subject_type', 'App\Models\Reservation')->count(),
-        ];
+        ]);
+        $stats = array_merge($fixedStats, ['total' => (clone $query)->count()]);
 
         return view('livewire.admin.activity-log', [
             'logs' => $query->latest()->paginate(15),

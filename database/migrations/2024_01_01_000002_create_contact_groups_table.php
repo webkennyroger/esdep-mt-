@@ -10,8 +10,11 @@ return new class extends Migration
     {
         Schema::create('contact_groups', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('owner_contact_id')->nullable()->constrained('contacts')->cascadeOnDelete();
             $table->string('name')->unique();
             $table->string('description')->nullable();
+            $table->string('color', 7)->default('#64748b');
+            $table->unsignedInteger('sort_order')->default(0)->index();
             $table->timestamps();
         });
     }

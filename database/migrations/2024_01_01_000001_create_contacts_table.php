@@ -12,9 +12,16 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->boolean('is_active')->default(true);
+            $table->string('password')->nullable();
+            $table->string('cpf')->nullable();
+            $table->string('tipo')->nullable();
+            $table->string('setor')->nullable();
+            $table->timestamp('autorizado_at')->nullable();
+            $table->timestamp('last_login_at')->nullable();
+            $table->boolean('is_active')->default(true)->index();
             $table->timestamp('subscribed_at')->nullable();
             $table->timestamp('unsubscribed_at')->nullable();
+            $table->unsignedInteger('sort_order')->default(0)->index();
             $table->timestamps();
         });
     }

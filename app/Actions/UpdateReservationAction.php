@@ -3,14 +3,12 @@
 namespace App\Actions;
 
 use App\Events\ReservationUpdated;
-use App\Mail\ReservationUpdatedMail;
 use App\Models\Reservation;
+use App\Models\Room;
 use App\Services\ActivityLogger;
 use App\Services\ConflictCheckerService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class UpdateReservationAction
 {
@@ -50,11 +48,6 @@ class UpdateReservationAction
 
             event(new ReservationUpdated($reservation));
 
-            try {
-                Mail::to($reservation->requester_email)->send(new ReservationUpdatedMail($reservation));
-            } catch (\Exception $e) {
-                Log::error('Erro ao enviar email de atualizacao: '.$e->getMessage());
-            }
         });
 
         return $reservation;
@@ -62,6 +55,16 @@ class UpdateReservationAction
 
     protected function validateChanges(Reservation $reservation, array $data): void
     {
+        $room = Room::where('is_active', true)->find($data['room_id'] ?? $reservation->room_id);
+        if (! $room) {
+            throw new \DomainException('A sala selecionada não está disponível.');
+        }
+
+        $attendeesCount = (int) ($data['attendees_count'] ?? $reservation->attendees_count);
+        if ($attendeesCount > $room->capacity) {
+            throw new \DomainException("O número de participantes excede a capacidade da sala \"{$room->name}\" ({$room->capacity} pessoas).");
+        }
+
         $dateChanged = isset($data['date']) && $data['date'] !== $reservation->date->format('Y-m-d');
         $startTimeChanged = isset($data['start_time']) && $data['start_time'] !== $reservation->start_time;
         $endTimeChanged = isset($data['end_time']) && $data['end_time'] !== $reservation->end_time;

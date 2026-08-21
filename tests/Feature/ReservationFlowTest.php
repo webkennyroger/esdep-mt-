@@ -67,6 +67,7 @@ test('public booking form saves all fields to database', function () {
 });
 
 test('admin reservation editor updates all fields', function () {
+    \Illuminate\Support\Facades\Mail::fake();
     $room = createFlowTestRoom();
     $date = now()->addDays(3)->toDateString();
 
@@ -105,6 +106,29 @@ test('admin reservation editor updates all fields', function () {
     expect($fresh->sonorizacao)->toBeTrue();
     expect($fresh->transmissao)->toBeTrue();
     expect($fresh->attendees_count)->toBe(25);
+    \Illuminate\Support\Facades\Mail::assertNothingSent();
+});
+
+test('reservation editor rejects attendees above room capacity', function () {
+    $room = createFlowTestRoom();
+    $reservation = Reservation::create([
+        'room_id' => $room->id,
+        'event_name' => 'Evento com capacidade válida',
+        'requester_name' => 'Ana',
+        'requester_email' => 'ana@esdep.mt.gov.br',
+        'date' => now()->addDays(3)->toDateString(),
+        'start_time' => '10:00',
+        'end_time' => '11:00',
+        'attendees_count' => 10,
+        'status' => 'pending',
+    ]);
+
+    Livewire::test(ReservationEditor::class)
+        ->call('open', $reservation->id)
+        ->set('attendeesCount', 61)
+        ->call('save');
+
+    expect($reservation->fresh()->attendees_count)->toBe(10);
 });
 
 test('admin approves and reservation appears in calendar', function () {

@@ -41,7 +41,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Setor</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Setor funcional</label>
                         <select wire:model="editSetor"
                             class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]">
                             <option value="">Selecione</option>
@@ -57,25 +57,7 @@
                         </label>
                     </div>
                 </div>
-                <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Grupos</label>
-                    <div class="max-h-32 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-[#16352a]">
-                        @php
-                            $editableGroups = auth('contact')->check()
-                                ? $groups->where('owner_contact_id', auth('contact')->id())
-                                : $groups;
-                        @endphp
-                        @forelse($editableGroups as $group)
-                            <label wire:key="edit-contact-group-{{ $group->id }}" class="flex items-center gap-2 py-1 text-sm text-slate-600 dark:text-[#8aa39a]">
-                                <input type="checkbox" wire:model.live="editGroupIds" value="{{ $group->id }}" class="rounded text-green-600 focus:ring-green-500" />
-                                <span class="h-2 w-2 rounded-full" style="background-color: {{ $group->color }};"></span>
-                                {{ $group->name }}
-                            </label>
-                        @empty
-                            <p class="py-1 text-xs text-slate-500 dark:text-[#70847d]">O grupo de acesso desta conta é definido pelo Super Admin.</p>
-                        @endforelse
-                    </div>
-                </div>
+                <p class="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:bg-[#0a1a14] dark:text-[#8aa39a]">O setor selecionado define automaticamente o grupo responsável pelas salas e divulgações.</p>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" wire:click="closeEditModal" class="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-[#8aa39a]">Cancelar</button>
                     <button type="submit" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800 dark:bg-[#00a477]">Salvar</button>

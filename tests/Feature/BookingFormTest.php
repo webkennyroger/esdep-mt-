@@ -62,6 +62,17 @@ test('submit booking saves to database', function () {
     expect($reservation->status)->toBe(ReservationStatus::PENDING);
 });
 
+test('terms are selected by default and submit button is enabled', function () {
+    $room = createBookingRoom();
+
+    Livewire::test(BookingForm::class)
+        ->assertSet('termsAccepted', true)
+        ->set('roomId', (string) $room->id)
+        ->assertSeeHtml('name="room"')
+        ->assertSeeHtml('checked')
+        ->assertDontSee('bg-slate-400');
+});
+
 test('reservation appears in admin manager', function () {
     $room = createBookingRoom();
     $futureDate = now()->addDays(10)->format('Y-m-d');

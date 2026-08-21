@@ -2,7 +2,10 @@
 
 namespace App\Actions;
 
-use App\Mail\EventAnnouncementMail;
+use App\Mail\ReservationApprovedMail;
+use App\Mail\ReservationRejectedMail;
+use App\Enums\ReservationStatus;
+use App\Jobs\SendEventAnnouncementJob;
 use App\Models\Contact;
 use App\Models\EventAnnouncement;
 use App\Models\Reservation;
@@ -15,6 +18,7 @@ class SendEventAnnouncementAction
 {
     public function execute(Reservation $reservation, array $data, User|Contact $creator): EventAnnouncement
     {
+        $this->sendStatusNotification($reservation);
         $contacts = $this->resolveContacts($data);
         $total = $contacts->count();
 
@@ -31,25 +35,29 @@ class SendEventAnnouncementAction
             'sent_at' => null,
         ]);
 
-        foreach ($contacts as $contact) {
-            try {
-                Mail::to($contact->email)->send(
-                    new EventAnnouncementMail($reservation, $contact->name, $announcement->message)
-                );
-
-                $announcement->increment('sent_count');
-            } catch (\Exception $e) {
-                $announcement->increment('failed_count');
-                Log::error("Erro ao enviar email para {$contact->email}: ".$e->getMessage());
-            }
-        }
-
-        $announcement->update([
-            'status' => 'completed',
-            'sent_at' => now(),
-        ]);
+        SendEventAnnouncementJob::dispatch($announcement->id, $contacts->pluck('id')->all());
 
         return $announcement;
+    }
+
+    private function sendStatusNotification(Reservation $reservation): void
+    {
+        $status = $reservation->status->value;
+        if (! in_array($reservation->status, [ReservationStatus::AUTHORIZED, ReservationStatus::REJECTED], true)
+            || $reservation->status_notification_sent_for === $status) {
+            return;
+        }
+
+        try {
+            $mail = $reservation->status === ReservationStatus::AUTHORIZED
+                ? new ReservationApprovedMail($reservation)
+                : new ReservationRejectedMail($reservation);
+
+            Mail::to($reservation->requester_email)->send($mail);
+            $reservation->update(['status_notification_sent_for' => $status]);
+        } catch (\Throwable $exception) {
+            Log::error('Erro ao enviar notificacao de status da reserva: '.$exception->getMessage());
+        }
     }
 
     protected function resolveContacts(array $data): Collection

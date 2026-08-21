@@ -44,7 +44,7 @@ class EventAnnouncementMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.events.announcement',
+            view: 'emails.event-announcement',
             with: [
                 'reservation' => $this->reservation,
                 'recipientName' => $this->recipientName,

@@ -22,11 +22,12 @@ class Dashboard extends Component
     {
         $reservations = Reservation::accessibleTo(auth()->user());
         $rooms = Room::accessibleTo(auth()->user());
+        $statusCounts = (clone $reservations)->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
 
         return view('livewire.admin.dashboard', [
-            'pendingCount' => (clone $reservations)->where('status', ReservationStatus::PENDING)->count(),
-            'authorizedCount' => (clone $reservations)->where('status', ReservationStatus::AUTHORIZED)->count(),
-            'rejectedCount' => (clone $reservations)->where('status', ReservationStatus::REJECTED)->count(),
+            'pendingCount' => $statusCounts[ReservationStatus::PENDING->value] ?? 0,
+            'authorizedCount' => $statusCounts[ReservationStatus::AUTHORIZED->value] ?? 0,
+            'rejectedCount' => $statusCounts[ReservationStatus::REJECTED->value] ?? 0,
             'roomsCount' => (clone $rooms)->where('is_active', true)->count(),
             'upcomingReservations' => (clone $reservations)->with('room')
                 ->where('status', ReservationStatus::AUTHORIZED)

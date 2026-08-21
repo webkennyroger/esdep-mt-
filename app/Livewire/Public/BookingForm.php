@@ -11,7 +11,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-#[Layout('components.layouts.app', ['title' => 'Nova Reserva — ESDEP-MT'])]
+#[Layout('components.layouts.public', ['title' => 'Nova Reserva — ESDEP-MT'])]
 class BookingForm extends Component
 {
     use WithFileUploads;
@@ -52,7 +52,7 @@ class BookingForm extends Component
 
     public string $attachmentName = '';
 
-    public bool $termsAccepted = false;
+    public bool $termsAccepted = true;
 
     public bool $showTermsModal = false;
 
@@ -221,8 +221,9 @@ class BookingForm extends Component
             $this->reset([
                 'roomId', 'eventName', 'description', 'requesterName',
                 'requesterEmail', 'date', 'coffeeBreak', 'sonorizacao', 'transmissao', 'projetor',
-                'attachment', 'attachmentName', 'termsAccepted',
+                'attachment', 'attachmentName',
             ]);
+            $this->termsAccepted = true;
             $this->startTime = '09:00';
             $this->endTime = '10:00';
             $this->attendeesCount = 1;

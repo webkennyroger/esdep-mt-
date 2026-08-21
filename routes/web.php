@@ -19,16 +19,13 @@ use App\Livewire\Contact\ContactReports;
 use App\Livewire\Contact\ContactReservationEdit;
 use App\Livewire\Contact\ContactReservations;
 use App\Livewire\Contact\ContactRooms;
-use App\Livewire\Public\BookingForm;
 use App\Livewire\Public\ReservationStatusCheck;
 use App\Livewire\Public\Timeline;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'site')->name('home');
 
-Route::get('/reservar', BookingForm::class)
-    ->middleware(['auth'])
-    ->name('reservations.create');
+Route::redirect('/reservar', '/#nova-reserva')->name('reservations.create');
 Route::get('/consultar', ReservationStatusCheck::class)->name('reservations.check');
 
 Route::get('dashboard', Dashboard::class)

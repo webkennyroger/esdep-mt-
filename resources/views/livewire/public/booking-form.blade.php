@@ -61,7 +61,7 @@
                                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             @endif
                                         <label class="flex items-center gap-3 rounded-xl border border-[#d2ded9] bg-white p-4 cursor-pointer transition-all duration-200 has-[:checked]:border-[#008b5c] has-[:checked]:bg-[#eef7f2] has-[:checked]:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:has-[:checked]:border-[#00a477] dark:has-[:checked]:bg-[#0c221a]">
-                                            <input wire:model="roomId" value="{{ $room->id }}" type="radio" name="room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
+                                            <input wire:model.live="roomId" value="{{ $room->id }}" type="radio" name="room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
                                             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style="background-color: {{ $room->theme_color }}20;">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color: {{ $room->theme_color }};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -93,21 +93,21 @@
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-4 sm:gap-4">
             <label>
                 <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Data do evento</span>
-                <input wire:model="date" type="date"
+                <input wire:model.live="date" type="date"
                     class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:[color-scheme:dark]">
                 @error('date') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </label>
 
             <label>
                 <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horario de inicio</span>
-                <input wire:model="startTime" type="time"
+                <input wire:model.live="startTime" type="time"
                     class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:[color-scheme:dark]">
                 @error('startTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </label>
 
             <label>
                 <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horario de termino</span>
-                <input wire:model="endTime" type="time"
+                <input wire:model.live="endTime" type="time"
                     class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:[color-scheme:dark]">
                 @error('endTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </label>
@@ -115,7 +115,7 @@
             <label>
                 <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Previsao de publico</span>
                 <span class="flex h-[46px] items-center border-b border-[#b8c9c2] dark:border-[#2c4a3e]">
-                    <input wire:model="attendeesCount" type="number" min="1"
+                    <input wire:model.live="attendeesCount" type="number" min="1"
                         @if($roomId) max="{{ $rooms->firstWhere('id', $roomId)?->capacity ?? 999 }}" @endif
                         value="1"
                         class="h-full w-[70px] bg-transparent text-[15px] text-[#003f32] outline-none dark:text-[#e6f2ec]">
@@ -215,7 +215,7 @@
         <div class="flex flex-col items-start justify-between gap-4 border-t border-[#d6e1dc] pt-7 dark:border-[#16352a] sm:flex-row sm:items-center sm:gap-10">
             <div class="flex-1">
                 <label class="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" wire:model="termsAccepted" class="mt-1 accent-[#008b5c] dark:accent-[#4fd1a5]">
+                    <input type="checkbox" wire:model="termsAccepted" @checked($termsAccepted) class="mt-1 accent-[#008b5c] dark:accent-[#4fd1a5]">
                     <span class="text-[12px] leading-5 text-[#70847d] dark:text-[#8aa39a]">
                         Li e aceito os 
                         <button type="button" wire:click="openTermsModal" class="font-semibold text-[#008b5c] hover:underline dark:text-[#4fd1a5]">
@@ -230,8 +230,8 @@
             <button type="submit"
                 wire:loading.attr="disabled"
                 wire:loading.class="opacity-60 cursor-not-allowed"
-                @if($conflictError || $capacityError || !$termsAccepted) disabled @endif
-                class="flex h-[46px] w-full items-center justify-center gap-6 px-7 text-[12px] font-bold text-white transition-colors sm:w-auto @if($conflictError || $capacityError || !$termsAccepted) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-[#008b5c] hover:bg-[#006e49] dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
+                @if($conflictError || $capacityError) disabled @endif
+                class="flex h-[46px] w-full items-center justify-center gap-6 px-7 text-[12px] font-bold text-white transition-colors sm:w-auto @if($conflictError || $capacityError) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-[#008b5c] hover:bg-[#006e49] dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
                 <span wire:loading.remove>Enviar solicitacao <span>&rarr;</span></span>
                 <span wire:loading>Enviando...</span>
             </button>

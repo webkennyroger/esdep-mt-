@@ -28,8 +28,6 @@ class RoomManager extends Component
     // Create Room Fields
     public string $name = '';
 
-    public string $code = '';
-
     public int $capacity = 30;
 
     public string $theme_color = '#008b5c';
@@ -44,8 +42,6 @@ class RoomManager extends Component
     public int $editRoomId = 0;
 
     public string $editName = '';
-
-    public string $editCode = '';
 
     public int $editCapacity = 30;
 
@@ -70,19 +66,9 @@ class RoomManager extends Component
         'roomDeleted' => '$refresh',
     ];
 
-    public function updatedCode(): void
-    {
-        $this->code = strtoupper(preg_replace('/[^A-Za-z0-9\-_]/', '', $this->code) ?? '');
-    }
-
-    public function updatedEditCode(): void
-    {
-        $this->editCode = strtoupper(preg_replace('/[^A-Za-z0-9\-_]/', '', $this->editCode) ?? '');
-    }
-
     public function openCreateModal(): void
     {
-        $this->reset(['name', 'code', 'description', 'contactGroupId']);
+        $this->reset(['name', 'description', 'contactGroupId']);
         $this->capacity = 30;
         $this->theme_color = '#008b5c';
         $this->is_active = true;
@@ -101,7 +87,6 @@ class RoomManager extends Component
 
         $this->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:rooms,code',
             'capacity' => 'required|integer|min:1|max:1000',
             'theme_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'description' => 'nullable|string|max:1000',
@@ -112,7 +97,6 @@ class RoomManager extends Component
         $room = Room::create([
             'contact_group_id' => $this->contactGroupId,
             'name' => $this->name,
-            'code' => strtoupper($this->code),
             'capacity' => $this->capacity,
             'theme_color' => $this->theme_color,
             'description' => $this->description ?: null,
@@ -132,7 +116,6 @@ class RoomManager extends Component
         $this->authorize('update', $room);
         $this->editRoomId = $room->id;
         $this->editName = $room->name;
-        $this->editCode = $room->code;
         $this->editCapacity = $room->capacity;
         $this->editThemeColor = $room->theme_color ?? '#008b5c';
         $this->editDescription = $room->description ?? '';
@@ -155,7 +138,6 @@ class RoomManager extends Component
 
         $this->validate([
             'editName' => 'required|string|max:255',
-            'editCode' => 'required|string|max:50|unique:rooms,code,'.$this->editRoomId,
             'editCapacity' => 'required|integer|min:1|max:1000',
             'editThemeColor' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'editDescription' => 'nullable|string|max:1000',
@@ -168,7 +150,6 @@ class RoomManager extends Component
         $room->update([
             'contact_group_id' => $this->editContactGroupId,
             'name' => $this->editName,
-            'code' => strtoupper($this->editCode),
             'capacity' => $this->editCapacity,
             'theme_color' => $this->editThemeColor,
             'description' => $this->editDescription ?: null,

@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('event_announcements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('reservation_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('created_by_contact_id')->nullable()->constrained('contacts')->nullOnDelete();
             $table->text('message')->nullable();
             $table->string('recipient_type')->default('all');
             $table->integer('total_recipients')->default(0);

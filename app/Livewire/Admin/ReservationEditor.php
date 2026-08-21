@@ -145,6 +145,7 @@ class ReservationEditor extends Component
         $this->transmissao = (bool) $reservation->transmissao;
         $this->projetor = (bool) $reservation->projetor;
 
+        $this->conflictError = '';
         $this->resetValidation();
         $this->showModal = true;
     }

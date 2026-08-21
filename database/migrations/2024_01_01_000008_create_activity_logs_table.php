@@ -14,14 +14,14 @@ return new class extends Migration
             $table->text('description'); // Descricao legivel da acao
             $table->string('subject_type')->nullable(); // Reservation, User, Room, etc.
             $table->unsignedBigInteger('subject_id')->nullable(); // ID do objeto afetado
-            $table->unsignedBigInteger('user_id')->nullable(); // Quem fez a acao
+            $table->unsignedBigInteger('user_id')->nullable()->index(); // Quem fez a acao
+            $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
             $table->json('changes')->nullable(); // Detalhes das mudancas (antes/depois)
             $table->json('metadata')->nullable(); // Informacoes adicionais
             $table->timestamps();
 
             // Indices para performance
             $table->index(['subject_type', 'subject_id']);
-            $table->index('user_id');
             $table->index('created_at');
             $table->index('action');
         });

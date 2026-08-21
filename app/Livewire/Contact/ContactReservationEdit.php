@@ -132,21 +132,28 @@ class ContactReservationEdit extends Component
         // O e-mail define a propriedade da reserva e nao pode ser transferido pelo formulario.
         $this->requesterEmail = $reservation->requester_email;
 
-        app(UpdateReservationAction::class)->execute($reservation, [
-            'event_name' => $this->eventName,
-            'description' => $this->description,
-            'room_id' => $this->roomId,
-            'date' => $this->date,
-            'start_time' => $this->startTime,
-            'end_time' => $this->endTime,
-            'requester_name' => $this->requesterName,
-            'requester_email' => $this->requesterEmail,
-            'attendees_count' => $this->attendeesCount,
-            'coffee_break' => $this->coffeeBreak,
-            'sonorizacao' => $this->sonorizacao,
-            'transmissao' => $this->transmissao,
-            'projetor' => $this->projetor,
-        ]);
+        try {
+            app(UpdateReservationAction::class)->execute($reservation, [
+                'event_name' => $this->eventName,
+                'description' => $this->description,
+                'room_id' => $this->roomId,
+                'date' => $this->date,
+                'start_time' => $this->startTime,
+                'end_time' => $this->endTime,
+                'requester_name' => $this->requesterName,
+                'requester_email' => $this->requesterEmail,
+                'attendees_count' => $this->attendeesCount,
+                'coffee_break' => $this->coffeeBreak,
+                'sonorizacao' => $this->sonorizacao,
+                'transmissao' => $this->transmissao,
+                'projetor' => $this->projetor,
+            ]);
+        } catch (\Exception $e) {
+            $safeMsg = addslashes(strip_tags($e->getMessage()));
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '{$safeMsg}' } }))");
+
+            return;
+        }
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva atualizada com sucesso!' } }))");
 
@@ -166,8 +173,8 @@ class ContactReservationEdit extends Component
         return Reservation::query()
             ->whereKey($id)
             ->where(function ($query) use ($contact) {
-                $query->whereRaw('LOWER(requester_email) = ?', [strtolower($contact->email)])
-                    ->orWhereIn('room_id', $contact->managedRoomIds());
+                $query->where('requester_email', strtolower($contact->email))
+                    ->orWhereIn('room_id', $contact->responsibleRoomIds());
             })
             ->firstOrFail();
     }
@@ -179,7 +186,7 @@ class ContactReservationEdit extends Component
             return Room::where('is_active', true)->orderBy('name')->get();
         }
 
-        return Room::where('is_active', true)->whereIn('id', $contact->managedRoomIds())->orderBy('name')->get();
+        return Room::where('is_active', true)->whereIn('id', $contact->responsibleRoomIds())->orderBy('name')->get();
     }
 
     public function render()

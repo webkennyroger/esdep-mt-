@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'google_calendar' => [
+        'enabled' => env('GOOGLE_CALENDAR_ENABLED', false),
+        'calendar_id' => env('GOOGLE_CALENDAR_ID', 'primary'),
+        'credentials_path' => env('GOOGLE_CALENDAR_CREDENTIALS_PATH'),
+        'credentials_json' => env('GOOGLE_CALENDAR_CREDENTIALS_JSON'),
+        'impersonate' => env('GOOGLE_CALENDAR_IMPERSONATE'),
+        'timezone' => env('GOOGLE_CALENDAR_TIMEZONE', 'America/Cuiaba'),
+    ],
+
 ];

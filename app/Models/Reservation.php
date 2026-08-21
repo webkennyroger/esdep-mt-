@@ -37,6 +37,12 @@ class Reservation extends Model
         'reminder_sent_at',
         'terms_accepted',
         'terms_accepted_at',
+        'google_event_id',
+        'google_meet_url',
+        'google_sync_status',
+        'google_sync_error',
+        'google_synced_at',
+        'status_notification_sent_for',
     ];
 
     protected $casts = [
@@ -50,7 +56,13 @@ class Reservation extends Model
         'reminder_sent_at' => 'datetime',
         'terms_accepted' => 'boolean',
         'terms_accepted_at' => 'datetime',
+        'google_synced_at' => 'datetime',
     ];
+
+    protected function setRequesterEmailAttribute(string $value): void
+    {
+        $this->attributes['requester_email'] = strtolower(trim($value));
+    }
 
     public function room(): BelongsTo
     {

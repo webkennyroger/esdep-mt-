@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Agenda de Salas | ESDEP-MT' }}</title>
+    <meta name="description" content="{{ $description ?? 'Agendamento de salas da Escola Superior da Defensoria Pública do Estado de Mato Grosso.' }}">
     <link rel="shortcut icon" href="{{ asset('assets/images/logo-esdep-icone.png') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -17,7 +18,7 @@
         <!-- HEADER -->
         <header
             class="h-[73px] border-b border-[#d8e2dd] bg-[#f4f8f5] px-4 sm:px-[3.75vw] flex items-center justify-between dark:border-[#16352a] dark:bg-[#081712]">
-            <a href="{{ route('home') }}" class="flex items-center no-underline text-[#003f32] dark:text-[#e6f2ec]">
+            <a href="{{ request()->routeIs('home') ? '#inicio' : route('home') }}" class="flex items-center no-underline text-[#003f32] dark:text-[#e6f2ec]">
                 <img src="{{ asset('assets/images/logo-esdep.png') }}"
                     alt="ESDEP — Escola Superior da Defensoria Pública do Estado de Mato Grosso"
                     class="h-[45px] w-auto dark:brightness-0 dark:invert">
@@ -32,22 +33,7 @@
 
             <div class="flex items-center gap-3 sm:gap-7">
                 <!-- DARK MODE TOGGLE -->
-                <button type="button" id="theme-toggle"
-                    class="flex h-[34px] w-[34px] items-center justify-center border border-[#d8e2dd] text-[#003f32] transition hover:border-[#008b5c] hover:text-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:hover:border-[#4fd1a5] dark:hover:text-[#4fd1a5]"
-                    aria-label="Alternar entre modo claro e escuro" title="Alternar tema">
-                    <svg class="h-[15px] w-[15px] dark:hidden" fill="none" stroke="currentColor" stroke-width="1.8"
-                        viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="4.5"></circle>
-                        <path stroke-linecap="round"
-                            d="M12 2.5v2.5M12 19v2.5M2.5 12h2.5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8">
-                        </path>
-                    </svg>
-                    <svg class="hidden h-[15px] w-[15px] dark:block" fill="none" stroke="currentColor"
-                        stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"></path>
-                    </svg>
-                </button>
+                <x-dark-mode-toggle />
 
                 @if(!($hideHeaderMenu ?? false))
                 <a href="{{ route('reservations.check') }}"
@@ -59,6 +45,13 @@
                 </a>
                 @endif
 
+                <a href="{{ route('login') }}" aria-label="Acesso administrativo" title="Acesso administrativo"
+                    class="inline-flex h-[34px] w-[34px] items-center justify-center border border-[#d8e2dd] text-[#003f32] transition hover:border-[#008b5c] hover:text-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:hover:border-[#4fd1a5] dark:hover:text-[#4fd1a5]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-[16px] w-[16px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3-3H9m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                </a>
+
                 <div
                     class="hidden md:flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-[#63766f] dark:text-[#8aa39a]">
                     <span
@@ -67,6 +60,9 @@
                 </div>
             </div>
         </header>
+
+        {{-- Conteudo sem padding, para secoes full-bleed como a Hero da home --}}
+        {{ $hero ?? '' }}
 
         {{-- Main Content --}}
         <section class="flex-1 px-4 sm:px-[3.75vw] py-[60px] sm:py-[84px]">
@@ -86,25 +82,7 @@
 
     </main>
 
-    <script>
-        (function () {
-            var root = document.documentElement;
-            var stored = localStorage.getItem('esdep-theme');
-            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            if (stored === 'dark' || (!stored && prefersDark)) {
-                root.classList.add('dark');
-            }
-
-            var btn = document.getElementById('theme-toggle');
-            if (btn) {
-                btn.addEventListener('click', function () {
-                    var isDark = root.classList.toggle('dark');
-                    localStorage.setItem('esdep-theme', isDark ? 'dark' : 'light');
-                });
-            }
-        })();
-    </script>
     @livewireScripts
 </body>
+
 </html>
