@@ -13,7 +13,9 @@
                         <th class="px-4 py-3">Reservas</th>
                         <th class="px-4 py-3">Acesso ao sistema</th>
                         <th class="px-4 py-3">Cadastro autorizado</th>
+                        @unless(auth('contact')->check())
                         <th class="px-4 py-3 text-right">Acoes</th>
+                        @endunless
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-[#16352a]" x-data="dragDrop($wire, 'reorderContacts')">
@@ -61,6 +63,7 @@
                                     <span class="text-xs text-slate-400 dark:text-[#5a7068]">-</span>
                                 @endif
                             </td>
+                            @unless(auth('contact')->check())
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1">
                                     <button wire:click="openViewModal({{ $contact->id }})" title="Ver detalhes"
@@ -77,6 +80,7 @@
                                     </button>
                                 </div>
                             </td>
+                            @endunless
                         </tr>
                     @endforeach
                 </tbody>

@@ -1,7 +1,7 @@
 <x-layouts.public description="Agendamento de salas da Escola Superior da Defensoria Pública do Estado de Mato Grosso.">
     <x-slot:hero>
         <!-- HERO -->
-        <section id="inicio" class="relative overflow-hidden border-b-[3px] border-[#008b5c] px-4 sm:px-[3.75vw]">
+        <section id="inicio" class="relative scroll-mt-[73px] overflow-hidden border-b-[3px] border-[#008b5c] px-4 sm:px-[3.75vw]">
             <div class="pointer-events-none absolute -left-[110px] -top-[180px] -z-10 h-[410px] w-[410px] rounded-full border-2 border-[#dceee7] dark:border-[#16352a]"></div>
             <div class="pointer-events-none absolute bottom-[-220px] left-[34%] -z-10 h-[390px] w-[390px] rounded-full border-2 border-[#dceee7] dark:border-[#16352a]"></div>
             <div class="container">

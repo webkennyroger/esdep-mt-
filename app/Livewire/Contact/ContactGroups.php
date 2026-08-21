@@ -195,22 +195,27 @@ class ContactGroups extends ContactManager
     {
         $managedRoomIds = auth('contact')->user()->responsibleRoomIds()->pluck('id');
         abort_if(collect($this->groupRoomIds)->diff($managedRoomIds)->isNotEmpty(), 403);
+        $allowedContactIds = $this->allowedContacts()->pluck('id');
+        abort_if(collect($this->groupContactIds)->diff($allowedContactIds)->isNotEmpty(), 403);
         $this->validate(['groupName' => 'required|string|max:255|unique:contact_groups,name', 'groupColor' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/']]);
         $group = ContactGroup::create(['owner_contact_id' => auth('contact')->id(), 'name' => $this->groupName, 'description' => $this->groupDescription, 'color' => $this->groupColor]);
         auth('contact')->user()->groups()->attach($group, ['is_responsible' => true]);
         Room::whereIn('id', $this->groupRoomIds)->update(['contact_group_id' => $group->id]);
+        $group->contacts()->attach(collect($this->groupContactIds)->diff([auth('contact')->id()])->all());
+        $this->allowedGroupIdsCache = null;
         $this->closeGroupModal();
         $this->toast('Grupo criado com sucesso.');
     }
 
     public function openEditGroupModal(int $id): void
     {
-        $group = $this->allowedGroup($id)->load('rooms');
+        $group = $this->allowedGroup($id)->load(['rooms', 'contacts']);
         $this->editGroupId = $group->id;
         $this->editGroupName = $group->name;
         $this->editGroupDescription = $group->description ?? '';
         $this->editGroupColor = $group->color;
         $this->editGroupRoomIds = $group->rooms->pluck('id')->all();
+        $this->editGroupContactIds = $group->contacts->pluck('id')->all();
         $this->resetValidation();
         $this->showEditGroupModal = true;
     }
@@ -220,11 +225,15 @@ class ContactGroups extends ContactManager
         $group = $this->allowedGroup($this->editGroupId);
         $permittedRooms = Room::whereIn('contact_group_id', $this->allowedGroupIds())->pluck('id');
         abort_if(collect($this->editGroupRoomIds)->diff($permittedRooms)->isNotEmpty(), 403);
+        $allowedContactIds = $this->allowedContacts()->pluck('id');
+        abort_if(collect($this->editGroupContactIds)->diff($allowedContactIds)->isNotEmpty(), 403);
         $this->validate(['editGroupName' => ['required', 'string', 'max:255', Rule::unique('contact_groups', 'name')->ignore($group->id)], 'editGroupColor' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/']]);
         DB::transaction(function () use ($group): void {
             $group->update(['name' => $this->editGroupName, 'description' => $this->editGroupDescription, 'color' => $this->editGroupColor]);
             Room::where('contact_group_id', $group->id)->whereNotIn('id', $this->editGroupRoomIds)->update(['contact_group_id' => null]);
             Room::whereIn('id', $this->editGroupRoomIds)->update(['contact_group_id' => $group->id]);
+            $contactIds = collect($this->editGroupContactIds)->push($group->owner_contact_id)->filter()->unique()->all();
+            $this->syncGroupContacts($group, $contactIds);
         });
         $this->closeEditGroupModal();
         $this->toast('Grupo atualizado com sucesso.');
@@ -241,9 +250,9 @@ class ContactGroups extends ContactManager
     public function deleteGroup(int $id): void
     {
         $group = $this->allowedGroup($id);
-        abort_if($group->rooms()->exists(), 422);
         $group->contacts()->detach();
         $group->delete();
+        $this->allowedGroupIdsCache = null;
         if ($this->filterGroupId === $id) {
             $this->filterGroupId = null;
         } $this->closeDeleteGroupModal();
@@ -336,6 +345,6 @@ class ContactGroups extends ContactManager
             $query->whereHas('groups', fn ($filter) => $filter->where('contact_groups.id', $this->filterGroupId));
         }
 
-        return view('livewire.admin.contact-manager', ['contacts' => $query->paginate(15), 'groups' => $groups, 'rooms' => Room::whereIn('id', auth('contact')->user()->responsibleRoomIds())->orderBy('name')->get(), 'sectors' => $groups->pluck('name')->values()->all(), 'cargos' => ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiário']]);
+        return view('livewire.admin.contact-manager', ['contacts' => $query->paginate(15), 'groups' => $groups, 'rooms' => Room::whereIn('id', auth('contact')->user()->responsibleRoomIds())->orderBy('name')->get(), 'contactsForGroups' => $this->allowedContacts()->orderBy('name')->get(['contacts.id', 'contacts.name', 'contacts.email']), 'sectors' => $groups->pluck('name')->values()->all(), 'cargos' => ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiário']]);
     }
 }

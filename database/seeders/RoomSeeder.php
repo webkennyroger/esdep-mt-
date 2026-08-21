@@ -10,7 +10,8 @@ class RoomSeeder extends Seeder
 {
     public function run(): void
     {
-        $groupIds = ContactGroup::pluck('id');
+        $namedGroups = ['CDI', 'INSTITUCIONAL', 'OUVIDORIA'];
+        $factoryGroupIds = ContactGroup::whereNotIn('name', $namedGroups)->pluck('id');
 
         collect([
             ['group' => 'CDI', 'name' => 'Sala Horizonte', 'code' => 'HORIZONTE', 'capacity' => 60, 'theme_color' => '#008b5c'],
@@ -27,8 +28,8 @@ class RoomSeeder extends Seeder
             ]);
         });
 
-        Room::factory()->count(10)->create()->each(function (Room $room) use ($groupIds) {
-            $room->update(['contact_group_id' => $groupIds->random()]);
+        Room::factory()->count(10)->create()->each(function (Room $room) use ($factoryGroupIds) {
+            $room->update(['contact_group_id' => $factoryGroupIds->random()]);
         });
     }
 }

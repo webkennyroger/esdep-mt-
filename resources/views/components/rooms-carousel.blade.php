@@ -1,5 +1,5 @@
 <div class="hidden lg:flex lg:justify-end">
-    <div class="flex relative items-center justify-center" style="perspective: 1200px;">
+    <div class="relative flex w-full max-w-[700px] items-center justify-center" style="perspective: 1200px;">
 
         <!-- SETA ESQUERDA -->
         <button type="button" id="room-prev"
@@ -11,7 +11,7 @@
         </button>
 
         <!-- CAROUSEL -->
-        <div class="relative w-full max-w-[700px] h-[500px] flex items-center justify-center overflow-visible">
+        <div class="relative w-full h-[500px] flex items-center justify-center overflow-visible">
             <div id="rooms-carousel" class="flex transition-transform duration-500 ease-out absolute top-0 right-0 bottom-0 left-0 items-center justify-center" style="transform-style: preserve-3d;">
 
                 <!-- 01 — HORIZONTE -->

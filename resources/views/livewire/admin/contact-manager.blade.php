@@ -22,6 +22,7 @@
                 <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Gerencie a lista de contatos para divulgacao.</p>
             </div>
             <div class="flex gap-2">
+                @unless(auth('contact')->check())
                 <button wire:click="openGroupModal"
                     class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-[#16352a] dark:bg-[#0c221a] dark:text-[#8aa39a]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -29,13 +30,8 @@
                     </svg>
                     Grupos
                 </button>
-                <button wire:click="openImportModal"
-                    class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-[#16352a] dark:bg-[#0c221a] dark:text-[#8aa39a]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    Importar
-                </button>
+                @endunless
+                @unless(auth('contact')->check())
                 <button wire:click="openCreateModal"
                     class="inline-flex items-center justify-center gap-2 rounded-lg bg-green-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -43,12 +39,15 @@
                     </svg>
                     Novo contato
                 </button>
+                @endunless
             </div>
         </div>
     </div>
 
     {{-- Groups Overview Filter --}}
-    @include('livewire.admin.contacts.partials.group-chips')
+    @unless(auth('contact')->check())
+        @include('livewire.admin.contacts.partials.group-chips')
+    @endunless
 
     {{-- Search Bar --}}
     <div class="mb-6">

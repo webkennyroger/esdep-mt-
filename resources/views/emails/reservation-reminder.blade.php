@@ -32,7 +32,14 @@
                 <p><span class="label">Horario:</span> {{ $reservation->start_time }} - {{ $reservation->end_time }}</p>
                 <p><span class="label">Participantes:</span> {{ $reservation->attendees_count }}</p>
             </div>
-            
+
+            @if($reservation->description)
+            <p><span class="label">Descrição do solicitante:</span></p>
+            <div class="info-box">
+                <p>{{ $reservation->description }}</p>
+            </div>
+            @endif
+
             <p>Por favor, chegue com antecedencia e respeite o horario agendado.</p>
             <p>Atenciosamente,<br><strong>Equipe ESDEP-MT</strong></p>
         </div>

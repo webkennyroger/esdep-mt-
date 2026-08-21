@@ -44,6 +44,15 @@
             </div>
             @error('editGroupRoomIds.*') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
         </div>
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Contatos do grupo</label>
+            <div class="max-h-44 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-[#16352a]">
+                @forelse($contactsForGroups as $groupContact)
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" wire:model="editGroupContactIds" value="{{ $groupContact->id }}" class="rounded text-green-600"><span>{{ $groupContact->name }}</span> <small class="text-slate-400">{{ $groupContact->email }}</small></label>
+                @empty <span class="text-xs text-slate-500">Nenhum contato disponivel.</span> @endforelse
+            </div>
+            @error('editGroupContactIds.*') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+        </div>
         <div class="flex justify-end gap-3 pt-2">
                     <button type="button" wire:click="closeEditGroupModal" class="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-[#8aa39a]">Cancelar</button>
                     <button type="submit" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800 dark:bg-[#00a477]">Salvar</button>

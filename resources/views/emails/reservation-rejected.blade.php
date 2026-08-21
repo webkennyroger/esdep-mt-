@@ -138,6 +138,18 @@
                         </td>
                     </tr>
 
+                    {{-- Descricao --}}
+                    @if($reservation->description)
+                    <tr>
+                        <td style="padding: 0 40px 20px;">
+                            <p style="margin: 0 0 10px; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Descrição do solicitante</p>
+                            <div style="background-color: #f8faf9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px;">
+                                <p style="margin: 0; color: #64748b; font-size: 13px; line-height: 1.6;">{{ $reservation->description }}</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endif
+
                     {{-- Motivo da Rejeicao --}}
                     @if($reservation->reject_reason)
                     <tr>

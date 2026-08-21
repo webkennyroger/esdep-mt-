@@ -112,6 +112,8 @@ class ContactManager extends Component
 
     public array $groupRoomIds = [];
 
+    public array $groupContactIds = [];
+
     // Edit Group fields
     public int $editGroupId = 0;
 
@@ -122,6 +124,8 @@ class ContactManager extends Component
     public string $editGroupColor = '#059669';
 
     public array $editGroupRoomIds = [];
+
+    public array $editGroupContactIds = [];
 
     protected $listeners = [
         'contactCreated' => '$refresh',
@@ -342,7 +346,7 @@ class ContactManager extends Component
 
     public function openGroupModal(): void
     {
-        $this->reset(['groupName', 'groupDescription', 'groupColor', 'groupRoomIds']);
+        $this->reset(['groupName', 'groupDescription', 'groupColor', 'groupRoomIds', 'groupContactIds']);
         $this->groupColor = '#059669';
         $this->resetValidation();
         $this->showGroupModal = true;
@@ -361,6 +365,8 @@ class ContactManager extends Component
             'groupColor' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'groupRoomIds' => 'array',
             'groupRoomIds.*' => 'integer|exists:rooms,id',
+            'groupContactIds' => 'array',
+            'groupContactIds.*' => 'integer|exists:contacts,id',
         ]);
 
         $group = ContactGroup::create([
@@ -369,6 +375,7 @@ class ContactManager extends Component
             'color' => $this->groupColor,
         ]);
         Room::whereIn('id', $this->groupRoomIds)->update(['contact_group_id' => $group->id]);
+        $group->contacts()->attach($this->groupContactIds);
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Grupo criado com sucesso.' } }))");
         $this->dispatch('groupCreated');
@@ -387,12 +394,13 @@ class ContactManager extends Component
 
     public function openEditGroupModal(int $id): void
     {
-        $group = ContactGroup::whereNull('owner_contact_id')->with('rooms')->findOrFail($id);
+        $group = ContactGroup::whereNull('owner_contact_id')->with(['rooms', 'contacts'])->findOrFail($id);
         $this->editGroupId = $group->id;
         $this->editGroupName = $group->name;
         $this->editGroupDescription = $group->description ?? '';
         $this->editGroupColor = $group->color;
         $this->editGroupRoomIds = $group->rooms->pluck('id')->all();
+        $this->editGroupContactIds = $group->contacts->pluck('id')->all();
         $this->resetValidation();
         $this->showEditGroupModal = true;
     }
@@ -411,6 +419,8 @@ class ContactManager extends Component
             'editGroupColor' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'editGroupRoomIds' => 'array',
             'editGroupRoomIds.*' => 'integer|exists:rooms,id',
+            'editGroupContactIds' => 'array',
+            'editGroupContactIds.*' => 'integer|exists:contacts,id',
         ]);
 
         DB::transaction(function () use ($group): void {
@@ -423,11 +433,22 @@ class ContactManager extends Component
                 ->whereNotIn('id', $this->editGroupRoomIds)
                 ->update(['contact_group_id' => null]);
             Room::whereIn('id', $this->editGroupRoomIds)->update(['contact_group_id' => $group->id]);
+
+            $this->syncGroupContacts($group, $this->editGroupContactIds);
         });
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Grupo atualizado com sucesso.' } }))");
         $this->dispatch('groupCreated');
         $this->closeEditGroupModal();
+    }
+
+    protected function syncGroupContacts(ContactGroup $group, array $contactIds): void
+    {
+        $existingResponsible = $group->contacts()->wherePivot('is_responsible', true)->pluck('contacts.id');
+        $syncData = collect($contactIds)->mapWithKeys(fn ($id) => [
+            $id => ['is_responsible' => $existingResponsible->contains($id)],
+        ]);
+        $group->contacts()->sync($syncData);
     }
 
     public function confirmDeleteGroup(int $id): void
@@ -448,12 +469,6 @@ class ContactManager extends Component
     public function deleteGroup(int $id): void
     {
         $group = ContactGroup::whereNull('owner_contact_id')->findOrFail($id);
-        if ($group->rooms()->exists()) {
-            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Não é possível excluir um grupo com salas vinculadas. Desvincule as salas primeiro.' } }))");
-            $this->closeDeleteGroupModal();
-
-            return;
-        }
         $group->contacts()->detach();
         $group->delete();
 
@@ -595,6 +610,7 @@ class ContactManager extends Component
             'contacts' => $query->paginate(15),
             'groups' => $groups,
             'rooms' => Room::with('contactGroup')->where(fn ($rooms) => $rooms->whereNull('contact_group_id')->orWhereHas('contactGroup', fn ($groups) => $groups->whereNull('owner_contact_id')))->orderBy('name')->get(),
+            'contactsForGroups' => Contact::orderBy('name')->get(['id', 'name', 'email']),
             'sectors' => $groups->pluck('name')->values()->all(),
             'cargos' => ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiario'],
         ]);

@@ -50,6 +50,77 @@ test('existing contact group crud synchronizes its managed rooms', function () {
         ->and($roomB->fresh()->contact_group_id)->toBe($group->id);
 });
 
+test('deleting a group unlinks its rooms and contacts without deleting them', function () {
+    $admin = User::factory()->create(['role' => 'super_admin']);
+    $group = ContactGroup::create(['name' => 'GRUPO PARA EXCLUIR', 'color' => '#008b5c']);
+    $room = Room::factory()->create(['contact_group_id' => $group->id]);
+    $contact = Contact::create(['name' => 'Contato do grupo', 'email' => 'contato-grupo-excluido@example.com', 'password' => 'password', 'is_active' => true]);
+    $contact->groups()->attach($group);
+
+    Livewire::actingAs($admin)->test(ContactManager::class)->call('deleteGroup', $group->id);
+
+    expect(ContactGroup::find($group->id))->toBeNull()
+        ->and(Room::find($room->id))->not->toBeNull()
+        ->and($room->fresh()->contact_group_id)->toBeNull()
+        ->and(Contact::find($contact->id))->not->toBeNull()
+        ->and($contact->groups()->whereKey($group->id)->exists())->toBeFalse();
+});
+
+test('admin can select contacts when creating and editing a group', function () {
+    $admin = User::factory()->create(['role' => 'super_admin']);
+    $alice = Contact::create(['name' => 'Alice', 'email' => 'alice@example.com', 'password' => 'password', 'is_active' => true]);
+    $bob = Contact::create(['name' => 'Bob', 'email' => 'bob@example.com', 'password' => 'password', 'is_active' => true]);
+
+    Livewire::actingAs($admin)->test(ContactManager::class)
+        ->set('groupName', 'GRUPO COM CONTATOS')
+        ->set('groupColor', '#008b5c')
+        ->set('groupContactIds', [$alice->id, $bob->id])
+        ->call('createGroup')
+        ->assertHasNoErrors();
+
+    $group = ContactGroup::where('name', 'GRUPO COM CONTATOS')->firstOrFail();
+    expect($group->contacts()->pluck('contacts.id')->sort()->values()->all())->toBe([$alice->id, $bob->id]);
+
+    $group->contacts()->updateExistingPivot($alice->id, ['is_responsible' => true]);
+
+    Livewire::actingAs($admin)->test(ContactManager::class)
+        ->call('openEditGroupModal', $group->id)
+        ->assertSet('editGroupContactIds', fn ($ids) => in_array($alice->id, $ids) && in_array($bob->id, $ids))
+        ->set('editGroupContactIds', [$alice->id])
+        ->call('updateGroup')
+        ->assertHasNoErrors();
+
+    expect($group->contacts()->pluck('contacts.id')->all())->toBe([$alice->id])
+        ->and($group->contacts()->wherePivot('is_responsible', true)->exists())->toBeTrue();
+});
+
+test('group user can only attach contacts from their own scope when creating a private group', function () {
+    $manager = Contact::create(['name' => 'Gestor', 'email' => 'gestor-privado@example.com', 'password' => 'password', 'is_active' => true]);
+    $ownGroup = ContactGroup::create(['owner_contact_id' => $manager->id, 'name' => 'GRUPO PROPRIO', 'color' => '#008b5c']);
+    $manager->groups()->attach($ownGroup, ['is_responsible' => true]);
+    $ownMember = Contact::create(['name' => 'Membro do grupo', 'email' => 'membro-proprio@example.com', 'password' => 'password', 'is_active' => true]);
+    $ownMember->groups()->attach($ownGroup);
+    $outsider = Contact::create(['name' => 'Fora do grupo', 'email' => 'fora@example.com', 'password' => 'password', 'is_active' => true]);
+
+    Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
+        ->set('groupName', 'GRUPO PRIVADO NOVO')
+        ->set('groupColor', '#2563eb')
+        ->set('groupContactIds', [$ownMember->id])
+        ->call('createGroup')
+        ->assertHasNoErrors();
+
+    $privateGroup = ContactGroup::where('name', 'GRUPO PRIVADO NOVO')->firstOrFail();
+    expect($privateGroup->contacts()->whereKey($ownMember->id)->exists())->toBeTrue();
+
+    Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
+        ->set('groupName', 'GRUPO INVALIDO')
+        ->set('groupColor', '#2563eb')
+        ->set('groupContactIds', [$outsider->id])
+        ->call('createGroup');
+
+    expect(ContactGroup::where('name', 'GRUPO INVALIDO')->exists())->toBeFalse();
+});
+
 test('responsible contact sees and can edit every reservation from group rooms', function () {
     $group = ContactGroup::create(['name' => 'GRUPO A', 'color' => '#008b5c']);
     $room = Room::factory()->create(['contact_group_id' => $group->id]);
@@ -252,8 +323,8 @@ test('group user has full contact tools scoped to own groups', function () {
     $group->update(['owner_contact_id' => $manager->id]);
 
     Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
-        ->assertSee('Importar')
-        ->assertSee('Novo contato')
+        ->assertDontSee('Importar')
+        ->assertDontSee('Novo contato')
         ->assertSee('Contato local')
         ->assertDontSee('Contato externo')
         ->set('newName', 'Novo contato do grupo')

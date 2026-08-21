@@ -22,12 +22,13 @@
                     <input type="password" wire:model="editPassword" placeholder="Nova senha"
                         class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid {{ auth('contact')->check() ? 'grid-cols-1' : 'grid-cols-2' }} gap-4">
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">CPF</label>
                         <input type="text" wire:model="editCpf" placeholder="000.000.000-00"
                             class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
                     </div>
+                    @unless(auth('contact')->check())
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Cargo</label>
                         <select wire:model="editTipo"
@@ -38,6 +39,7 @@
                             @endforeach
                         </select>
                     </div>
+                    @endunless
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>

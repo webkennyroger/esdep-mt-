@@ -33,7 +33,14 @@
                 <p><span class="label">Horário:</span> {{ \Carbon\Carbon::parse($reservation->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($reservation->end_time)->format('H:i') }}</p>
                 <p><span class="label">Participantes:</span> {{ $reservation->attendees_count }}</p>
             </div>
-            
+
+            @if($reservation->description)
+            <p><span class="label">Descrição do solicitante:</span></p>
+            <div class="info-box">
+                <p>{{ $reservation->description }}</p>
+            </div>
+            @endif
+
             <p>Acesse o painel administrativo para autorizar ou rejeitar esta solicitação.</p>
             <p>Atenciosamente,<br><strong>Equipe ESDEP-MT</strong></p>
         </div>

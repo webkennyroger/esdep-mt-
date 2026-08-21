@@ -304,7 +304,7 @@
                     {{-- Descricao --}}
                     @if($detailReservation->description)
                         <div class="mt-5">
-                            <h4 class="mb-2.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#5a7068]">Descricao</h4>
+                            <h4 class="mb-2.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#5a7068]">Descrição do solicitante</h4>
                             <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#8aa39a]">
                                 {{ $detailReservation->description }}
                             </div>
