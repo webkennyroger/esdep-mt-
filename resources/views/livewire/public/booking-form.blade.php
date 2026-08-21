@@ -115,11 +115,22 @@
             <label>
                 <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Previsao de publico</span>
                 <span class="flex h-[46px] items-center border-b border-[#b8c9c2] dark:border-[#2c4a3e]">
-                    <input wire:model="attendeesCount" type="number" min="1" max="60" value="1"
+                    <input wire:model="attendeesCount" type="number" min="1"
+                        @if($roomId) max="{{ $rooms->firstWhere('id', $roomId)?->capacity ?? 999 }}" @endif
+                        value="1"
                         class="h-full w-[70px] bg-transparent text-[15px] text-[#003f32] outline-none dark:text-[#e6f2ec]">
                     <small class="pr-2 text-[11px] text-[#70847d] dark:text-[#8aa39a]">pessoas</small>
                 </span>
+                @if($roomId)
+                    @php $selectedRoom = $rooms->firstWhere('id', $roomId); @endphp
+                    @if($selectedRoom)
+                        <small class="mt-1 block text-[10px] text-[#70847d] dark:text-[#8aa39a]">Capacidade maxima: {{ $selectedRoom->capacity }} pessoas</small>
+                    @endif
+                @endif
                 @error('attendeesCount') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                @if($capacityError)
+                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $capacityError }}</p>
+                @endif
             </label>
         </div>
 
@@ -219,8 +230,8 @@
             <button type="submit"
                 wire:loading.attr="disabled"
                 wire:loading.class="opacity-60 cursor-not-allowed"
-                @if($conflictError || !$termsAccepted) disabled @endif
-                class="flex h-[46px] w-full items-center justify-center gap-6 px-7 text-[12px] font-bold text-white transition-colors sm:w-auto @if($conflictError || !$termsAccepted) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-[#008b5c] hover:bg-[#006e49] dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
+                @if($conflictError || $capacityError || !$termsAccepted) disabled @endif
+                class="flex h-[46px] w-full items-center justify-center gap-6 px-7 text-[12px] font-bold text-white transition-colors sm:w-auto @if($conflictError || $capacityError || !$termsAccepted) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-[#008b5c] hover:bg-[#006e49] dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
                 <span wire:loading.remove>Enviar solicitacao <span>&rarr;</span></span>
                 <span wire:loading>Enviando...</span>
             </button>

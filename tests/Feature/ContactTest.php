@@ -2,8 +2,12 @@
 
 use App\Livewire\Admin\ContactManager;
 use App\Models\Contact;
-use App\Models\ContactGroup;
+use App\Models\User;
 use Livewire\Livewire;
+
+beforeEach(function () {
+    $this->actingAs(User::factory()->create(['role' => 'super_admin']));
+});
 
 test('create contact', function () {
     Livewire::test(ContactManager::class)

@@ -10,7 +10,7 @@ class IsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || !$request->user()->is_admin) {
+        if (! auth()->check() || ! $request->user()->is_admin) {
             abort(403, 'Acesso negado. Apenas administradores podem acessar esta area.');
         }
 

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 class SendReservationRemindersCommand extends Command
 {
     protected $signature = 'reservations:send-reminders';
+
     protected $description = 'Envia lembretes para solicitantes com reservas nas proximas 24h';
 
     public function handle(): int
@@ -28,6 +29,7 @@ class SendReservationRemindersCommand extends Command
 
         if ($reservations->isEmpty()) {
             $this->info('Nenhum lembrete para enviar.');
+
             return self::SUCCESS;
         }
 

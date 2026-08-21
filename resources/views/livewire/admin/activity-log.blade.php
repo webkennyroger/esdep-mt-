@@ -300,6 +300,34 @@
                             </div>
                             <p class="text-sm font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $selectedLog->created_at->format('d/m/Y H:i:s') }}</p>
                         </div>
+
+                        {{-- Historico de Alteracoes --}}
+                        @if($selectedLog->formatted_changes && count($selectedLog->formatted_changes) > 0)
+                            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-[#16352a] dark:bg-[#0a1a14]">
+                                <div class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#5a7068]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Historico de Alteracoes
+                                </div>
+                                <div class="space-y-2">
+                                    @foreach($selectedLog->formatted_changes as $label => $change)
+                                        <div class="flex items-start gap-2">
+                                            <span class="inline-flex shrink-0 items-center rounded-md bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:bg-[#16352a] dark:text-[#8aa39a]">
+                                                {{ $label }}
+                                            </span>
+                                            @if(isset($change['old']))
+                                                <span class="text-sm text-slate-500 line-through dark:text-[#5a7068]">{{ $change['old'] }}</span>
+                                                <span class="text-sm text-slate-400 dark:text-[#5a7068]">→</span>
+                                                <span class="text-sm font-medium text-slate-700 dark:text-[#e6f2ec]">{{ $change['new'] }}</span>
+                                            @else
+                                                <span class="text-sm text-slate-700 dark:text-[#e6f2ec]">{{ $change['value'] ?? '' }}</span>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 

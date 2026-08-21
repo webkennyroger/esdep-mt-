@@ -17,7 +17,7 @@ function createConflictTestRoom(): Room
 test('cannot create reservation overlapping authorized', function () {
     $room = createConflictTestRoom();
 
-    $createAction = new CreateReservationAction();
+    $createAction = new CreateReservationAction;
     $reservation1 = $createAction->execute([
         'room_id' => $room->id,
         'event_name' => 'Reunião 1',
@@ -29,7 +29,7 @@ test('cannot create reservation overlapping authorized', function () {
         'attendees_count' => 10,
     ]);
 
-    $approveAction = new ApproveReservationAction();
+    $approveAction = new ApproveReservationAction;
     $approveAction->execute($reservation1);
 
     expect(fn () => $createAction->execute([
@@ -41,13 +41,13 @@ test('cannot create reservation overlapping authorized', function () {
         'start_time' => '09:30',
         'end_time' => '10:30',
         'attendees_count' => 5,
-    ]))->toThrow(\Exception::class);
+    ]))->toThrow(Exception::class);
 });
 
 test('can create reservation after authorized ends', function () {
     $room = createConflictTestRoom();
 
-    $createAction = new CreateReservationAction();
+    $createAction = new CreateReservationAction;
     $reservation1 = $createAction->execute([
         'room_id' => $room->id,
         'event_name' => 'Reunião 1',
@@ -59,7 +59,7 @@ test('can create reservation after authorized ends', function () {
         'attendees_count' => 10,
     ]);
 
-    $approveAction = new ApproveReservationAction();
+    $approveAction = new ApproveReservationAction;
     $approveAction->execute($reservation1);
 
     $reservation2 = $createAction->execute([
@@ -79,7 +79,7 @@ test('can create reservation after authorized ends', function () {
 test('cannot create pending overlapping pending', function () {
     $room = createConflictTestRoom();
 
-    $action = new CreateReservationAction();
+    $action = new CreateReservationAction;
 
     $action->execute([
         'room_id' => $room->id,
@@ -101,5 +101,5 @@ test('cannot create pending overlapping pending', function () {
         'start_time' => '09:30',
         'end_time' => '10:30',
         'attendees_count' => 5,
-    ]))->toThrow(\Exception::class);
+    ]))->toThrow(Exception::class);
 });

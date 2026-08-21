@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 // All of the dependencies rely on this file
 require __DIR__.'/../vendor/autoload.php';

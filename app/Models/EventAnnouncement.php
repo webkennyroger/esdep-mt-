@@ -10,6 +10,7 @@ class EventAnnouncement extends Model
     protected $fillable = [
         'reservation_id',
         'created_by',
+        'created_by_contact_id',
         'message',
         'recipient_type',
         'total_recipients',
@@ -31,5 +32,10 @@ class EventAnnouncement extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function contactCreator(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'created_by_contact_id');
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Reservation;
 use App\Services\IcsCalendarGenerator;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Mail\Mailables\Headers;
@@ -28,12 +29,12 @@ class ReservationApprovedMail extends Mailable
     {
         return new Headers(
             text: [
-                'List-Unsubscribe: <mailto:' . config('mail.from.address') . '?subject=Cancelar%20inscricao>',
+                'List-Unsubscribe: <mailto:'.config('mail.from.address').'?subject=Cancelar%20inscricao>',
                 'List-Unsubscribe-Post: List-Unsubscribe=One-Click',
                 'Precedence: bulk',
                 'X-Mailer: ESDEP-MT/1.0',
-                'Return-Path: ' . config('mail.from.address'),
-                'Sender: ' . config('mail.from.address'),
+                'Return-Path: '.config('mail.from.address'),
+                'Sender: '.config('mail.from.address'),
             ],
         );
     }
@@ -52,7 +53,7 @@ class ReservationApprovedMail extends Mailable
         $filename = $icsGenerator->getFilename($this->reservation);
 
         return [
-            \Illuminate\Mail\Mailables\Attachment::fromData(fn () => $icsContent, $filename)
+            Attachment::fromData(fn () => $icsContent, $filename)
                 ->withMime('text/calendar; charset=utf-8'),
         ];
     }

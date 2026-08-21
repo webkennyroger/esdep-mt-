@@ -12,15 +12,20 @@ use Livewire\Component;
 class AdminCalendar extends Component
 {
     public int $currentMonth;
+
     public int $currentYear;
+
     public array $reservations = [];
+
     public string $selectedDate = '';
+
     public array $dayReservations = [];
 
     protected $listeners = [
-        'reservationCreated' => '$refresh',
-        'reservationApproved' => '$refresh',
-        'reservationRejected' => '$refresh',
+        'reservationCreated' => 'loadReservations',
+        'reservationUpdated' => 'loadReservations',
+        'reservationApproved' => 'loadReservations',
+        'reservationRejected' => 'loadReservations',
     ];
 
     public function mount(): void
@@ -36,7 +41,7 @@ class AdminCalendar extends Component
         $start = Carbon::create($this->currentYear, $this->currentMonth, 1)->startOfMonth()->toDateString();
         $end = Carbon::create($this->currentYear, $this->currentMonth, 1)->endOfMonth()->toDateString();
 
-        $rows = Reservation::with('room')
+        $rows = Reservation::accessibleTo(auth()->user())->with('room')
             ->whereDate('date', '>=', $start)
             ->whereDate('date', '<=', $end)
             ->where('status', ReservationStatus::AUTHORIZED)
@@ -117,6 +122,7 @@ class AdminCalendar extends Component
         for ($d = 1; $d <= $daysInMonth; $d++) {
             $days[] = $d;
         }
+
         return $days;
     }
 

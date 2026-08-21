@@ -12,27 +12,30 @@ use Livewire\Component;
 class Dashboard extends Component
 {
     protected $listeners = [
-        'reservationCreated'  => '$refresh',
-        'reservationUpdated'  => '$refresh',
+        'reservationCreated' => '$refresh',
+        'reservationUpdated' => '$refresh',
         'reservationApproved' => '$refresh',
         'reservationRejected' => '$refresh',
     ];
 
     public function render()
     {
+        $reservations = Reservation::accessibleTo(auth()->user());
+        $rooms = Room::accessibleTo(auth()->user());
+
         return view('livewire.admin.dashboard', [
-            'pendingCount'        => Reservation::where('status', ReservationStatus::PENDING)->count(),
-            'authorizedCount'     => Reservation::where('status', ReservationStatus::AUTHORIZED)->count(),
-            'rejectedCount'       => Reservation::where('status', ReservationStatus::REJECTED)->count(),
-            'roomsCount'          => Room::where('is_active', true)->count(),
-            'upcomingReservations' => Reservation::with('room')
+            'pendingCount' => (clone $reservations)->where('status', ReservationStatus::PENDING)->count(),
+            'authorizedCount' => (clone $reservations)->where('status', ReservationStatus::AUTHORIZED)->count(),
+            'rejectedCount' => (clone $reservations)->where('status', ReservationStatus::REJECTED)->count(),
+            'roomsCount' => (clone $rooms)->where('is_active', true)->count(),
+            'upcomingReservations' => (clone $reservations)->with('room')
                 ->where('status', ReservationStatus::AUTHORIZED)
                 ->where('date', '>=', now()->toDateString())
                 ->orderBy('date')
                 ->orderBy('start_time')
                 ->limit(5)
                 ->get(),
-            'pendingReservations' => Reservation::with('room')
+            'pendingReservations' => (clone $reservations)->with('room')
                 ->where('status', ReservationStatus::PENDING)
                 ->latest()
                 ->limit(5)

@@ -31,17 +31,18 @@
                         <tr>
                             <th class="px-4 py-3">Sala / Código</th>
                             <th class="px-4 py-3">Capacidade</th>
+                            <th class="px-4 py-3">Grupo responsável</th>
                             <th class="px-4 py-3">Cor no Calendário</th>
                             <th class="px-4 py-3">Reservas</th>
                             <th class="px-4 py-3">Status</th>
                             <th class="px-4 py-3 text-right">Ações</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-[#16352a]">
+                    <tbody class="divide-y divide-slate-100 dark:divide-[#16352a]" x-data="dragDrop($wire, 'reorderRooms')">
                         @foreach($rooms as $room)
-                            <tr class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30">
+                            <tr draggable="false" data-sort-id="{{ $room->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30">
                                 <td class="px-4 py-3">
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-3"><x-drag-handle />
                                         <span class="h-3.5 w-3.5 shrink-0 rounded-full" style="background-color: {{ $room->theme_color ?? '#008b5c' }};"></span>
                                         <div>
                                             <p class="font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $room->name }}</p>
@@ -49,6 +50,12 @@
                                         </div>
                                     </div>
                                 </td>
+                                @php
+                                    $visibleGroup = $room->contactGroup;
+                                    if (auth('contact')->check() && $visibleGroup?->owner_contact_id !== auth('contact')->id()) $visibleGroup = null;
+                                    if (auth()->check() && $visibleGroup?->owner_contact_id !== null) $visibleGroup = null;
+                                @endphp
+                                <td class="px-4 py-3 text-xs text-slate-600 dark:text-[#8aa39a]">{{ $visibleGroup?->name ?? 'Não atribuído' }}</td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-[#16352a] dark:text-[#8aa39a]">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -124,6 +131,15 @@
                         </div>
                     </div>
 
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Grupo responsável</label>
+                        <select wire:model="contactGroupId" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm dark:border-[#16352a] dark:bg-[#0a1a14]">
+                            <option value="">Não atribuído</option>
+                            @foreach($contactGroups as $group)<option value="{{ $group->id }}">{{ $group->name }}</option>@endforeach
+                        </select>
+                        @error('administrativeGroupId') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Capacidade (Pessoas) *</label>
@@ -137,6 +153,15 @@
                                 <span class="text-sm text-slate-700 dark:text-[#8aa39a]">Sala Ativa para Reservas</span>
                             </label>
                         </div>
+                    </div>
+
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Grupo responsável</label>
+                        <select wire:model="editContactGroupId" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm dark:border-[#16352a] dark:bg-[#0a1a14]">
+                            <option value="">Não atribuído</option>
+                            @foreach($contactGroups as $group)<option value="{{ $group->id }}">{{ $group->name }}</option>@endforeach
+                        </select>
+                        @error('editContactGroupId') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>

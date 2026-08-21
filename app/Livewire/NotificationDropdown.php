@@ -10,6 +10,7 @@ use Livewire\Component;
 class NotificationDropdown extends Component
 {
     public int $pendingCount = 0;
+
     public array $notifications = [];
 
     protected $listeners = [
@@ -26,9 +27,17 @@ class NotificationDropdown extends Component
 
     public function loadData(): void
     {
-        $this->pendingCount = Reservation::where('status', ReservationStatus::PENDING)->count();
+        if (! auth()->check() || ! auth()->user()->is_admin) {
+            $this->pendingCount = 0;
+            $this->notifications = [];
 
-        $this->notifications = Reservation::with('room')
+            return;
+        }
+
+        $visible = Reservation::accessibleTo(auth()->user());
+        $this->pendingCount = (clone $visible)->where('status', ReservationStatus::PENDING)->count();
+
+        $this->notifications = (clone $visible)->with('room')
             ->latest()
             ->take(5)
             ->get()
@@ -37,7 +46,7 @@ class NotificationDropdown extends Component
                     'id' => $notif->id,
                     'event_name' => $notif->event_name,
                     'requester_name' => $notif->requester_name,
-                    'date' => \Carbon\Carbon::parse($notif->date)->format('d/m'),
+                    'date' => Carbon::parse($notif->date)->format('d/m'),
                     'status' => $notif->status->value,
                 ];
             })

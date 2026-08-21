@@ -4,6 +4,9 @@ namespace App\Livewire\Admin;
 
 use App\Models\Contact;
 use App\Models\ContactGroup;
+use App\Models\Room;
+use App\Services\ActivityLogger;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -13,49 +16,82 @@ class ContactManager extends Component
 {
     use WithPagination;
 
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->isSuperAdmin(), 403);
+    }
+
     public string $search = '';
+
     public ?int $filterGroupId = null;
 
     // Contact Modals
     public bool $showCreateModal = false;
+
     public bool $showEditModal = false;
+
     public bool $showViewModal = false;
+
     public bool $showDeleteContactModal = false;
+
     public int $deleteContactId = 0;
+
     public string $deleteContactName = '';
 
     // Group Modals
     public bool $showGroupModal = false;
+
     public bool $showEditGroupModal = false;
+
     public bool $showDeleteGroupModal = false;
+
     public int $deleteGroupId = 0;
+
     public string $deleteGroupName = '';
 
     // Import Modal
     public bool $showImportModal = false;
+
     public string $importCsv = '';
 
     // Create contact fields
     public string $newName = '';
+
     public string $newEmail = '';
+
     public string $newPassword = '';
+
     public string $newCpf = '';
+
     public string $newTipo = '';
+
     public string $newSetor = '';
+
     public bool $newAutorizado = false;
+
     public array $newGroupIds = [];
+
     public array $newResponsibleGroupIds = [];
 
     // Edit contact fields
     public int $editContactId = 0;
+
     public string $editName = '';
+
     public string $editEmail = '';
+
     public string $editPassword = '';
+
     public string $editCpf = '';
+
     public string $editTipo = '';
+
     public string $editSetor = '';
+
     public bool $editAutorizado = false;
+
     public array $editGroupIds = [];
+
     public array $editResponsibleGroupIds = [];
 
     // View contact
@@ -63,20 +99,29 @@ class ContactManager extends Component
 
     // Create Group fields
     public string $groupName = '';
+
     public string $groupDescription = '';
+
     public string $groupColor = '#059669';
+
+    public array $groupRoomIds = [];
 
     // Edit Group fields
     public int $editGroupId = 0;
+
     public string $editGroupName = '';
+
     public string $editGroupDescription = '';
+
     public string $editGroupColor = '#059669';
+
+    public array $editGroupRoomIds = [];
 
     protected $listeners = [
         'contactCreated' => '$refresh',
         'contactUpdated' => '$refresh',
         'contactDeleted' => '$refresh',
-        'groupCreated'   => '$refresh',
+        'groupCreated' => '$refresh',
     ];
 
     // ─── Contact CRUD ────────────────────────────────
@@ -95,23 +140,23 @@ class ContactManager extends Component
     public function createContact(): void
     {
         $this->validate([
-            'newName'  => 'required|string|max:255',
+            'newName' => 'required|string|max:255',
             'newEmail' => 'required|email|max:255|unique:contacts,email',
         ]);
 
         $contact = Contact::create([
-            'name'          => $this->newName,
-            'email'         => $this->newEmail,
-            'password'      => $this->newPassword ? bcrypt($this->newPassword) : null,
-            'cpf'           => $this->newCpf ?: null,
-            'tipo'          => $this->newTipo ?: null,
-            'setor'         => $this->newSetor ?: null,
+            'name' => $this->newName,
+            'email' => strtolower(trim($this->newEmail)),
+            'password' => $this->newPassword ? bcrypt($this->newPassword) : null,
+            'cpf' => $this->newCpf ?: null,
+            'tipo' => $this->newTipo ?: null,
+            'setor' => $this->newSetor ?: null,
             'autorizado_at' => $this->newAutorizado ? now() : null,
-            'is_active'     => true,
+            'is_active' => true,
             'subscribed_at' => now(),
         ]);
 
-        if (!empty($this->newGroupIds)) {
+        if (! empty($this->newGroupIds)) {
             $responsibleIds = array_intersect($this->newGroupIds, $this->newResponsibleGroupIds);
             $syncData = [];
             foreach ($this->newGroupIds as $groupId) {
@@ -119,6 +164,8 @@ class ContactManager extends Component
             }
             $contact->groups()->sync($syncData);
         }
+
+        ActivityLogger::created($contact, "Contato \"{$contact->name}\" criado");
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Contato criado com sucesso.' } }))");
         $this->dispatch('contactCreated');
@@ -128,17 +175,21 @@ class ContactManager extends Component
     public function openEditModal(int $id): void
     {
         $contact = Contact::with('groups')->findOrFail($id);
-        $this->editContactId   = $contact->id;
-        $this->editName        = $contact->name;
-        $this->editEmail       = $contact->email;
-        $this->editPassword    = '';
-        $this->editCpf         = $contact->cpf ?? '';
-        $this->editTipo        = $contact->tipo ?? '';
-        $this->editSetor       = $contact->setor ?? '';
-        $this->editAutorizado  = $contact->autorizado_at !== null;
-        $this->editGroupIds    = $contact->groups->pluck('id')->toArray();
-        $this->editResponsibleGroupIds = $contact->groups->filter->pivot->is_responsible->pluck('id')->toArray();
-        $this->showEditModal   = true;
+        $globalGroupIds = ContactGroup::whereNull('owner_contact_id')->pluck('id');
+        $this->editContactId = $contact->id;
+        $this->editName = $contact->name;
+        $this->editEmail = $contact->email;
+        $this->editPassword = '';
+        $this->editCpf = $contact->cpf ?? '';
+        $this->editTipo = $contact->tipo ?? '';
+        $this->editSetor = $contact->setor ?? '';
+        $this->editAutorizado = $contact->autorizado_at !== null;
+        $this->editGroupIds = $contact->groups->pluck('id')->intersect($globalGroupIds)->values()->all();
+        $this->editResponsibleGroupIds = $contact->groups
+            ->whereIn('id', $globalGroupIds)
+            ->filter(fn ($group) => (bool) $group->getRelation('pivot')->getAttribute('is_responsible'))
+            ->pluck('id')->toArray();
+        $this->showEditModal = true;
     }
 
     public function closeEditModal(): void
@@ -149,18 +200,20 @@ class ContactManager extends Component
     public function updateContact(): void
     {
         $this->validate([
-            'editName'  => 'required|string|max:255',
-            'editEmail' => 'required|email|max:255|unique:contacts,email,' . $this->editContactId,
+            'editName' => 'required|string|max:255',
+            'editEmail' => 'required|email|max:255|unique:contacts,email,'.$this->editContactId,
         ]);
 
         $contact = Contact::findOrFail($this->editContactId);
 
+        $oldValues = $contact->toArray();
+
         $data = [
-            'name'          => $this->editName,
-            'email'         => $this->editEmail,
-            'cpf'           => $this->editCpf ?: null,
-            'tipo'          => $this->editTipo ?: null,
-            'setor'         => $this->editSetor ?: null,
+            'name' => $this->editName,
+            'email' => strtolower(trim($this->editEmail)),
+            'cpf' => $this->editCpf ?: null,
+            'tipo' => $this->editTipo ?: null,
+            'setor' => $this->editSetor ?: null,
             'autorizado_at' => $this->editAutorizado ? ($contact->autorizado_at ?? now()) : null,
         ];
 
@@ -168,13 +221,21 @@ class ContactManager extends Component
             $data['password'] = bcrypt($this->editPassword);
         }
 
-        $contact->update($data);
+        $globalGroupIds = ContactGroup::whereNull('owner_contact_id')->pluck('id');
+        $selectedGroupIds = collect($this->editGroupIds)->map(fn ($id) => (int) $id)->unique();
+        abort_if($selectedGroupIds->diff($globalGroupIds)->isNotEmpty(), 403);
 
-        $syncData = [];
-        foreach ($this->editGroupIds as $groupId) {
-            $syncData[$groupId] = ['is_responsible' => in_array($groupId, $this->editResponsibleGroupIds)];
-        }
-        $contact->groups()->sync($syncData);
+        $syncData = $selectedGroupIds->mapWithKeys(fn ($groupId) => [
+            $groupId => ['is_responsible' => in_array($groupId, $this->editResponsibleGroupIds)],
+        ])->all();
+
+        DB::transaction(function () use ($contact, $data, $globalGroupIds, $syncData): void {
+            $contact->update($data);
+            $contact->groups()->detach($globalGroupIds->all());
+            $contact->groups()->syncWithoutDetaching($syncData);
+        });
+
+        ActivityLogger::updated($contact, $oldValues, $contact->fresh()->toArray(), "Contato \"{$contact->name}\" atualizado");
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Contato atualizado com sucesso.' } }))");
         $this->dispatch('contactUpdated');
@@ -183,14 +244,14 @@ class ContactManager extends Component
 
     public function openViewModal(int $id): void
     {
-        $this->viewContact   = Contact::with('groups')->findOrFail($id);
+        $this->viewContact = Contact::with('groups')->findOrFail($id);
         $this->showViewModal = true;
     }
 
     public function closeViewModal(): void
     {
         $this->showViewModal = false;
-        $this->viewContact   = null;
+        $this->viewContact = null;
     }
 
     public function toggleActive(int $id): void
@@ -203,13 +264,15 @@ class ContactManager extends Component
             $contact->subscribe();
         }
 
+        $status = $contact->is_active ? 'ativado' : 'desativado';
+        ActivityLogger::log('updated', "Contato \"{$contact->name}\" {$status}", $contact, ['is_active' => $contact->is_active]);
         $this->dispatch('contactUpdated');
     }
 
     public function confirmDeleteContact(int $id): void
     {
         $contact = Contact::findOrFail($id);
-        $this->deleteContactId   = $contact->id;
+        $this->deleteContactId = $contact->id;
         $this->deleteContactName = $contact->name;
         $this->showDeleteContactModal = true;
     }
@@ -217,16 +280,18 @@ class ContactManager extends Component
     public function closeDeleteContactModal(): void
     {
         $this->showDeleteContactModal = false;
-        $this->deleteContactId   = 0;
+        $this->deleteContactId = 0;
         $this->deleteContactName = '';
     }
 
     public function deleteContact(int $id): void
     {
         $contact = Contact::findOrFail($id);
+        $name = $contact->name;
         $contact->groups()->detach();
         $contact->delete();
 
+        ActivityLogger::log('deleted', "Contato \"{$name}\" excluido", null, ['name' => $name, 'id' => $id]);
         $this->closeDeleteContactModal();
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Contato removido com sucesso.' } }))");
         $this->dispatch('contactDeleted');
@@ -236,8 +301,8 @@ class ContactManager extends Component
 
     public function openGroupModal(): void
     {
-        $this->reset(['groupName', 'groupDescription', 'groupColor']);
-        $this->groupColor     = '#059669';
+        $this->reset(['groupName', 'groupDescription', 'groupColor', 'groupRoomIds']);
+        $this->groupColor = '#059669';
         $this->showGroupModal = true;
     }
 
@@ -249,15 +314,18 @@ class ContactManager extends Component
     public function createGroup(): void
     {
         $this->validate([
-            'groupName'  => 'required|string|max:255|unique:contact_groups,name',
+            'groupName' => 'required|string|max:255|unique:contact_groups,name',
             'groupColor' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'groupRoomIds' => 'array',
+            'groupRoomIds.*' => 'integer|exists:rooms,id',
         ]);
 
-        ContactGroup::create([
-            'name'        => $this->groupName,
+        $group = ContactGroup::create([
+            'name' => $this->groupName,
             'description' => $this->groupDescription,
-            'color'       => $this->groupColor,
+            'color' => $this->groupColor,
         ]);
+        Room::whereIn('id', $this->groupRoomIds)->update(['contact_group_id' => $group->id]);
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Grupo criado com sucesso.' } }))");
         $this->dispatch('groupCreated');
@@ -276,12 +344,13 @@ class ContactManager extends Component
 
     public function openEditGroupModal(int $id): void
     {
-        $group = ContactGroup::findOrFail($id);
-        $this->editGroupId          = $group->id;
-        $this->editGroupName        = $group->name;
+        $group = ContactGroup::whereNull('owner_contact_id')->with('rooms')->findOrFail($id);
+        $this->editGroupId = $group->id;
+        $this->editGroupName = $group->name;
         $this->editGroupDescription = $group->description ?? '';
-        $this->editGroupColor       = $group->color;
-        $this->showEditGroupModal   = true;
+        $this->editGroupColor = $group->color;
+        $this->editGroupRoomIds = $group->rooms->pluck('id')->all();
+        $this->showEditGroupModal = true;
     }
 
     public function closeEditGroupModal(): void
@@ -292,16 +361,22 @@ class ContactManager extends Component
     public function updateGroup(): void
     {
         $this->validate([
-            'editGroupName'  => 'required|string|max:255|unique:contact_groups,name,' . $this->editGroupId,
+            'editGroupName' => 'required|string|max:255|unique:contact_groups,name,'.$this->editGroupId,
             'editGroupColor' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'editGroupRoomIds' => 'array',
+            'editGroupRoomIds.*' => 'integer|exists:rooms,id',
         ]);
 
-        $group = ContactGroup::findOrFail($this->editGroupId);
+        $group = ContactGroup::whereNull('owner_contact_id')->findOrFail($this->editGroupId);
         $group->update([
-            'name'        => $this->editGroupName,
+            'name' => $this->editGroupName,
             'description' => $this->editGroupDescription,
-            'color'       => $this->editGroupColor,
+            'color' => $this->editGroupColor,
         ]);
+        Room::where('contact_group_id', $group->id)
+            ->whereNotIn('id', $this->editGroupRoomIds)
+            ->update(['contact_group_id' => null]);
+        Room::whereIn('id', $this->editGroupRoomIds)->update(['contact_group_id' => $group->id]);
 
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Grupo atualizado com sucesso.' } }))");
         $this->dispatch('groupCreated');
@@ -310,8 +385,8 @@ class ContactManager extends Component
 
     public function confirmDeleteGroup(int $id): void
     {
-        $group = ContactGroup::findOrFail($id);
-        $this->deleteGroupId   = $group->id;
+        $group = ContactGroup::whereNull('owner_contact_id')->findOrFail($id);
+        $this->deleteGroupId = $group->id;
         $this->deleteGroupName = $group->name;
         $this->showDeleteGroupModal = true;
     }
@@ -319,13 +394,13 @@ class ContactManager extends Component
     public function closeDeleteGroupModal(): void
     {
         $this->showDeleteGroupModal = false;
-        $this->deleteGroupId   = 0;
+        $this->deleteGroupId = 0;
         $this->deleteGroupName = '';
     }
 
     public function deleteGroup(int $id): void
     {
-        $group = ContactGroup::findOrFail($id);
+        $group = ContactGroup::whereNull('owner_contact_id')->findOrFail($id);
         $group->contacts()->detach();
         $group->delete();
 
@@ -346,18 +421,35 @@ class ContactManager extends Component
         $this->resetPage();
     }
 
+    public function reorderGroups(array $ids): void
+    {
+        $allowed = ContactGroup::whereNull('owner_contact_id')->whereIn('id', $ids)->pluck('id');
+        abort_if($allowed->count() !== count(array_unique($ids)), 403);
+        foreach ($ids as $position => $id) {
+            ContactGroup::whereNull('owner_contact_id')->whereKey($id)->update(['sort_order' => $position]);
+        }
+    }
+
+    public function reorderContacts(array $ids): void
+    {
+        abort_if(Contact::whereIn('id', $ids)->count() !== count(array_unique($ids)), 403);
+        foreach ($ids as $position => $id) {
+            Contact::whereKey($id)->update(['sort_order' => $position]);
+        }
+    }
+
     // ─── Import ──────────────────────────────────────
 
     public function openImportModal(): void
     {
-        $this->importCsv        = '';
-        $this->showImportModal  = true;
+        $this->importCsv = '';
+        $this->showImportModal = true;
     }
 
     public function closeImportModal(): void
     {
         $this->showImportModal = false;
-        $this->importCsv       = '';
+        $this->importCsv = '';
     }
 
     public function importContacts(): void
@@ -366,37 +458,45 @@ class ContactManager extends Component
             'importCsv' => 'required|string|max:102400',
         ]);
 
-        $lines    = explode("\n", $this->importCsv);
+        $lines = explode("\n", $this->importCsv);
         $imported = 0;
-        $skipped  = 0;
-        $invalid  = 0;
+        $skipped = 0;
+        $invalid = 0;
 
         foreach ($lines as $line) {
             $line = trim($line);
-            if (empty($line)) continue;
+            if (empty($line)) {
+                continue;
+            }
 
             $parts = str_getcsv($line);
-            if (count($parts) < 2) continue;
+            if (count($parts) < 2) {
+                continue;
+            }
 
-            $name  = trim($parts[0]);
+            $name = trim($parts[0]);
             $email = strtolower(trim($parts[1]));
 
-            if (empty($name) || empty($email)) continue;
+            if (empty($name) || empty($email)) {
+                continue;
+            }
 
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $invalid++;
+
                 continue;
             }
 
             if (Contact::where('email', $email)->exists()) {
                 $skipped++;
+
                 continue;
             }
 
             Contact::create([
-                'name'          => $name,
-                'email'         => $email,
-                'is_active'     => true,
+                'name' => $name,
+                'email' => $email,
+                'is_active' => true,
                 'subscribed_at' => now(),
             ]);
 
@@ -417,25 +517,26 @@ class ContactManager extends Component
 
     public function render()
     {
-        $query = Contact::with('groups')->latest();
+        $query = Contact::with('groups')->orderBy('sort_order')->orderBy('name');
 
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $query->where(function ($q) {
                 $q->where('name', 'like', "%{$this->search}%")
-                  ->orWhere('email', 'like', "%{$this->search}%")
-                  ->orWhere('cpf', 'like', "%{$this->search}%");
+                    ->orWhere('email', 'like', "%{$this->search}%")
+                    ->orWhere('cpf', 'like', "%{$this->search}%");
             });
         }
 
         if ($this->filterGroupId) {
-            $query->whereHas('groups', fn($q) => $q->where('contact_groups.id', $this->filterGroupId));
+            $query->whereHas('groups', fn ($q) => $q->where('contact_groups.id', $this->filterGroupId));
         }
 
         return view('livewire.admin.contact-manager', [
             'contacts' => $query->paginate(15),
-            'groups'   => ContactGroup::withCount('contacts')->orderBy('name')->get(),
-            'sectors'  => ['CDI', 'DGE', 'DJ', 'DGDI', 'OUVIDORIA', 'INTITUCIONAL'],
-            'tipos'    => ['Defensor', 'Servidor', 'Estagiario', 'Gestor', 'Convidado'],
+            'groups' => ContactGroup::whereNull('owner_contact_id')->withCount(['contacts', 'rooms'])->orderBy('sort_order')->orderBy('name')->get(),
+            'rooms' => Room::with('contactGroup')->where(fn ($rooms) => $rooms->whereNull('contact_group_id')->orWhereHas('contactGroup', fn ($groups) => $groups->whereNull('owner_contact_id')))->orderBy('name')->get(),
+            'sectors' => ['CDI', 'DGE', 'DJ', 'DGDI', 'OUVIDORIA', 'INTITUCIONAL'],
+            'cargos' => ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiario'],
         ]);
     }
 }

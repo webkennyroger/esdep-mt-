@@ -7,8 +7,13 @@ use App\Livewire\Admin\ReservationManager;
 use App\Livewire\Public\BookingForm;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\User;
 use Carbon\Carbon;
 use Livewire\Livewire;
+
+beforeEach(function () {
+    $this->actingAs(User::factory()->create(['role' => 'super_admin']));
+});
 
 function createFlowTestRoom(): Room
 {

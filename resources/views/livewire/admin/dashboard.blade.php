@@ -5,7 +5,7 @@
                 <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#e6f2ec]">Visao geral</h1>
                 <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Acompanhe as solicitacoes e reservas das salas da ESDEP-MT.</p>
             </div>
-            <a href="{{ route('reservations.create') }}"
+            <a href="{{ route(auth('contact')->check() ? 'contact.booking' : 'reservations.create') }}"
                 class="inline-flex items-center justify-center gap-2 rounded-lg bg-green-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14" />
@@ -134,7 +134,7 @@
                                 </div>
                                 <div class="mt-4 flex items-center justify-between">
                                     <span class="text-xs text-slate-400 dark:text-[#70847d]">{{ \Carbon\Carbon::parse($reservation['created_at'])->diffForHumans() }}</span>
-                                    <a href="{{ route('admin.reservations.index') }}" class="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-400">Analisar</a>
+                                    <a href="{{ route(auth('contact')->check() ? 'contact.reservations' : 'admin.reservations.index') }}" class="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-400">Analisar</a>
                                 </div>
                             </div>
                         @endforeach

@@ -10,7 +10,7 @@ class IcsCalendarGenerator
     public function generate(Reservation $reservation): string
     {
         $dtStart = Carbon::parse($reservation->date)->setTimeFromTimeString($reservation->start_time);
-        $dtEnd   = Carbon::parse($reservation->date)->setTimeFromTimeString($reservation->end_time);
+        $dtEnd = Carbon::parse($reservation->date)->setTimeFromTimeString($reservation->end_time);
 
         $lines = [
             'BEGIN:VCALENDAR',
@@ -19,14 +19,14 @@ class IcsCalendarGenerator
             'CALSCALE:GREGORIAN',
             'METHOD:PUBLISH',
             'BEGIN:VEVENT',
-            'UID:' . $reservation->protocol . '@esdep-mt',
-            'DTSTART:' . $dtStart->format('Ymd\THis'),
-            'DTEND:' . $dtEnd->format('Ymd\THis'),
-            'SUMMARY:' . $this->escapeText($reservation->event_name),
-            'DESCRIPTION:' . $this->escapeText($this->buildDescription($reservation)),
-            'LOCATION:' . $this->escapeText($reservation->room?->name ?? 'ESDEP-MT'),
+            'UID:'.$reservation->protocol.'@esdep-mt',
+            'DTSTART:'.$dtStart->format('Ymd\THis'),
+            'DTEND:'.$dtEnd->format('Ymd\THis'),
+            'SUMMARY:'.$this->escapeText($reservation->event_name),
+            'DESCRIPTION:'.$this->escapeText($this->buildDescription($reservation)),
+            'LOCATION:'.$this->escapeText($reservation->room->name ?? 'ESDEP-MT'),
             'STATUS:CONFIRMED',
-            'DTSTAMP:' . Carbon::now()->format('Ymd\THis'),
+            'DTSTAMP:'.Carbon::now()->format('Ymd\THis'),
             'END:VEVENT',
             'END:VCALENDAR',
         ];
@@ -56,13 +56,21 @@ class IcsCalendarGenerator
         $parts[] = "Horario: {$reservation->start_time} - {$reservation->end_time}";
 
         $services = [];
-        if ($reservation->coffee_break) $services[] = 'Coffee Break';
-        if ($reservation->sonorizacao) $services[] = 'Sonorizacao';
-        if ($reservation->transmissao) $services[] = 'Transmissao';
-        if ($reservation->projetor) $services[] = 'Projetor';
+        if ($reservation->coffee_break) {
+            $services[] = 'Coffee Break';
+        }
+        if ($reservation->sonorizacao) {
+            $services[] = 'Sonorizacao';
+        }
+        if ($reservation->transmissao) {
+            $services[] = 'Transmissao';
+        }
+        if ($reservation->projetor) {
+            $services[] = 'Projetor';
+        }
 
         if ($services) {
-            $parts[] = 'Servicos: ' . implode(', ', $services);
+            $parts[] = 'Servicos: '.implode(', ', $services);
         }
 
         return implode('\\n', $parts);

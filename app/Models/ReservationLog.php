@@ -35,12 +35,12 @@ class ReservationLog extends Model
     public function getActionLabelAttribute(): string
     {
         return match ($this->action) {
-            'created'  => 'Solicitação Criada',
+            'created' => 'Solicitação Criada',
             'approved' => 'Reserva Aprovada',
             'rejected' => 'Reserva Rejeitada',
-            'updated'  => 'Reserva Alterada',
+            'updated' => 'Reserva Alterada',
             'reopened' => 'Reserva Reaberta',
-            default    => ucfirst($this->action),
+            default => ucfirst($this->action),
         };
     }
 }

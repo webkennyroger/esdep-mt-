@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class ActivityLog extends Model
 {
@@ -102,6 +102,70 @@ class ActivityLog extends Model
                 'App\Models\Contact' => 'Contato',
                 'App\Models\ContactGroup' => 'Grupo de Contatos',
                 default => class_basename($this->subject_type ?? ''),
+            },
+        );
+    }
+
+    protected function formattedChanges(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (! $this->changes) {
+                    return [];
+                }
+
+                $labels = match ($this->subject_type) {
+                    'App\Models\Reservation' => [
+                        'event_name' => 'Nome do Evento',
+                        'description' => 'Descricao',
+                        'date' => 'Data',
+                        'start_time' => 'Horario Inicial',
+                        'end_time' => 'Horario Final',
+                        'room_id' => 'Sala',
+                        'requester_name' => 'Solicitante',
+                        'requester_email' => 'Email do Solicitante',
+                        'attendees_count' => 'Numero de Participantes',
+                        'coffee_break' => 'Coffee Break',
+                        'sonorizacao' => 'Sonorizacao',
+                        'transmissao' => 'Transmissao',
+                        'projetor' => 'Projetor',
+                        'status' => 'Status',
+                    ],
+                    'App\Models\User' => [
+                        'name' => 'Nome',
+                        'email' => 'Email',
+                        'role' => 'Perfil',
+                    ],
+                    'App\Models\Room' => [
+                        'name' => 'Nome',
+                        'capacity' => 'Capacidade',
+                        'active' => 'Ativa',
+                    ],
+                    'App\Models\Contact' => [
+                        'name' => 'Nome',
+                        'email' => 'Email',
+                        'cpf' => 'CPF',
+                        'tipo' => 'Tipo',
+                        'setor' => 'Setor',
+                    ],
+                    default => [],
+                };
+
+                $result = [];
+                foreach ($this->changes as $field => $value) {
+                    $label = $labels[$field] ?? ucfirst(str_replace('_', ' ', $field));
+
+                    if (is_array($value) && isset($value['old'], $value['new'])) {
+                        $result[$label] = [
+                            'old' => $value['old'],
+                            'new' => $value['new'],
+                        ];
+                    } else {
+                        $result[$label] = ['value' => $value];
+                    }
+                }
+
+                return $result;
             },
         );
     }

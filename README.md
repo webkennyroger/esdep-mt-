@@ -11,7 +11,8 @@ Sistema de agendamento de salas da Escola Superior da Defensoria Publica do Esta
 - **Divulgacao de eventos** via email
 - **Deteccao de conflito** de horarios
 - **Modo escuro** com toggle
-- **30 testes** automatizados
+- Grupos de contatos vinculados às salas, com responsáveis e acesso isolado às reservas
+- **57 testes** automatizados
 
 ## Tecnologias
 
@@ -47,14 +48,50 @@ php artisan serve
 
 Acesse: http://localhost:8000
 
-## Deploy no Vercel
+## Deploy com Docker
 
-1. Import o repositorio no Vercel
-2. Configure as environment variables:
+Crie o arquivo de ambiente sem versionar segredos:
+
+```bash
+cp .env.example .env
+php artisan key:generate --show
+```
+
+Copie a chave gerada para `APP_KEY` no `.env` e configure, no mínimo, `APP_URL`, SMTP e cookies HTTPS. Nunca reutilize chaves ou senhas da documentação.
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://agenda.exemplo.gov.br
+SESSION_SECURE_COOKIE=true
+MAIL_MAILER=smtp
+```
+
+Suba a aplicação:
+
+```bash
+docker compose up -d --build
+docker compose ps
+```
+
+O container `app` executa migrations, cache de configuração e cache das views. O serviço `scheduler` executa os lembretes programados. O banco SQLite e o diretório `storage` ficam em volumes persistentes.
+
+Antes de atualizar, faça backup do banco:
+
+```bash
+docker compose exec app php artisan down
+docker compose cp app:/var/www/html/database/database.sqlite ./backup-database.sqlite
+docker compose up -d --build
+docker compose exec app php artisan up
+```
+
+Para produção com mais de uma réplica, troque SQLite por MySQL ou PostgreSQL e configure as variáveis `DB_*`.
+
+### Variáveis essenciais
 
 | Variavel | Valor |
 |---|---|
-| `APP_KEY` | `base64:w7gKqaVQ3sVr9y/Np/b16QjhX8YQ02+kEem0aIEGwhU=` |
+| `APP_KEY` | Chave exclusiva gerada para o ambiente |
 | `APP_ENV` | `production` |
 | `APP_DEBUG` | `false` |
 | `APP_URL` | URL do deploy |
@@ -62,12 +99,9 @@ Acesse: http://localhost:8000
 | `QUEUE_CONNECTION` | `database` |
 | `CACHE_STORE` | `database` |
 | `SESSION_DRIVER` | `database` |
-| `MAIL_MAILER` | `log` |
+| `MAIL_MAILER` | `smtp` |
 
-## Credenciais Admin
-
-- **Email:** admin@esdep.mt.gov.br
-- **Senha:** password
+Não execute seeders de demonstração em produção. Crie o primeiro Super Admin com uma senha exclusiva e forte por um procedimento administrativo controlado.
 
 ## Estrutura
 
@@ -76,7 +110,6 @@ Acesse: http://localhost:8000
 │   ├── Actions/        # Logica de negocio
 │   ├── Enums/          # Status enum
 │   ├── Events/         # Eventos Laravel
-│   ├── Jobs/           # Filas
 │   ├── Livewire/       # Componentes
 │   │   ├── Admin/      # Painel administrativo
 │   │   └── Public/     # Site publico
@@ -88,7 +121,8 @@ Acesse: http://localhost:8000
 │   └── seeders/        # Dados iniciais
 ├── resources/views/    # Templates Blade
 ├── routes/             # Rotas
-└── tests/              # 30 testes
+├── docker/             # PHP e Nginx para producao
+└── tests/              # Testes automatizados
 ```
 
 ## Licenca

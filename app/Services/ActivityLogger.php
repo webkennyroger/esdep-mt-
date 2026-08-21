@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\ActivityLog;
+use App\Models\Room;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class ActivityLogger
@@ -19,7 +21,7 @@ class ActivityLogger
             'description' => $description,
             'subject_type' => $subject ? get_class($subject) : null,
             'subject_id' => $subject?->id,
-            'user_id' => Auth::id(),
+            'user_id' => Auth::guard('web')->id(),
             'changes' => $changes,
             'metadata' => $metadata,
         ]);
@@ -87,7 +89,7 @@ class ActivityLogger
     {
         return self::log(
             'rejected',
-            "Reserva \"{$reservation->event_name}\" rejeitada" . ($reason ? ": {$reason}" : ''),
+            "Reserva \"{$reservation->event_name}\" rejeitada".($reason ? ": {$reason}" : ''),
             $reservation,
             ['status' => ['old' => 'pending', 'new' => 'rejected'], 'reason' => $reason]
         );
@@ -96,19 +98,19 @@ class ActivityLogger
     public static function reservationUpdated(object $reservation, array $changes): ActivityLog
     {
         $labels = [
-            'event_name'      => ['Nome do evento', 'alterado'],
-            'description'     => ['Descricao', 'alterada'],
-            'date'            => ['Data', 'alterada'],
-            'start_time'      => ['Horario inicial', 'alterado'],
-            'end_time'        => ['Horario final', 'alterado'],
-            'room_id'         => ['Sala', 'alterada'],
-            'requester_name'  => ['Solicitante', 'alterado'],
+            'event_name' => ['Nome do evento', 'alterado'],
+            'description' => ['Descricao', 'alterada'],
+            'date' => ['Data', 'alterada'],
+            'start_time' => ['Horario inicial', 'alterado'],
+            'end_time' => ['Horario final', 'alterado'],
+            'room_id' => ['Sala', 'alterada'],
+            'requester_name' => ['Solicitante', 'alterado'],
             'requester_email' => ['Email do solicitante', 'alterado'],
             'attendees_count' => ['Numero de participantes', 'alterado'],
-            'coffee_break'    => ['Coffee break', 'alterado'],
-            'sonorizacao'     => ['Sonorizacao', 'alterada'],
-            'transmissao'     => ['Transmissao', 'alterada'],
-            'projetor'        => ['Projetor', 'alterado'],
+            'coffee_break' => ['Coffee break', 'alterado'],
+            'sonorizacao' => ['Sonorizacao', 'alterada'],
+            'transmissao' => ['Transmissao', 'alterada'],
+            'projetor' => ['Projetor', 'alterado'],
         ];
 
         $descriptions = [];
@@ -129,7 +131,7 @@ class ActivityLogger
         }
 
         $desc = count($descriptions) > 0
-            ? "Reserva \"{$reservation->event_name}\": " . implode('; ', $descriptions)
+            ? "Reserva \"{$reservation->event_name}\": ".implode('; ', $descriptions)
             : "Reserva \"{$reservation->event_name}\" atualizada";
 
         return self::log(
@@ -147,9 +149,9 @@ class ActivityLogger
         }
 
         return match ($field) {
-            'date' => $value instanceof \Carbon\Carbon
+            'date' => $value instanceof Carbon
                 ? $value->format('Y-m-d')
-                : \Carbon\Carbon::parse($value)->format('Y-m-d'),
+                : Carbon::parse($value)->format('Y-m-d'),
             'coffee_break', 'sonorizacao', 'transmissao', 'projetor' => (bool) $value,
             'attendees_count' => (int) $value,
             default => $value,
@@ -163,10 +165,10 @@ class ActivityLogger
         }
 
         return match ($field) {
-            'room_id' => \App\Models\Room::find((int) $value)?->name ?? 'Sala #' . $value,
-            'date' => $value instanceof \Carbon\Carbon
+            'room_id' => Room::find((int) $value)->name ?? 'Sala #'.$value,
+            'date' => $value instanceof Carbon
                 ? $value->format('d/m/Y')
-                : \Carbon\Carbon::parse($value)->format('d/m/Y'),
+                : Carbon::parse($value)->format('d/m/Y'),
             'coffee_break', 'sonorizacao', 'transmissao', 'projetor' => $value ? 'Sim' : 'Nao',
             'start_time', 'end_time' => substr((string) $value, 0, 5),
             default => (string) $value,

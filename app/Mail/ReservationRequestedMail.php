@@ -29,8 +29,8 @@ class ReservationRequestedMail extends Mailable
             text: [
                 'Precedence: transactional',
                 'X-Mailer: ESDEP-MT/1.0',
-                'Return-Path: ' . config('mail.from.address'),
-                'Sender: ' . config('mail.from.address'),
+                'Return-Path: '.config('mail.from.address'),
+                'Sender: '.config('mail.from.address'),
             ],
         );
     }

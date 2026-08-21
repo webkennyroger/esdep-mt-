@@ -3,15 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContactGroup extends Model
 {
     protected $fillable = [
         'name',
+        'owner_contact_id',
+        'sort_order',
         'description',
         'color',
     ];
+
+    protected $casts = ['sort_order' => 'integer'];
+
+    public function ownerContact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'owner_contact_id');
+    }
 
     public function contacts(): BelongsToMany
     {
@@ -25,8 +36,8 @@ class ContactGroup extends Model
             ->withPivot('is_responsible');
     }
 
-    public function reservations()
+    public function rooms(): HasMany
     {
-        return $this->hasMany(Reservation::class);
+        return $this->hasMany(Room::class);
     }
 }

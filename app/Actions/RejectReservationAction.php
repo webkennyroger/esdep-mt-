@@ -2,10 +2,12 @@
 
 namespace App\Actions;
 
-use App\Models\Reservation;
 use App\Enums\ReservationStatus;
+use App\Events\ReservationRejected;
 use App\Mail\ReservationRejectedMail;
+use App\Models\Reservation;
 use App\Services\ActivityLogger;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
 class RejectReservationAction
@@ -24,17 +26,17 @@ class RejectReservationAction
         ActivityLogger::reservationRejected($reservation, $reason);
 
         $reservation->logs()->create([
-            'user_id' => \Illuminate\Support\Facades\Auth::id(),
-            'action'  => 'rejected',
-            'reason'  => $reason ?? 'Reserva rejeitada pelo administrador',
+            'user_id' => Auth::guard('web')->id(),
+            'action' => 'rejected',
+            'reason' => $reason ?? 'Reserva rejeitada pelo administrador',
         ]);
 
-        event(new \App\Events\ReservationRejected($reservation));
+        event(new ReservationRejected($reservation));
 
         try {
             Mail::to($reservation->requester_email)->send(new ReservationRejectedMail($reservation));
         } catch (\Exception $e) {
-            \Log::error('Erro ao enviar email de rejeicao: ' . $e->getMessage());
+            \Log::error('Erro ao enviar email de rejeicao: '.$e->getMessage());
         }
 
         return $reservation;

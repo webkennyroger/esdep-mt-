@@ -1,12 +1,28 @@
 <div>
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-[#e6f2ec]">Painel do Contato</h1>
-        <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Bem-vindo(a), {{ auth('contact')->user()->name }}. Aqui estao suas reservas.</p>
+        <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Bem-vindo(a), {{ auth('contact')->user()->name }}. Aqui estão suas reservas e as reservas das salas sob sua responsabilidade.</p>
     </div>
+
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3"><div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#16352a] dark:bg-[#0c221a]"><p class="text-sm text-slate-500">Salas gerenciadas</p><strong class="mt-1 block text-3xl">{{ $roomsCount }}</strong></div><div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#16352a] dark:bg-[#0c221a]"><p class="text-sm text-slate-500">Reservas pendentes</p><strong class="mt-1 block text-3xl text-amber-600">{{ $pendingCount }}</strong></div><div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#16352a] dark:bg-[#0c221a]"><p class="text-sm text-slate-500">Reservas autorizadas</p><strong class="mt-1 block text-3xl text-green-700">{{ $authorizedCount }}</strong></div></div>
+
+    @if($managedGroups->isNotEmpty())
+        <div class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            @foreach($managedGroups as $group)
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Grupo responsável</p>
+                    <h2 class="mt-1 font-bold text-slate-900 dark:text-[#e6f2ec]">{{ $group->name }}</h2>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        @forelse($group->rooms as $room)<span class="rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-950/40 dark:text-green-300">{{ $room->name }}</span>@empty<span class="text-xs text-slate-500">Nenhuma sala vinculada</span>@endforelse
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
 
     <div class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
         <div class="border-b border-slate-200 px-6 py-4 dark:border-[#16352a]">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-[#e6f2ec]">Minhas Reservas</h2>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-[#e6f2ec]">Reservas acessíveis</h2>
         </div>
 
         @if($this->reservations->isEmpty())

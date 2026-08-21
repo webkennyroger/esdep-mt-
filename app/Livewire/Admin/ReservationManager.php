@@ -11,6 +11,7 @@ use App\Models\Contact;
 use App\Models\ContactGroup;
 use App\Models\Reservation;
 use App\Services\ConflictCheckerService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -19,33 +20,49 @@ use Livewire\WithPagination;
 #[Layout('components.layouts.app')]
 class ReservationManager extends Component
 {
-    use WithPagination;
+    use AuthorizesRequests, WithPagination;
 
     public string $activeFilter = 'all';
+
     public string $search = '';
+
     public bool $showApproveModal = false;
+
     public bool $showRejectModal = false;
+
     public int $selectedId = 0;
+
     public string $selectedName = '';
+
     public string $rejectReason = '';
 
     public bool $showDetailModal = false;
+
     public ?Reservation $detailReservation = null;
 
     public bool $showAnnounceModal = false;
+
     public int $announceReservationId = 0;
+
     public string $announceReservationName = '';
+
     public string $announceMessage = '';
+
     public string $announceRecipientType = 'all';
+
     public array $announceSelectedGroupIds = [];
+
     public array $announceSelectedContactIds = [];
+
     public $announceGroups = [];
+
     public $announceContacts = [];
+
     public string $detailConflictError = '';
 
     protected $listeners = [
-        'reservationCreated'  => '$refresh',
-        'reservationUpdated'  => '$refresh',
+        'reservationCreated' => '$refresh',
+        'reservationUpdated' => '$refresh',
         'reservationApproved' => '$refresh',
         'reservationRejected' => '$refresh',
     ];
@@ -73,10 +90,11 @@ class ReservationManager extends Component
 
     public function openDetailModal(int $id): void
     {
-        $this->detailReservation = Reservation::with(['room', 'logs.user'])->find($id);
+        $this->detailReservation = Reservation::accessibleTo(auth()->user())->with(['room'])->findOrFail($id);
+        $this->authorize('view', $this->detailReservation);
         $this->detailConflictError = '';
 
-        if ($this->detailReservation && $this->detailReservation->status === ReservationStatus::PENDING) {
+        if ($this->detailReservation->status === ReservationStatus::PENDING) {
             try {
                 app(ConflictCheckerService::class)->check(
                     $this->detailReservation->room_id,
@@ -103,7 +121,10 @@ class ReservationManager extends Component
 
     public function openApproveModal(int $id, string $name): void
     {
-        $this->selectedId   = $id;
+        $this->authorize('update', Reservation::accessibleTo(auth()->user())->findOrFail($id));
+        $this->showDetailModal = false;
+        $this->detailReservation = null;
+        $this->selectedId = $id;
         $this->selectedName = $name;
         $this->showApproveModal = true;
     }
@@ -111,19 +132,28 @@ class ReservationManager extends Component
     public function closeApproveModal(): void
     {
         $this->showApproveModal = false;
-        $this->selectedId   = 0;
+        $this->selectedId = 0;
         $this->selectedName = '';
     }
 
-    public function confirmApprove(): void
+    public function confirmApprove(?int $id = null): void
     {
+        $reservationId = $id ?: $this->selectedId;
+        if ($reservationId < 1) {
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Reserva não identificada. Atualize a página e tente novamente.' } }))");
+            $this->closeApproveModal();
+
+            return;
+        }
+
         try {
-            $reservation = Reservation::findOrFail($this->selectedId);
+            $reservation = Reservation::accessibleTo(auth()->user())->findOrFail($reservationId);
+            $this->authorize('update', $reservation);
             app(ApproveReservationAction::class)->execute($reservation);
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva autorizada com sucesso.' } }))");
             $this->dispatch('reservationApproved');
         } catch (\Exception $e) {
-            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '" . $this->safeMessage($e->getMessage()) . "' } }))");
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '".$this->safeMessage($e->getMessage())."' } }))");
         }
 
         $this->closeApproveModal();
@@ -133,7 +163,8 @@ class ReservationManager extends Component
 
     public function openRejectModal(int $id, string $name): void
     {
-        $this->selectedId   = $id;
+        $this->authorize('update', Reservation::accessibleTo(auth()->user())->findOrFail($id));
+        $this->selectedId = $id;
         $this->selectedName = $name;
         $this->rejectReason = '';
         $this->showRejectModal = true;
@@ -142,20 +173,29 @@ class ReservationManager extends Component
     public function closeRejectModal(): void
     {
         $this->showRejectModal = false;
-        $this->selectedId   = 0;
+        $this->selectedId = 0;
         $this->selectedName = '';
         $this->rejectReason = '';
     }
 
-    public function confirmReject(): void
+    public function confirmReject(?int $id = null): void
     {
+        $reservationId = $id ?: $this->selectedId;
+        if ($reservationId < 1) {
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Reserva não identificada. Atualize a página e tente novamente.' } }))");
+            $this->closeRejectModal();
+
+            return;
+        }
+
         try {
-            $reservation = Reservation::findOrFail($this->selectedId);
+            $reservation = Reservation::accessibleTo(auth()->user())->findOrFail($reservationId);
+            $this->authorize('update', $reservation);
             app(RejectReservationAction::class)->execute($reservation, $this->rejectReason ?: null);
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva rejeitada com sucesso.' } }))");
             $this->dispatch('reservationRejected');
         } catch (\Exception $e) {
-            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '" . $this->safeMessage($e->getMessage()) . "' } }))");
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '".$this->safeMessage($e->getMessage())."' } }))");
         }
 
         $this->closeRejectModal();
@@ -167,7 +207,8 @@ class ReservationManager extends Component
     {
         try {
             DB::transaction(function () use ($id) {
-                $reservation = Reservation::findOrFail($id);
+                $reservation = Reservation::accessibleTo(auth()->user())->findOrFail($id);
+                $this->authorize('update', $reservation);
 
                 // Verifica conflito antes de reabrir
                 app(ConflictCheckerService::class)->check(
@@ -178,7 +219,7 @@ class ReservationManager extends Component
                     $reservation->id
                 );
 
-                $reservation->status        = ReservationStatus::PENDING;
+                $reservation->status = ReservationStatus::PENDING;
                 $reservation->reject_reason = null;
                 $reservation->save();
             });
@@ -186,7 +227,16 @@ class ReservationManager extends Component
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva reaberta como pendente.' } }))");
             $this->dispatch('reservationRejected');
         } catch (\Exception $e) {
-            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '" . $this->safeMessage($e->getMessage()) . "' } }))");
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '".$this->safeMessage($e->getMessage())."' } }))");
+        }
+    }
+
+    public function reorderReservations(array $ids): void
+    {
+        $query = Reservation::accessibleTo(auth()->user());
+        abort_if((clone $query)->whereIn('id', $ids)->count() !== count(array_unique($ids)), 403);
+        foreach ($ids as $position => $id) {
+            (clone $query)->whereKey($id)->update(['sort_order' => $position]);
         }
     }
 
@@ -194,46 +244,48 @@ class ReservationManager extends Component
 
     public function openAnnounceModal(int $id, string $name): void
     {
-        $this->announceReservationId       = $id;
-        $this->announceReservationName     = $name;
-        $this->announceMessage             = '';
-        $this->announceRecipientType       = 'all';
-        $this->announceSelectedGroupIds    = [];
-        $this->announceSelectedContactIds  = [];
-        $this->announceGroups              = ContactGroup::orderBy('name')->get();
-        $this->announceContacts            = Contact::active()->orderBy('name')->get();
-        $this->showAnnounceModal           = true;
+        $this->authorize('view', Reservation::accessibleTo(auth()->user())->findOrFail($id));
+        $this->announceReservationId = $id;
+        $this->announceReservationName = $name;
+        $this->announceMessage = '';
+        $this->announceRecipientType = 'all';
+        $this->announceSelectedGroupIds = [];
+        $this->announceSelectedContactIds = [];
+        $this->announceGroups = ContactGroup::orderBy('name')->get();
+        $this->announceContacts = Contact::active()->orderBy('name')->get();
+        $this->showAnnounceModal = true;
     }
 
     public function closeAnnounceModal(): void
     {
-        $this->showAnnounceModal       = false;
-        $this->announceReservationId   = 0;
+        $this->showAnnounceModal = false;
+        $this->announceReservationId = 0;
         $this->announceReservationName = '';
     }
 
     public function sendAnnouncement(): void
     {
         $this->validate([
-            'announceRecipientType'        => 'required|in:all,groups,contacts',
-            'announceSelectedGroupIds'     => 'required_if:announceRecipientType,groups|array',
-            'announceSelectedContactIds'   => 'required_if:announceRecipientType,contacts|array',
+            'announceRecipientType' => 'required|in:all,groups,contacts',
+            'announceSelectedGroupIds' => 'required_if:announceRecipientType,groups|array',
+            'announceSelectedContactIds' => 'required_if:announceRecipientType,contacts|array',
         ]);
 
         try {
-            $reservation = Reservation::findOrFail($this->announceReservationId);
+            $reservation = Reservation::accessibleTo(auth()->user())->findOrFail($this->announceReservationId);
+            $this->authorize('view', $reservation);
 
             $announcement = app(SendEventAnnouncementAction::class)->execute($reservation, [
-                'message'        => $this->announceMessage,
+                'message' => $this->announceMessage,
                 'recipient_type' => $this->announceRecipientType,
-                'group_ids'      => $this->announceRecipientType === 'groups'   ? $this->announceSelectedGroupIds   : [],
-                'contact_ids'    => $this->announceRecipientType === 'contacts' ? $this->announceSelectedContactIds : [],
+                'group_ids' => $this->announceRecipientType === 'groups' ? $this->announceSelectedGroupIds : [],
+                'contact_ids' => $this->announceRecipientType === 'contacts' ? $this->announceSelectedContactIds : [],
             ], auth()->user());
 
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Evento divulgado com sucesso! ({$announcement->total_recipients} destinatarios)' } }))");
             $this->closeAnnounceModal();
         } catch (\Exception $e) {
-            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '" . $this->safeMessage($e->getMessage()) . "' } }))");
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '".$this->safeMessage($e->getMessage())."' } }))");
         }
     }
 
@@ -241,16 +293,16 @@ class ReservationManager extends Component
 
     public function render()
     {
-        $query = Reservation::with('room')->latest();
+        $query = Reservation::accessibleTo(auth()->user())->with('room')->orderBy('sort_order')->latest('created_at');
 
         if ($this->activeFilter !== 'all') {
             $query->where('status', $this->activeFilter);
         }
 
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $query->where(function ($q) {
                 $q->where('event_name', 'like', "%{$this->search}%")
-                  ->orWhere('requester_name', 'like', "%{$this->search}%");
+                    ->orWhere('requester_name', 'like', "%{$this->search}%");
             });
         }
 

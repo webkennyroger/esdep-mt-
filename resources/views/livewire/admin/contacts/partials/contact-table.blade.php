@@ -8,39 +8,33 @@
                     <tr>
                         <th class="px-4 py-3">CPF / Nome</th>
                         <th class="px-4 py-3">E-mail</th>
-                        <th class="px-4 py-3">Setor</th>
-                        <th class="px-4 py-3">Tipo</th>
+                        <th class="px-4 py-3">Grupos</th>
+                        <th class="px-4 py-3">Cargo</th>
                         <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3">Autorizado</th>
                         <th class="px-4 py-3 text-right">Acoes</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-[#16352a]">
+                <tbody class="divide-y divide-slate-100 dark:divide-[#16352a]" x-data="dragDrop($wire, 'reorderContacts')">
                     @foreach($contacts as $contact)
-                        <tr class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30">
+                        <tr draggable="false" data-sort-id="{{ $contact->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30">
                             <td class="px-4 py-3">
-                                <div class="flex flex-col">
+                                <div class="flex items-center gap-2"><x-drag-handle /><div class="flex flex-col">
                                     <span class="font-mono text-xs font-medium text-slate-900 dark:text-[#e6f2ec]">{{ $contact->cpf ?? '-' }}</span>
                                     <span class="text-[11px] text-slate-500 dark:text-[#8aa39a]">{{ $contact->name }}</span>
-                                </div>
+                                </div></div>
                             </td>
                             <td class="px-4 py-3 text-slate-600 dark:text-[#8aa39a]">{{ $contact->email }}</td>
                             <td class="px-4 py-3">
-                                @php
-                                    $setorGroup = $groups->firstWhere('name', $contact->setor);
-                                @endphp
-                                @if($setorGroup)
-                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold" style="background-color: {{ $setorGroup->color }}18; color: {{ $setorGroup->color }};">
-                                        <span class="h-1.5 w-1.5 rounded-full" style="background-color: {{ $setorGroup->color }};"></span>
-                                        {{ $contact->setor }}
+                                @php($visibleGroups = $contact->groups->whereIn('id', $groups->pluck('id')))
+                                @forelse($visibleGroups as $group)
+                                    <span class="mr-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold" style="background-color: {{ $group->color }}18; color: {{ $group->color }};">
+                                        <span class="h-1.5 w-1.5 rounded-full" style="background-color: {{ $group->color }};"></span>
+                                        {{ $group->name }}
                                     </span>
-                                @elseif($contact->setor)
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-[#16352a] dark:text-[#8aa39a]">
-                                        {{ $contact->setor }}
-                                    </span>
-                                @else
+                                @empty
                                     <span class="text-slate-400 dark:text-[#5a7068]">-</span>
-                                @endif
+                                @endforelse
                             </td>
                             <td class="px-4 py-3 text-slate-600 dark:text-[#8aa39a]">{{ $contact->tipo ?? '-' }}</td>
                             <td class="px-4 py-3">

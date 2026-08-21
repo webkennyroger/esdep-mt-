@@ -31,8 +31,8 @@ class Timeline extends Component
 
         return view('livewire.public.timeline', [
             'reservations' => $reservations,
-            'currentPage'  => $reservations->currentPage(),
-            'totalPages'   => $reservations->lastPage(),
+            'currentPage' => $reservations->currentPage(),
+            'totalPages' => $reservations->lastPage(),
         ]);
     }
 }

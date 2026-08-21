@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -10,6 +10,7 @@ class Contact extends Authenticatable
 {
     protected $fillable = [
         'name',
+        'sort_order',
         'email',
         'password',
         'cpf',
@@ -38,7 +39,7 @@ class Contact extends Authenticatable
 
     public function groups(): BelongsToMany
     {
-        return $this->belongsToMany(ContactGroup::class, 'contact_contact_group')->withPivot('is_responsible');
+        return $this->belongsToMany(ContactGroup::class, 'contact_contact_group')->withPivot(['is_responsible', 'sort_order']);
     }
 
     public function scopeActive($query)
@@ -59,6 +60,27 @@ class Contact extends Authenticatable
         return $this->belongsToMany(ContactGroup::class, 'contact_contact_group')
             ->wherePivot('is_responsible', true)
             ->withPivot('is_responsible');
+    }
+
+    public function managedRoomIds()
+    {
+        return Room::query()->whereIn(
+            'contact_group_id',
+            $this->groups()->select('contact_groups.id')
+        )->select('rooms.id');
+    }
+
+    public function canManageReservation(Reservation $reservation): bool
+    {
+        return $this->managedRoomIds()->whereKey($reservation->room_id)->exists();
+    }
+
+    public function accessibleReservations(): Builder
+    {
+        return Reservation::query()->where(function (Builder $query): void {
+            $query->whereRaw('LOWER(requester_email) = ?', [strtolower($this->email)])
+                ->orWhereIn('room_id', $this->managedRoomIds());
+        });
     }
 
     public function subscribe(): void

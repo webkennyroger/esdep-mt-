@@ -29,12 +29,12 @@
                             class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
                     </div>
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Tipo</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Cargo</label>
                         <select wire:model="newTipo"
                             class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]">
                             <option value="">Selecione</option>
-                            @foreach($tipos as $tipo)
-                                <option value="{{ $tipo }}">{{ $tipo }}</option>
+                            @foreach($cargos as $cargo)
+                                <option value="{{ $cargo }}">{{ $cargo }}</option>
                             @endforeach
                         </select>
                     </div>

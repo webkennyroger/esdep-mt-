@@ -7,12 +7,16 @@ use App\Models\Room;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Layout('components.layouts.app')]
+/** @property-read array<string, mixed> $stats */
 class Reports extends Component
 {
     public string $startDate = '';
+
     public string $endDate = '';
+
     public ?int $roomId = null;
 
     public function mount(): void
@@ -23,7 +27,7 @@ class Reports extends Component
 
     public function getStatsProperty(): array
     {
-        $query = Reservation::query()
+        $query = Reservation::accessibleTo(auth()->user())
             ->whereBetween('date', [$this->startDate, $this->endDate]);
 
         if ($this->roomId) {
@@ -36,15 +40,16 @@ class Reports extends Component
         $pending = (clone $query)->where('status', 'pending')->count();
         $totalAttendees = (clone $query)->sum('attendees_count');
 
-        $byRoom = (clone $query)
-            ->selectRaw('room_id, count(*) as total')
-            ->groupBy('room_id')
-            ->with('room')
+        $byRoom = Room::accessibleTo(auth()->user())
+            ->when($this->roomId, fn ($rooms) => $rooms->whereKey($this->roomId))
+            ->withCount(['reservations as total' => fn ($reservations) => $reservations
+                ->whereBetween('date', [$this->startDate, $this->endDate])])
             ->get()
-            ->map(fn ($item) => [
-                'name' => $item->room?->name ?? 'Sem sala',
-                'total' => $item->total,
+            ->map(fn (Room $room) => [
+                'name' => $room->name,
+                'total' => (int) $room->getAttribute('total'),
             ])
+            ->filter(fn (array $item) => $item['total'] > 0)
             ->sortByDesc('total')
             ->toArray();
 
@@ -63,9 +68,9 @@ class Reports extends Component
         );
     }
 
-    public function exportCsv(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportCsv(): StreamedResponse
     {
-        $query = Reservation::with('room')
+        $query = Reservation::accessibleTo(auth()->user())->with('room')
             ->whereBetween('date', [$this->startDate, $this->endDate])
             ->orderBy('date');
 
@@ -77,7 +82,7 @@ class Reports extends Component
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="relatorio-reservas-' . $this->startDate . '-' . $this->endDate . '.csv"',
+            'Content-Disposition' => 'attachment; filename="relatorio-reservas-'.$this->startDate.'-'.$this->endDate.'.csv"',
         ];
 
         return response()->stream(function () use ($reservations) {
@@ -89,7 +94,7 @@ class Reports extends Component
                 fputcsv($handle, [
                     $r->protocol,
                     $r->event_name,
-                    $r->room?->name ?? '-',
+                    $r->room->name ?? '-',
                     $r->date->format('d/m/Y'),
                     "{$r->start_time} - {$r->end_time}",
                     $r->requester_name,
@@ -110,8 +115,8 @@ class Reports extends Component
     public function render()
     {
         return view('livewire.admin.reports', [
-            'rooms' => Room::orderBy('name')->get(),
-            'stats' => $this->stats,
+            'rooms' => Room::accessibleTo(auth()->user())->orderBy('name')->get(),
+            'stats' => $this->getStatsProperty(),
         ]);
     }
 }

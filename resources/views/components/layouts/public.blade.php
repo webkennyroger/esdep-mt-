@@ -1,87 +1,110 @@
 <!DOCTYPE html>
-<html lang="pt-BR"
-    x-data="{ dark: localStorage.getItem('esdep-theme') === 'dark' || (!localStorage.getItem('esdep-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) }"
-    x-init="$watch('dark', v => { localStorage.setItem('esdep-theme', v ? 'dark' : 'light'); if(v) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); }); if(dark) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark')"
-    :class="{ 'dark': dark }">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'ESDEP-MT — Agenda de Salas' }}</title>
+    <title>{{ $title ?? 'Agenda de Salas | ESDEP-MT' }}</title>
     <link rel="shortcut icon" href="{{ asset('assets/images/logo-esdep-icone.png') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
 
-<body class="min-h-screen bg-[#f4f8f5] text-[#003f32] antialiased dark:bg-[#081712] dark:text-[#e6f2ec]">
+<body class="overflow-x-hidden bg-[#f4f8f5] text-[#003f32] antialiased dark:bg-[#081712] dark:text-[#e6f2ec]">
     <x-toast />
-
-    {{-- Public Header --}}
-    <header class="sticky top-0 z-40 border-b border-[#d8e2dd] bg-[#f4f8f5]/90 backdrop-blur dark:border-[#16352a] dark:bg-[#081712]/90">
-        <div class="mx-auto flex h-[73px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('home') }}" class="flex items-center gap-3 no-underline text-[#003f32] dark:text-[#e6f2ec]">
+    <main class="flex min-h-screen flex-col">
+        <!-- HEADER -->
+        <header
+            class="h-[73px] border-b border-[#d8e2dd] bg-[#f4f8f5] px-4 sm:px-[3.75vw] flex items-center justify-between dark:border-[#16352a] dark:bg-[#081712]">
+            <a href="{{ route('home') }}" class="flex items-center no-underline text-[#003f32] dark:text-[#e6f2ec]">
                 <img src="{{ asset('assets/images/logo-esdep.png') }}"
-                    alt="ESDEP-MT"
-                    class="h-[42px] w-auto dark:brightness-0 dark:invert">
-                <span class="hidden sm:inline-block h-[32px] w-px bg-[#b9c9c2] dark:bg-[#2c4a3e]"></span>
-                <span class="hidden sm:inline-block font-mono text-[10px] uppercase tracking-[0.12em] leading-[14px] text-[#00664f] dark:text-[#4fd1a5]">
-                    Escola Superior<br><strong>Defensoria MT</strong>
+                    alt="ESDEP — Escola Superior da Defensoria Pública do Estado de Mato Grosso"
+                    class="h-[45px] w-auto dark:brightness-0 dark:invert">
+
+                <span class="mx-3 sm:mx-4 h-[35px] w-px bg-[#b9c9c2] dark:bg-[#2c4a3e]"></span>
+
+                <span
+                    class="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.12em] leading-[15px] text-[#00664f] dark:text-[#4fd1a5]">
+                    Agenda<br><strong>de salas</strong>
                 </span>
             </a>
 
-            <div class="flex items-center gap-3 sm:gap-6">
-                <a href="{{ route('home') }}" class="text-xs font-semibold uppercase tracking-wider text-slate-600 transition hover:text-green-700 dark:text-[#8aa39a] dark:hover:text-[#4fd1a5]">
-                    Início
-                </a>
-                <a href="{{ route('reservations.check') }}" class="text-xs font-semibold uppercase tracking-wider text-slate-600 transition hover:text-green-700 dark:text-[#8aa39a] dark:hover:text-[#4fd1a5]">
-                    Consultar Reserva
-                </a>
-
-                {{-- Dark Mode Toggle --}}
-                <button @click="dark = !dark"
-                    class="flex h-9 w-9 items-center justify-center rounded-lg border border-[#d8e2dd] text-[#003f32] transition hover:border-[#008b5c] hover:text-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:hover:border-[#4fd1a5] dark:hover:text-[#4fd1a5]"
-                    title="Alternar tema">
-                    <svg x-show="!dark" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="flex items-center gap-3 sm:gap-7">
+                <!-- DARK MODE TOGGLE -->
+                <button type="button" id="theme-toggle"
+                    class="flex h-[34px] w-[34px] items-center justify-center border border-[#d8e2dd] text-[#003f32] transition hover:border-[#008b5c] hover:text-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:hover:border-[#4fd1a5] dark:hover:text-[#4fd1a5]"
+                    aria-label="Alternar entre modo claro e escuro" title="Alternar tema">
+                    <svg class="h-[15px] w-[15px] dark:hidden" fill="none" stroke="currentColor" stroke-width="1.8"
+                        viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="4.5"></circle>
-                        <path stroke-linecap="round" d="M12 2.5v2.5M12 19v2.5M2.5 12h2.5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8"></path>
+                        <path stroke-linecap="round"
+                            d="M12 2.5v2.5M12 19v2.5M2.5 12h2.5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8">
+                        </path>
                     </svg>
-                    <svg x-show="dark" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"></path>
+                    <svg class="hidden h-[15px] w-[15px] dark:block" fill="none" stroke="currentColor"
+                        stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"></path>
                     </svg>
                 </button>
 
-                @auth
-                    <a href="{{ route('dashboard') }}" class="rounded-lg bg-green-700 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-green-800 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
-                        Painel
-                    </a>
-                @else
-                    @auth('contact')
-                        <a href="{{ route('contact.dashboard') }}" class="rounded-lg bg-green-700 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-green-800 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
-                            Meu Painel
-                        </a>
-                    @else
-                        <a href="{{ route('login') }}" class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-[#16352a] dark:bg-[#0c221a] dark:text-[#8aa39a]">
-                            Acesso Restrito
-                        </a>
-                        <a href="{{ route('contact.login') }}" class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-[#16352a] dark:bg-[#0c221a] dark:text-[#8aa39a]">
-                            Contato
-                        </a>
-                    @endauth
-                @endauth
-            </div>
-        </div>
-    </header>
+                @if(!($hideHeaderMenu ?? false))
+                <a href="{{ route('reservations.check') }}"
+                    class="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-[#d8e2dd] px-3 py-1.5 text-xs font-semibold text-[#003f32] transition hover:border-[#008b5c] hover:text-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:hover:border-[#4fd1a5] dark:hover:text-[#4fd1a5]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Consultar Reserva
+                </a>
+                @endif
 
-    {{-- Main Content --}}
-    <main class="py-10">
-        {{ $slot }}
+                <div
+                    class="hidden md:flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-[#63766f] dark:text-[#8aa39a]">
+                    <span
+                        class="h-[8px] w-[8px] rounded-full bg-[#00b879] shadow-[0_0_0_4px_rgba(0,184,121,.10)]"></span>
+                     Sistema disponível
+                </div>
+            </div>
+        </header>
+
+        {{-- Main Content --}}
+        <section class="flex-1 px-4 sm:px-[3.75vw] py-[60px] sm:py-[84px]">
+            {{ $slot }}
+        </section>
+
+        <!-- FOOTER -->
+        <footer
+            class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#d6e1dc] px-4 sm:px-[3.75vw] py-7 dark:border-[#16352a]">
+            <p class="m-0 text-[11px] text-[#70847d] dark:text-[#8aa39a]">© {{ date('Y') }} Defensoria Pública do Estado de Mato Grosso — Todos os direitos reservados.</p>
+            <a href="#inicio" class="flex items-center justify-center h-10 w-10 rounded-full bg-[#003f32] text-white transition hover:bg-[#008b5c] dark:bg-[#008b5c] dark:hover:bg-[#4fd1a5]" title="Voltar ao topo">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                </svg>
+            </a>
+        </footer>
+
     </main>
 
-    {{-- Footer --}}
-    <footer class="border-t border-[#d8e2dd] py-8 text-center text-xs text-slate-500 dark:border-[#16352a] dark:text-[#70847d]">
-        <p>© {{ date('Y') }} Escola Superior da Defensoria Pública do Estado de Mato Grosso — Todos os direitos reservados.</p>
-    </footer>
+    <script>
+        (function () {
+            var root = document.documentElement;
+            var stored = localStorage.getItem('esdep-theme');
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+            if (stored === 'dark' || (!stored && prefersDark)) {
+                root.classList.add('dark');
+            }
+
+            var btn = document.getElementById('theme-toggle');
+            if (btn) {
+                btn.addEventListener('click', function () {
+                    var isDark = root.classList.toggle('dark');
+                    localStorage.setItem('esdep-theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
     @livewireScripts
 </body>
 </html>

@@ -32,6 +32,12 @@ class User extends Authenticatable
 
     public function getIsAdminAttribute(): bool
     {
-        return in_array($this->role, ['super-admin', 'admin', 'manager']);
+        return in_array($this->role, ['super-admin', 'super_admin', 'admin', 'manager']);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        // "admin" e "super-admin" sao mantidos como perfis globais legados.
+        return in_array($this->role, ['super_admin', 'super-admin', 'admin'], true);
     }
 }

@@ -2,14 +2,14 @@
 
 namespace App\Actions;
 
-use App\Exceptions\ConflictException;
-use App\Models\Room;
-use App\Models\Reservation;
 use App\Enums\ReservationStatus;
+use App\Events\ReservationRequested;
 use App\Mail\ReservationRequestedMail;
+use App\Models\Reservation;
+use App\Models\Room;
 use App\Services\ActivityLogger;
 use App\Services\ConflictCheckerService;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -24,27 +24,29 @@ class CreateReservationAction
 
     public function execute(array $data): Reservation
     {
-        $room = Room::findOrFail($data['room_id']);
+        $room = Room::where('is_active', true)->findOrFail($data['room_id']);
 
         $this->conflictChecker->check($room->id, $data['date'], $data['start_time'], $data['end_time']);
 
         $reservation = Reservation::create([
-            'room_id'         => $room->id,
-            'event_name'      => $data['event_name'],
-            'description'     => $data['description'] ?? null,
-            'requester_name'  => $data['requester_name'],
+            'room_id' => $room->id,
+            'event_name' => $data['event_name'],
+            'description' => $data['description'] ?? null,
+            'requester_name' => $data['requester_name'],
             'requester_email' => $data['requester_email'],
-            'date'            => $data['date'],
-            'start_time'      => $data['start_time'],
-            'end_time'        => $data['end_time'],
+            'date' => $data['date'],
+            'start_time' => $data['start_time'],
+            'end_time' => $data['end_time'],
             'attendees_count' => $data['attendees_count'],
-            'status'          => ReservationStatus::PENDING->value,
-            'coffee_break'    => $data['coffee_break'] ?? false,
-            'sonorizacao'     => $data['sonorizacao'] ?? false,
-            'transmissao'     => $data['transmissao'] ?? false,
-            'projetor'        => $data['projetor'] ?? false,
-            'terms_accepted'  => $data['terms_accepted'] ?? false,
+            'status' => ReservationStatus::PENDING->value,
+            'coffee_break' => $data['coffee_break'] ?? false,
+            'sonorizacao' => $data['sonorizacao'] ?? false,
+            'transmissao' => $data['transmissao'] ?? false,
+            'projetor' => $data['projetor'] ?? false,
+            'terms_accepted' => $data['terms_accepted'] ?? false,
             'terms_accepted_at' => $data['terms_accepted_at'] ?? null,
+            'attachment_path' => $data['attachment_path'] ?? null,
+            'attachment_name' => $data['attachment_name'] ?? null,
         ]);
 
         $protocol = sprintf('RES-%s-%04d', date('Y'), $reservation->id);
@@ -54,18 +56,18 @@ class CreateReservationAction
         ActivityLogger::reservationCreated($reservation);
 
         $reservation->logs()->create([
-            'user_id' => \Illuminate\Support\Facades\Auth::id(),
-            'action'  => 'created',
-            'reason'  => 'Solicitação registrada pelo formulário',
+            'user_id' => Auth::id(),
+            'action' => 'created',
+            'reason' => 'Solicitação registrada pelo formulário',
         ]);
 
-        event(new \App\Events\ReservationRequested($reservation));
+        event(new ReservationRequested($reservation));
 
         try {
             $adminEmail = config('app.admin_email', 'admin@esdep.mt.gov.br');
             Mail::to($adminEmail)->send(new ReservationRequestedMail($reservation));
         } catch (\Exception $e) {
-            Log::error('Erro ao enviar email de notificacao: ' . $e->getMessage());
+            Log::error('Erro ao enviar email de notificacao: '.$e->getMessage());
         }
 
         return $reservation;

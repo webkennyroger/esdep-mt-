@@ -50,7 +50,7 @@
                             <th class="px-6 py-3 text-right">Acoes</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-[#16352a]">
+                    <tbody class="divide-y divide-slate-100 dark:divide-[#16352a]" x-data="dragDrop($wire, 'reorderReservations')">
                         @foreach($reservations as $reservation)
                             @php
                                 $startTime = $reservation->start_time;
@@ -59,12 +59,12 @@
                                 $isPending = $reservation->status === \App\Enums\ReservationStatus::PENDING;
                                 $isAuthorized = $reservation->status === \App\Enums\ReservationStatus::AUTHORIZED;
                             @endphp
-                            <tr class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30 {{ $isRejected ? 'opacity-60' : '' }}">
+                            <tr draggable="false" data-sort-id="{{ $reservation->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30 {{ $isRejected ? 'opacity-60' : '' }}">
                                 <td class="px-6 py-4 text-sm font-medium">
-                                    <button wire:click="openDetailModal({{ $reservation->id }})"
+                                    <div class="flex items-center gap-2"><x-drag-handle /><button wire:click="openDetailModal({{ $reservation->id }})"
                                         class="text-left text-green-700 hover:text-green-900 hover:underline dark:text-[#4fd1a5] dark:hover:text-[#7de8c8] {{ $isRejected ? 'line-through text-slate-400 dark:text-[#5a7068]' : '' }}">
                                         {{ $reservation->event_name }}
-                                    </button>
+                                    </button></div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-600 dark:text-[#8aa39a]">{{ $reservation->room?->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-slate-600 dark:text-[#8aa39a]">{{ \Carbon\Carbon::parse($reservation->date)->format('d/m/Y') }}</td>
@@ -111,10 +111,17 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
+                                        @if(auth('contact')->check())
+                                        <a href="{{ route('contact.reservation.edit', $reservation) }}"
+                                            class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 dark:bg-[#16352a] dark:text-[#e6f2ec] dark:hover:bg-[#1f4a3a]">
+                                            Editar
+                                        </a>
+                                        @else
                                         <button wire:click="$dispatch('openReservationEditor', { id: {{ $reservation->id }} })"
                                             class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 dark:bg-[#16352a] dark:text-[#e6f2ec] dark:hover:bg-[#1f4a3a]">
                                             Editar
                                         </button>
+                                        @endif
                                         @if($isAuthorized)
                                             <button wire:click="openAnnounceModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
                                                 class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800">
@@ -314,54 +321,6 @@
                         </div>
                     @endif
 
-                    {{-- Historico de Alteracoes --}}
-                    @if($detailReservation->logs->isNotEmpty())
-                        <div class="mt-5">
-                            <h4 class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#5a7068]">Historico de Alteracoes</h4>
-                            <div class="space-y-3">
-                                @foreach($detailReservation->logs as $log)
-                                    @php
-                                        $actionConfig = match($log->action) {
-                                            'created' => ['icon' => 'M12 6v6m0 0v6m0-6h6m-6 0H6', 'color' => 'text-blue-500 bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400'],
-                                            'approved' => ['icon' => 'M5 13l4 4L19 7', 'color' => 'text-emerald-500 bg-emerald-100 dark:bg-emerald-950/50 dark:text-[#4fd1a5]'],
-                                            'rejected' => ['icon' => 'M6 18L18 6M6 6l12 12', 'color' => 'text-red-500 bg-red-100 dark:bg-red-950/50 dark:text-red-400'],
-                                            'updated' => ['icon' => 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15', 'color' => 'text-amber-500 bg-amber-100 dark:bg-amber-950/50 dark:text-amber-400'],
-                                            default => ['icon' => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'text-slate-500 bg-slate-100 dark:bg-slate-800 dark:text-slate-400'],
-                                        };
-                                    @endphp
-                                    <div class="flex items-start gap-3">
-                                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {{ $actionConfig['color'] }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $actionConfig['icon'] }}" />
-                                            </svg>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-sm font-medium text-slate-900 dark:text-[#e6f2ec]">{{ $log->action_label }}</span>
-                                                <span class="text-xs text-slate-400 dark:text-[#5a7068]">{{ $log->created_at->format('d/m/Y H:i') }}</span>
-                                            </div>
-                                            @if($log->user)
-                                                <p class="text-xs text-slate-500 dark:text-[#8aa39a]">por {{ $log->user->name }}</p>
-                                            @endif
-                                            @if($log->reason)
-                                                <p class="mt-1 text-sm text-slate-600 dark:text-[#8aa39a]">{!! $log->reason !!}</p>
-                                            @endif
-                                            @if($log->changes && count($log->changes) > 0)
-                                                <div class="mt-1.5 flex flex-wrap gap-1.5">
-                                                    @foreach($log->changes as $field => $value)
-                                                        <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-[#16352a] dark:text-[#8aa39a]">
-                                                            {{ $field }}: {{ is_array($value) ? json_encode($value) : $value }}
-                                                        </span>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
                     {{-- Footer --}}
                     <div class="mt-6 flex items-center justify-end gap-3 border-t border-slate-200 pt-5 dark:border-[#16352a]">
                         <button wire:click="closeDetailModal"
@@ -381,7 +340,7 @@
                                     Conflito de horario detectado
                                 </div>
                             @endif
-                            <button wire:click="closeDetailModal; openApproveModal({{ $detailReservation->id }}, '{{ addslashes($detailReservation->event_name) }}')"
+                            <button wire:click="openApproveModal({{ $detailReservation->id }}, '{{ addslashes($detailReservation->event_name) }}')"
                                 @if($detailConflictError) disabled @endif
                                 class="rounded-lg px-4 py-2 text-sm font-semibold text-white @if($detailConflictError) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-emerald-600 hover:bg-emerald-700 dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
                                 Autorizar
@@ -412,7 +371,7 @@
                         class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-[#2c4a3e] dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
                         Cancelar
                     </button>
-                    <button wire:click="confirmApprove"
+                    <button wire:click="confirmApprove({{ $selectedId }})"
                         class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
                         Sim, Autorizar
                     </button>
@@ -449,7 +408,7 @@
                         class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-[#2c4a3e] dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
                         Cancelar
                     </button>
-                    <button wire:click="confirmReject"
+                    <button wire:click="confirmReject({{ $selectedId }})"
                         class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800">
                         Sim, Rejeitar
                     </button>
@@ -534,6 +493,8 @@
     @endif
 
     {{-- Modal Edicao --}}
-    <livewire:admin.reservation-editor />
+    @unless(auth('contact')->check())
+        <livewire:admin.reservation-editor />
+    @endunless
 
 </div>

@@ -2,18 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Enums\ReservationStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Enums\ReservationStatus;
 
+/** @property-read Room|null $room */
 class Reservation extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'protocol',
+        'sort_order',
         'room_id',
         'event_name',
         'description',
@@ -57,5 +60,18 @@ class Reservation extends Model
     public function logs(): HasMany
     {
         return $this->hasMany(ReservationLog::class)->latest();
+    }
+
+    public function scopeAccessibleTo(Builder $query, ?User $user): Builder
+    {
+        if (! $user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if ($user->is_admin) {
+            return $query;
+        }
+
+        return $query->whereRaw('1 = 0');
     }
 }

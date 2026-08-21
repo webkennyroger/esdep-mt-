@@ -23,7 +23,7 @@ class EventAnnouncementMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'ESDEP-MT — ' . $this->reservation->event_name,
+            subject: 'ESDEP-MT — '.$this->reservation->event_name,
         );
     }
 
@@ -31,12 +31,12 @@ class EventAnnouncementMail extends Mailable
     {
         return new Headers(
             text: [
-                'List-Unsubscribe: <mailto:' . config('mail.from.address') . '?subject=Cancelar%20inscricao>',
+                'List-Unsubscribe: <mailto:'.config('mail.from.address').'?subject=Cancelar%20inscricao>',
                 'List-Unsubscribe-Post: List-Unsubscribe=One-Click',
                 'Precedence: bulk',
                 'X-Mailer: ESDEP-MT/1.0',
-                'Return-Path: ' . config('mail.from.address'),
-                'Sender: ' . config('mail.from.address'),
+                'Return-Path: '.config('mail.from.address'),
+                'Sender: '.config('mail.from.address'),
             ],
         );
     }

@@ -1,0 +1,3 @@
+<span data-drag-handle x-on:pointerdown.stop="arm($event)" x-on:pointerup.stop="disarm($event)" x-on:pointercancel.stop="disarm($event)" {{ $attributes->class('cursor-grab select-none touch-none text-slate-400 active:cursor-grabbing dark:text-[#5a7068]') }} title="Arraste para reordenar" aria-label="Arraste para reordenar">
+    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm9-12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/></svg>
+</span>

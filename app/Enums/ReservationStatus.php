@@ -10,7 +10,7 @@ enum ReservationStatus: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDING => 'Pendente',
             self::AUTHORIZED => 'Autorizada',
             self::REJECTED => 'Rejeitada',

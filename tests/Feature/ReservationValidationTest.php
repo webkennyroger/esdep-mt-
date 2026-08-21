@@ -3,7 +3,12 @@
 use App\Livewire\Admin\ReservationEditor;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\User;
 use Livewire\Livewire;
+
+beforeEach(function () {
+    $this->actingAs(User::factory()->create(['role' => 'super_admin']));
+});
 
 function createValidationTestRoom(): Room
 {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,6 +24,10 @@ class ContactLoginController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
+        $normalizedEmail = strtolower(trim($credentials['email']));
+        $storedEmail = Contact::whereRaw('LOWER(email) = ?', [$normalizedEmail])->value('email');
+        $credentials['email'] = is_string($storedEmail) ? $storedEmail : $normalizedEmail;
+        $credentials['is_active'] = true;
 
         if (Auth::guard('contact')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();

@@ -23,7 +23,7 @@
                         <h2 class="text-xl font-bold text-white">{{ $viewContact->name }}</h2>
                         <div class="mt-1.5 flex items-center gap-2">
                             <span class="inline-flex rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
-                                {{ $viewContact->tipo ?? 'Sem tipo' }}
+                                {{ $viewContact->tipo ?? 'Sem cargo' }}
                             </span>
                             @if($viewContact->last_login_at)
                                 <span class="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">

@@ -2,20 +2,24 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\User;
 use App\Services\ActivityLogger;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Illuminate\Support\Facades\Hash;
 
 #[Layout('components.layouts.app')]
 class UserProfile extends Component
 {
     public string $name = '';
+
     public string $email = '';
+
     public string $currentPassword = '';
+
     public string $newPassword = '';
+
     public string $newPasswordConfirmation = '';
+
     public bool $showDeleteModal = false;
 
     public function mount(): void
@@ -29,7 +33,7 @@ class UserProfile extends Component
     {
         $this->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
+            'email' => 'required|email|max:255|unique:users,email,'.auth()->id(),
         ]);
 
         $user = auth()->user();
@@ -57,8 +61,9 @@ class UserProfile extends Component
 
         $user = auth()->user();
 
-        if (!Hash::check($this->currentPassword, $user->password)) {
+        if (! Hash::check($this->currentPassword, $user->password)) {
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', title: 'Erro', message: 'A senha atual esta incorreta.' } }))");
+
             return;
         }
 
@@ -86,7 +91,7 @@ class UserProfile extends Component
     public function deleteAccount(): void
     {
         $user = auth()->user();
-        
+
         ActivityLogger::userDeleted($user);
 
         auth()->logout();

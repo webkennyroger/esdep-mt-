@@ -2,7 +2,6 @@
 
 use App\Actions\CreateReservationAction;
 use App\Livewire\Public\ReservationStatusCheck;
-use App\Models\Reservation;
 use App\Models\Room;
 use Livewire\Livewire;
 
@@ -19,7 +18,7 @@ beforeEach(function () {
 test('public user can access consultation page', function () {
     $this->get(route('reservations.check'))
         ->assertStatus(200)
-        ->assertSee('Consultar Status da Reserva');
+        ->assertSee('Consultar Status da disponibilidade');
 });
 
 test('create reservation action automatically generates protocol', function () {
@@ -85,4 +84,64 @@ test('search shows empty message when no record matches', function () {
         ->set('searchQuery', 'RES-9999-9999')
         ->call('search')
         ->assertSee('Nenhuma reserva encontrada');
+});
+
+test('user can search reservation by event name', function () {
+    $action = app(CreateReservationAction::class);
+    $reservation = $action->execute([
+        'room_id' => $this->room->id,
+        'event_name' => 'Workshop de Python',
+        'requester_name' => 'Ana Dev',
+        'requester_email' => 'ana@defensoria.mt.def.br',
+        'date' => now()->addDays(20)->toDateString(),
+        'start_time' => '09:00',
+        'end_time' => '12:00',
+        'attendees_count' => 30,
+    ]);
+
+    Livewire::test(ReservationStatusCheck::class)
+        ->set('searchQuery', 'Workshop')
+        ->call('search')
+        ->assertSee('Workshop de Python')
+        ->assertSee($reservation->protocol);
+});
+
+test('user can search reservation by room name', function () {
+    $action = app(CreateReservationAction::class);
+    $reservation = $action->execute([
+        'room_id' => $this->room->id,
+        'event_name' => 'Reunião de Equipe',
+        'requester_name' => 'Pedro Gestor',
+        'requester_email' => 'pedro@defensoria.mt.def.br',
+        'date' => now()->addDays(22)->toDateString(),
+        'start_time' => '14:00',
+        'end_time' => '16:00',
+        'attendees_count' => 15,
+    ]);
+
+    Livewire::test(ReservationStatusCheck::class)
+        ->set('searchQuery', 'Auditório')
+        ->call('search')
+        ->assertSee('Reunião de Equipe')
+        ->assertSee($reservation->protocol);
+});
+
+test('user can search reservation by requester name', function () {
+    $action = app(CreateReservationAction::class);
+    $reservation = $action->execute([
+        'room_id' => $this->room->id,
+        'event_name' => 'Palestra',
+        'requester_name' => 'Fernanda Silva',
+        'requester_email' => 'fernanda@defensoria.mt.def.br',
+        'date' => now()->addDays(25)->toDateString(),
+        'start_time' => '10:00',
+        'end_time' => '11:30',
+        'attendees_count' => 8,
+    ]);
+
+    Livewire::test(ReservationStatusCheck::class)
+        ->set('searchQuery', 'Fernanda')
+        ->call('search')
+        ->assertSee('Palestra')
+        ->assertSee('Fernanda Silva');
 });

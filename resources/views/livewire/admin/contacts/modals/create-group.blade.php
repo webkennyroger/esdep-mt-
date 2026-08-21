@@ -20,7 +20,8 @@
                     <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Cor *</label>
                     <div class="flex flex-wrap gap-2">
                         @foreach($colors as $hex => $label)
-                            <button type="button" wire:click="groupColor = '{{ $hex }}'"
+                            <button type="button" wire:key="create-group-color-{{ $hex }}" wire:click="$set('groupColor', '{{ $hex }}')"
+                                aria-pressed="{{ $groupColor === $hex ? 'true' : 'false' }}"
                                 class="group relative h-8 w-8 rounded-full transition-transform {{ $groupColor === $hex ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-110' }}"
                                 style="background-color: {{ $hex }};"
                                 title="{{ $label }}">
@@ -32,10 +33,18 @@
                             </button>
                         @endforeach
                     </div>
-                    <input type="hidden" wire:model="groupColor" />
                     @error('groupColor') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                 </div>
-                <div class="flex justify-end gap-3 pt-2">
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Salas gerenciadas</label>
+            <div class="max-h-44 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-[#16352a]">
+                @forelse($rooms as $room)
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" wire:model="groupRoomIds" value="{{ $room->id }}" class="rounded text-green-600"><span>{{ $room->name }}</span>@if($room->contactGroup && (!auth('contact')->check() || $room->contactGroup->owner_contact_id === auth('contact')->id()))<small class="text-amber-600">atual: {{ $room->contactGroup->name }}</small>@endif</label>
+                @empty <span class="text-xs text-slate-500">Nenhuma sala cadastrada.</span> @endforelse
+            </div>
+            @error('groupRoomIds.*') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
                     <button type="button" wire:click="closeGroupModal" class="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-[#8aa39a]">Cancelar</button>
                     <button type="submit" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800 dark:bg-[#00a477]">Criar grupo</button>
                 </div>

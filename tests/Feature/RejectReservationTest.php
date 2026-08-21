@@ -28,7 +28,7 @@ test('can reject pending reservation', function () {
         'status' => 'pending',
     ]);
 
-    $action = new RejectReservationAction();
+    $action = new RejectReservationAction;
     $result = $action->execute($reservation);
 
     expect($result->status->value)->toBe('rejected');
@@ -48,10 +48,10 @@ test('cannot reject already rejected reservation', function () {
         'status' => 'rejected',
     ]);
 
-    $action = new RejectReservationAction();
+    $action = new RejectReservationAction;
 
     expect(fn () => $action->execute($reservation))
-        ->toThrow(\Exception::class, 'Esta reserva ja foi rejeitada anteriormente.');
+        ->toThrow(Exception::class, 'Esta reserva ja foi rejeitada anteriormente.');
 });
 
 test('can reject authorized reservation', function () {
@@ -68,7 +68,7 @@ test('can reject authorized reservation', function () {
         'status' => 'authorized',
     ]);
 
-    $action = new RejectReservationAction();
+    $action = new RejectReservationAction;
     $result = $action->execute($reservation);
 
     expect($result->status->value)->toBe('rejected');
