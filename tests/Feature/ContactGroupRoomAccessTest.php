@@ -259,6 +259,8 @@ test('group user can announce an authorized reservation only to contacts from ow
     Livewire::actingAs($manager, 'contact')->test(ContactReservations::class)
         ->assertSee('Divulgar')
         ->call('openAnnounceModal', $reservation->id, $reservation->event_name)
+        ->set('announceRecipientType', 'groups')
+        ->set('announceSelectedGroupIds', [$group->id])
         ->call('sendAnnouncement')
         ->assertHasNoErrors();
 
@@ -269,6 +271,26 @@ test('group user can announce an authorized reservation only to contacts from ow
     Mail::assertOutgoingCount(3);
     Mail::assertQueued(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo($reservation->requester_email));
     Mail::assertNotSent(fn (EventAnnouncementMail $mail) => $mail->hasTo($outsider->email));
+});
+
+test('announcing without selecting extra recipients only notifies the requester (and room owner via cc)', function () {
+    Mail::fake();
+    $group = ContactGroup::create(['name' => 'GRUPO SEM SELECAO', 'color' => '#008b5c', 'notification_email' => 'dono@example.com']);
+    $room = Room::factory()->create(['contact_group_id' => $group->id]);
+    $reservation = managedReservation($room, 'Evento sem destinatarios extras');
+    $reservation->update(['status' => 'authorized']);
+    $manager = Contact::create(['name' => 'Gestor Sem Selecao', 'email' => 'gestor-sem-selecao@example.com', 'password' => 'password', 'is_active' => true]);
+    $manager->groups()->attach($group, ['is_responsible' => true]);
+
+    Livewire::actingAs($manager, 'contact')->test(ContactReservations::class)
+        ->call('openAnnounceModal', $reservation->id, $reservation->event_name)
+        ->call('sendAnnouncement')
+        ->assertHasNoErrors();
+
+    $announcement = EventAnnouncement::firstOrFail();
+    expect($announcement->total_recipients)->toBe(0);
+    Mail::assertOutgoingCount(1);
+    Mail::assertQueued(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo($reservation->requester_email) && $mail->hasCc('dono@example.com'));
 });
 
 test('status changes do not send email before the reservation is disclosed', function () {

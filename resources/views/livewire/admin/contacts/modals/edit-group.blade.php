@@ -35,6 +35,12 @@
                     </div>
                     @error('editGroupColor') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                 </div>
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">E-mail de notificação de agendamento</label>
+                    <x-email-tags-input model="editGroupNotificationEmail" placeholder="Digite um e-mail e pressione Enter" />
+                    <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Recebe o aviso de "Nova Solicitação" das salas deste grupo que não tiverem um e-mail próprio definido. Pode adicionar mais de um e-mail.</p>
+                    @error('editGroupNotificationEmail') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                </div>
         <div>
             <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Salas gerenciadas</label>
             <div class="max-h-44 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-[#16352a]">

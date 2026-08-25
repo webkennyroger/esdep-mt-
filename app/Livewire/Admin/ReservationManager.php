@@ -48,7 +48,7 @@ class ReservationManager extends Component
 
     public string $announceMessage = '';
 
-    public string $announceRecipientType = 'all';
+    public string $announceRecipientType = '';
 
     public array $announceSelectedGroupIds = [];
 
@@ -248,7 +248,7 @@ class ReservationManager extends Component
         $this->announceReservationId = $id;
         $this->announceReservationName = $name;
         $this->announceMessage = '';
-        $this->announceRecipientType = 'all';
+        $this->announceRecipientType = '';
         $this->announceSelectedGroupIds = [];
         $this->announceSelectedContactIds = [];
         $this->announceGroups = ContactGroup::orderBy('name')->get();
@@ -266,7 +266,7 @@ class ReservationManager extends Component
     public function sendAnnouncement(): void
     {
         $this->validate([
-            'announceRecipientType' => 'required|in:all,groups,contacts',
+            'announceRecipientType' => 'nullable|in:groups,contacts',
             'announceSelectedGroupIds' => 'required_if:announceRecipientType,groups|array',
             'announceSelectedContactIds' => 'required_if:announceRecipientType,contacts|array',
         ]);

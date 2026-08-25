@@ -53,7 +53,9 @@ class SendEventAnnouncementAction
                 ? new ReservationApprovedMail($reservation)
                 : new ReservationRejectedMail($reservation);
 
-            Mail::to($reservation->requester_email)->send($mail);
+            $ownerEmails = $reservation->room?->ownerEmails() ?? [];
+
+            Mail::to($reservation->requester_email)->cc($ownerEmails)->send($mail);
             $reservation->update(['status_notification_sent_for' => $status]);
         } catch (\Throwable $exception) {
             Log::error('Erro ao enviar notificacao de status da reserva: '.$exception->getMessage());
@@ -72,6 +74,6 @@ class SendEventAnnouncementAction
             })->active()->get();
         }
 
-        return Contact::active()->get();
+        return Contact::query()->whereRaw('1 = 0')->get();
     }
 }

@@ -64,8 +64,8 @@ class CreateReservationAction
         event(new ReservationRequested($reservation));
 
         try {
-            $adminEmail = config('app.admin_email', 'admin@esdep.mt.gov.br');
-            Mail::to($adminEmail)->send(new ReservationRequestedMail($reservation));
+            $notifyEmails = $room->ownerEmails() ?: [config('app.admin_email', 'admin@esdep.mt.gov.br')];
+            Mail::to($notifyEmails)->send(new ReservationRequestedMail($reservation));
         } catch (\Exception $e) {
             Log::error('Erro ao enviar email de notificacao: '.$e->getMessage());
         }

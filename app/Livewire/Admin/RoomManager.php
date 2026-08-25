@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\ContactGroup;
 use App\Models\Room;
+use App\Rules\MultipleEmails;
 use App\Services\ActivityLogger;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
@@ -38,6 +39,8 @@ class RoomManager extends Component
 
     public ?int $contactGroupId = null;
 
+    public string $notificationEmail = '';
+
     // Edit Room Fields
     public int $editRoomId = 0;
 
@@ -52,6 +55,8 @@ class RoomManager extends Component
     public bool $editIsActive = true;
 
     public ?int $editContactGroupId = null;
+
+    public string $editNotificationEmail = '';
 
     // Delete Room Fields
     public int $deleteRoomId = 0;
@@ -68,7 +73,7 @@ class RoomManager extends Component
 
     public function openCreateModal(): void
     {
-        $this->reset(['name', 'description', 'contactGroupId']);
+        $this->reset(['name', 'description', 'contactGroupId', 'notificationEmail']);
         $this->capacity = 30;
         $this->theme_color = '#008b5c';
         $this->is_active = true;
@@ -92,6 +97,7 @@ class RoomManager extends Component
             'description' => 'nullable|string|max:1000',
             'is_active' => 'boolean',
             'contactGroupId' => ['nullable', 'integer', Rule::exists('contact_groups', 'id')],
+            'notificationEmail' => ['nullable', 'string', 'max:255', new MultipleEmails],
         ]);
 
         $room = Room::create([
@@ -101,6 +107,7 @@ class RoomManager extends Component
             'theme_color' => $this->theme_color,
             'description' => $this->description ?: null,
             'is_active' => $this->is_active,
+            'notification_email' => $this->notificationEmail ?: null,
         ]);
 
         ActivityLogger::roomCreated($room);
@@ -121,6 +128,7 @@ class RoomManager extends Component
         $this->editDescription = $room->description ?? '';
         $this->editIsActive = (bool) $room->is_active;
         $this->editContactGroupId = $room->contact_group_id;
+        $this->editNotificationEmail = $room->notification_email ?? '';
 
         $this->resetValidation();
         $this->showEditModal = true;
@@ -143,6 +151,7 @@ class RoomManager extends Component
             'editDescription' => 'nullable|string|max:1000',
             'editIsActive' => 'boolean',
             'editContactGroupId' => ['nullable', 'integer', Rule::exists('contact_groups', 'id')],
+            'editNotificationEmail' => ['nullable', 'string', 'max:255', new MultipleEmails],
         ]);
 
         $oldValues = $room->toArray();
@@ -154,6 +163,7 @@ class RoomManager extends Component
             'theme_color' => $this->editThemeColor,
             'description' => $this->editDescription ?: null,
             'is_active' => $this->editIsActive,
+            'notification_email' => $this->editNotificationEmail ?: null,
         ]);
 
         ActivityLogger::roomUpdated($room, $oldValues);

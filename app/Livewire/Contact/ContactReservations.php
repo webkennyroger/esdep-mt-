@@ -48,7 +48,7 @@ class ContactReservations extends Component
 
     public string $announceMessage = '';
 
-    public string $announceRecipientType = 'all';
+    public string $announceRecipientType = '';
 
     public array $announceSelectedGroupIds = [];
 
@@ -165,7 +165,7 @@ class ContactReservations extends Component
         $this->announceReservationId = $id;
         $this->announceReservationName = $name;
         $this->announceMessage = '';
-        $this->announceRecipientType = 'all';
+        $this->announceRecipientType = '';
         $this->announceSelectedGroupIds = [];
         $this->announceSelectedContactIds = [];
         $this->announceGroups = $contact->groups()->orderBy('name')->get();
@@ -182,7 +182,7 @@ class ContactReservations extends Component
     public function sendAnnouncement(): void
     {
         $this->validate([
-            'announceRecipientType' => 'required|in:all,groups,contacts',
+            'announceRecipientType' => 'nullable|in:groups,contacts',
             'announceSelectedGroupIds' => 'required_if:announceRecipientType,groups|array',
             'announceSelectedContactIds' => 'required_if:announceRecipientType,contacts|array',
         ]);
@@ -198,7 +198,7 @@ class ContactReservations extends Component
         $recipients = match ($this->announceRecipientType) {
             'groups' => ['group_ids' => $groupIds->all(), 'contact_ids' => []],
             'contacts' => ['group_ids' => [], 'contact_ids' => $contactIds->all()],
-            default => ['group_ids' => [], 'contact_ids' => $allowedContactIds->all()],
+            default => ['group_ids' => [], 'contact_ids' => []],
         };
         $announcement = app(SendEventAnnouncementAction::class)->execute($reservation, [
             'message' => $this->announceMessage,

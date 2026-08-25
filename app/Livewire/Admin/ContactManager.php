@@ -6,6 +6,7 @@ use App\Models\Contact;
 use App\Models\ContactGroup;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Rules\MultipleEmails;
 use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -114,6 +115,8 @@ class ContactManager extends Component
 
     public array $groupContactIds = [];
 
+    public string $groupNotificationEmail = '';
+
     // Edit Group fields
     public int $editGroupId = 0;
 
@@ -126,6 +129,8 @@ class ContactManager extends Component
     public array $editGroupRoomIds = [];
 
     public array $editGroupContactIds = [];
+
+    public string $editGroupNotificationEmail = '';
 
     protected $listeners = [
         'contactCreated' => '$refresh',
@@ -346,7 +351,7 @@ class ContactManager extends Component
 
     public function openGroupModal(): void
     {
-        $this->reset(['groupName', 'groupDescription', 'groupColor', 'groupRoomIds', 'groupContactIds']);
+        $this->reset(['groupName', 'groupDescription', 'groupColor', 'groupRoomIds', 'groupContactIds', 'groupNotificationEmail']);
         $this->groupColor = '#059669';
         $this->resetValidation();
         $this->showGroupModal = true;
@@ -367,12 +372,14 @@ class ContactManager extends Component
             'groupRoomIds.*' => 'integer|exists:rooms,id',
             'groupContactIds' => 'array',
             'groupContactIds.*' => 'integer|exists:contacts,id',
+            'groupNotificationEmail' => ['nullable', 'string', 'max:255', new MultipleEmails],
         ]);
 
         $group = ContactGroup::create([
             'name' => $this->groupName,
             'description' => $this->groupDescription,
             'color' => $this->groupColor,
+            'notification_email' => $this->groupNotificationEmail ?: null,
         ]);
         Room::whereIn('id', $this->groupRoomIds)->update(['contact_group_id' => $group->id]);
         $group->contacts()->attach($this->groupContactIds);
@@ -401,6 +408,7 @@ class ContactManager extends Component
         $this->editGroupColor = $group->color;
         $this->editGroupRoomIds = $group->rooms->pluck('id')->all();
         $this->editGroupContactIds = $group->contacts->pluck('id')->all();
+        $this->editGroupNotificationEmail = $group->notification_email ?? '';
         $this->resetValidation();
         $this->showEditGroupModal = true;
     }
@@ -421,6 +429,7 @@ class ContactManager extends Component
             'editGroupRoomIds.*' => 'integer|exists:rooms,id',
             'editGroupContactIds' => 'array',
             'editGroupContactIds.*' => 'integer|exists:contacts,id',
+            'editGroupNotificationEmail' => ['nullable', 'string', 'max:255', new MultipleEmails],
         ]);
 
         DB::transaction(function () use ($group): void {
@@ -428,6 +437,7 @@ class ContactManager extends Component
                 'name' => $this->editGroupName,
                 'description' => $this->editGroupDescription,
                 'color' => $this->editGroupColor,
+                'notification_email' => $this->editGroupNotificationEmail ?: null,
             ]);
             Room::where('contact_group_id', $group->id)
                 ->whereNotIn('id', $this->editGroupRoomIds)

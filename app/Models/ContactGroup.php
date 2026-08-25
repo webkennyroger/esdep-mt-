@@ -18,6 +18,7 @@ class ContactGroup extends Model
         'sort_order',
         'description',
         'color',
+        'notification_email',
     ];
 
     protected $casts = ['sort_order' => 'integer'];

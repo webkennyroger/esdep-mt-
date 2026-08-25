@@ -133,6 +133,13 @@
                         @error('contactGroupId') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">E-mail para notificações (dono da sala)</label>
+                        <x-email-tags-input model="notificationEmail" placeholder="Digite um e-mail e pressione Enter" />
+                        <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Recebe o aviso de "Nova Solicitação" para esta sala. Pode adicionar mais de um e-mail. Deixe vazio para usar o e-mail do grupo ou o padrão do sistema.</p>
+                        @error('notificationEmail') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Capacidade (Pessoas) *</label>
@@ -205,6 +212,13 @@
                             @foreach($contactGroups as $group)<option value="{{ $group->id }}">{{ $group->name }}</option>@endforeach
                         </select>
                         @error('editContactGroupId') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">E-mail para notificações (dono da sala)</label>
+                        <x-email-tags-input model="editNotificationEmail" placeholder="Digite um e-mail e pressione Enter" />
+                        <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Recebe o aviso de "Nova Solicitação" para esta sala. Pode adicionar mais de um e-mail. Deixe vazio para usar o e-mail do grupo ou o padrão do sistema.</p>
+                        @error('editNotificationEmail') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">

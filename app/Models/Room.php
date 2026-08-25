@@ -42,6 +42,7 @@ class Room extends Model
         'theme_color',
         'description',
         'is_active',
+        'notification_email',
     ];
 
     protected $casts = [
@@ -57,6 +58,25 @@ class Room extends Model
     public function contactGroup(): BelongsTo
     {
         return $this->belongsTo(ContactGroup::class);
+    }
+
+    /**
+     * E-mails do "dono" da sala: os da própria sala, senão os do grupo responsável, senão nenhum.
+     * Não inclui o e-mail padrão do sistema — quem chama decide se quer esse fallback.
+     */
+    public function ownerEmails(): array
+    {
+        return $this->parseEmails($this->notification_email)
+            ?: $this->parseEmails($this->contactGroup?->notification_email);
+    }
+
+    private function parseEmails(?string $value): array
+    {
+        if (! $value) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $value))));
     }
 
     public function scopeAccessibleTo(Builder $query, ?User $user): Builder

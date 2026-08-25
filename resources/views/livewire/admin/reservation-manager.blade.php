@@ -440,12 +440,9 @@
                     </div>
 
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Destinatarios</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Destinatarios adicionais (opcional)</label>
+                        <p class="mb-2 text-[11px] text-slate-400 dark:text-[#5a7068]">O solicitante e o e-mail da sala/grupo já recebem automaticamente. Escolha abaixo só se quiser avisar mais gente.</p>
                         <div class="space-y-2">
-                            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-[#8aa39a]">
-                                <input type="radio" wire:model="announceRecipientType" value="all" class="text-blue-600 focus:ring-blue-500" />
-                                Todos os contatos ativos
-                            </label>
                             <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-[#8aa39a]">
                                 <input type="radio" wire:model="announceRecipientType" value="groups" class="text-blue-600 focus:ring-blue-500" />
                                 Por grupos
