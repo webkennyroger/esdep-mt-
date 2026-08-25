@@ -22,6 +22,8 @@ class Reports extends Component
 
     public function mount(): void
     {
+        abort_unless(auth()->user()?->can('access-reports'), 403);
+
         $this->startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
         $this->endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
     }

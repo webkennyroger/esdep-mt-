@@ -31,6 +31,11 @@ class ActivityLogController extends Component
         'activityCreated' => '$refresh',
     ];
 
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->can('access-activity-log'), 403);
+    }
+
     public function setFilter(string $filter): void
     {
         $this->actionFilter = $filter;

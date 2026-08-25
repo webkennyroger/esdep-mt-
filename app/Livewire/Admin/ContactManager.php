@@ -21,7 +21,7 @@ class ContactManager extends Component
 
     public function mount(): void
     {
-        abort_unless(auth()->user()?->isSuperAdmin(), 403);
+        abort_unless(auth()->user()?->can('access-contacts'), 403);
     }
 
     public string $search = '';
