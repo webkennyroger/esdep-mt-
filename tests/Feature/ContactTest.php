@@ -87,3 +87,17 @@ test('delete contact', function () {
 
     $this->assertDatabaseMissing('contacts', ['id' => $contact->id]);
 });
+
+test('only super-admin sees the papel column identifying gerentes', function () {
+    $group = \App\Models\ContactGroup::create(['name' => 'SETOR X', 'color' => '#059669']);
+    $gerente = Contact::create(['name' => 'Gestora', 'email' => 'gestora@test.com', 'is_active' => true]);
+    $gerente->groups()->attach($group, ['is_responsible' => true]);
+
+    Livewire::test(ContactManager::class)
+        ->assertSee('Papel')
+        ->assertSee('Gerente');
+
+    $admin = User::factory()->create(['role' => 'admin']);
+    Livewire::actingAs($admin)->test(ContactManager::class)
+        ->assertDontSee('Papel');
+});

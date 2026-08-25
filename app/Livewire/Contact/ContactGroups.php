@@ -345,6 +345,6 @@ class ContactGroups extends ContactManager
             $query->whereHas('groups', fn ($filter) => $filter->where('contact_groups.id', $this->filterGroupId));
         }
 
-        return view('livewire.admin.contact-manager', ['contacts' => $query->paginate(15), 'groups' => $groups, 'rooms' => Room::whereIn('id', auth('contact')->user()->responsibleRoomIds())->orderBy('name')->get(), 'contactsForGroups' => $this->allowedContacts()->orderBy('name')->get(['contacts.id', 'contacts.name', 'contacts.email']), 'sectors' => $groups->pluck('name')->values()->all(), 'cargos' => ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiário']]);
+        return view('livewire.admin.contact-manager', ['contacts' => $query->paginate(15), 'groups' => $groups, 'rooms' => Room::whereIn('id', auth('contact')->user()->responsibleRoomIds())->orderBy('name')->get(), 'contactsForGroups' => $this->allowedContacts()->orderBy('name')->get(['contacts.id', 'contacts.name', 'contacts.email']), 'sectors' => $groups->pluck('name')->values()->all(), 'cargos' => ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiário'], 'isSuperAdmin' => false]);
     }
 }

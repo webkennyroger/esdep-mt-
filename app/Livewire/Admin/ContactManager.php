@@ -623,6 +623,7 @@ class ContactManager extends Component
             'contactsForGroups' => Contact::orderBy('name')->get(['id', 'name', 'email']),
             'sectors' => $groups->pluck('name')->values()->all(),
             'cargos' => ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiario'],
+            'isSuperAdmin' => (bool) auth('web')->user()?->isSuperAdmin(),
         ]);
     }
 }
