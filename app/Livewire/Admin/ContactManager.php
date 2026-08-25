@@ -72,6 +72,8 @@ class ContactManager extends Component
 
     public bool $newAutorizado = false;
 
+    public bool $newIsResponsible = false;
+
     /** @deprecated Mantido apenas para compatibilidade com chamadas antigas. */
     public array $newGroupIds = [];
 
@@ -94,6 +96,8 @@ class ContactManager extends Component
     public string $editSetor = '';
 
     public bool $editAutorizado = false;
+
+    public bool $editIsResponsible = false;
 
     /** @deprecated Mantido apenas para compatibilidade com chamadas antigas. */
     public array $editGroupIds = [];
@@ -143,7 +147,7 @@ class ContactManager extends Component
 
     public function openCreateModal(): void
     {
-        $this->reset(['newName', 'newEmail', 'newPassword', 'newCpf', 'newTipo', 'newSetor', 'newAutorizado', 'newGroupIds', 'newResponsibleGroupIds']);
+        $this->reset(['newName', 'newEmail', 'newPassword', 'newCpf', 'newTipo', 'newSetor', 'newAutorizado', 'newIsResponsible', 'newGroupIds', 'newResponsibleGroupIds']);
         $this->resetValidation();
         $this->showCreateModal = true;
     }
@@ -176,7 +180,7 @@ class ContactManager extends Component
         ]);
 
         if ($this->newSetor !== '') {
-            $this->syncContactSector($contact, $this->newSetor);
+            $this->syncContactSector($contact, $this->newSetor, $this->newIsResponsible);
         } elseif ($this->newGroupIds !== []) {
             $this->syncLegacyGroups($contact, $this->newGroupIds, $this->newResponsibleGroupIds);
         }
@@ -203,6 +207,7 @@ class ContactManager extends Component
         $this->editGroupIds = $contact->groups->pluck('id')->intersect($globalGroupIds)->values()->all();
         $this->editResponsibleGroupIds = $contact->groups->whereIn('id', $globalGroupIds)
             ->filter(fn ($group) => (bool) $group->getRelation('pivot')->getAttribute('is_responsible'))->pluck('id')->all();
+        $this->editIsResponsible = $contact->groups->firstWhere('name', $this->editSetor)?->pivot?->is_responsible ?? false;
         $this->resetValidation();
         $this->showEditModal = true;
     }
@@ -242,7 +247,7 @@ class ContactManager extends Component
         DB::transaction(function () use ($contact, $data, $legacyGroupsChanged): void {
             $contact->update($data);
             if ($this->editSetor !== '') {
-                $this->syncContactSector($contact, $this->editSetor);
+                $this->syncContactSector($contact, $this->editSetor, $this->editIsResponsible);
             } elseif ($legacyGroupsChanged) {
                 $this->syncLegacyGroups($contact, $this->editGroupIds, $this->editResponsibleGroupIds);
             }
@@ -255,7 +260,7 @@ class ContactManager extends Component
         $this->closeEditModal();
     }
 
-    private function syncContactSector(Contact $contact, ?string $sector): void
+    private function syncContactSector(Contact $contact, ?string $sector, bool $isResponsible = false): void
     {
         $globalGroups = ContactGroup::whereNull('owner_contact_id')->get(['id', 'name']);
         $contact->groups()->detach($globalGroups->pluck('id')->all());
@@ -266,7 +271,7 @@ class ContactManager extends Component
 
         $group = $globalGroups->firstWhere('name', $sector);
         if ($group) {
-            $contact->groups()->syncWithoutDetaching([$group->id => ['is_responsible' => true]]);
+            $contact->groups()->syncWithoutDetaching([$group->id => ['is_responsible' => $isResponsible]]);
         }
     }
 

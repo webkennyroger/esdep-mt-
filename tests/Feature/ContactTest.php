@@ -101,3 +101,32 @@ test('only super-admin sees the papel column identifying gerentes', function () 
     Livewire::actingAs($admin)->test(ContactManager::class)
         ->assertDontSee('Papel');
 });
+
+test('super-admin can mark a contact as gerente responsavel when creating with a setor', function () {
+    $group = \App\Models\ContactGroup::create(['name' => 'SETOR Y', 'color' => '#059669']);
+
+    Livewire::test(ContactManager::class)
+        ->set('newName', 'Nova Gerente')
+        ->set('newEmail', 'nova-gerente@test.com')
+        ->set('newSetor', 'SETOR Y')
+        ->set('newIsResponsible', true)
+        ->call('createContact')
+        ->assertHasNoErrors();
+
+    $contact = Contact::where('email', 'nova-gerente@test.com')->firstOrFail();
+    expect((bool) $contact->groups()->whereKey($group->id)->firstOrFail()->pivot->is_responsible)->toBeTrue();
+});
+
+test('selecting a setor without marking gerente responsavel does not grant responsibility', function () {
+    $group = \App\Models\ContactGroup::create(['name' => 'SETOR Z', 'color' => '#059669']);
+
+    Livewire::test(ContactManager::class)
+        ->set('newName', 'Contato Comum')
+        ->set('newEmail', 'contato-comum@test.com')
+        ->set('newSetor', 'SETOR Z')
+        ->call('createContact')
+        ->assertHasNoErrors();
+
+    $contact = Contact::where('email', 'contato-comum@test.com')->firstOrFail();
+    expect((bool) $contact->groups()->whereKey($group->id)->firstOrFail()->pivot->is_responsible)->toBeFalse();
+});
