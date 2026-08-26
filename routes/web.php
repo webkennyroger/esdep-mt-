@@ -13,7 +13,6 @@ use App\Livewire\Contact\ContactActivity;
 use App\Livewire\Contact\ContactBooking;
 use App\Livewire\Contact\ContactCalendar;
 use App\Livewire\Contact\ContactDashboard;
-use App\Livewire\Contact\ContactGroups;
 use App\Livewire\Contact\ContactProfile;
 use App\Livewire\Contact\ContactReports;
 use App\Livewire\Contact\ContactReservationEdit;
@@ -60,7 +59,6 @@ Route::middleware('auth:contact')->group(function () {
     Route::get('contato/agenda', ContactCalendar::class)->name('contact.calendar');
     Route::get('contato/reservar', ContactBooking::class)->name('contact.booking');
     Route::get('contato/reservas', ContactReservations::class)->name('contact.reservations');
-    Route::get('contato/grupos', ContactGroups::class)->name('contact.groups');
     Route::get('contato/relatorios', ContactReports::class)->name('contact.reports');
     Route::get('contato/atividades', ContactActivity::class)->name('contact.activity');
     Route::get('contato/perfil', ContactProfile::class)->name('contact.profile');

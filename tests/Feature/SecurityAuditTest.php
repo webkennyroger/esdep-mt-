@@ -10,6 +10,14 @@ test('diagnostic route does not exist', function () {
     $response->assertStatus(404);
 });
 
+test('gerente cannot access the contatos do setor screen anymore', function () {
+    $contact = Contact::create(['name' => 'Gerente', 'email' => 'gerente-sem-grupos@example.com', 'password' => 'password', 'is_active' => true]);
+
+    $response = $this->actingAs($contact, 'contact')->get('/contato/grupos');
+
+    $response->assertStatus(404);
+});
+
 test('login route has rate limiting active', function () {
     for ($i = 0; $i < 5; $i++) {
         $this->post('/login', [
