@@ -9,9 +9,6 @@
                         <th class="px-4 py-3">CPF / Nome</th>
                         <th class="px-4 py-3">E-mail</th>
                         <th class="px-4 py-3">Grupos</th>
-                        @if($isSuperAdmin)
-                        <th class="px-4 py-3">Papel</th>
-                        @endif
                         <th class="px-4 py-3">Cargo</th>
                         <th class="px-4 py-3">Reservas</th>
                         <th class="px-4 py-3">Acesso ao sistema</th>
@@ -42,15 +39,6 @@
                                     <span class="text-slate-400 dark:text-[#5a7068]">-</span>
                                 @endforelse
                             </td>
-                            @if($isSuperAdmin)
-                            <td class="px-4 py-3">
-                                @if($contact->groups->contains(fn ($group) => (bool) $group->pivot->is_responsible))
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-medium text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">Responsável</span>
-                                @else
-                                    <span class="text-slate-400 dark:text-[#5a7068]">-</span>
-                                @endif
-                            </td>
-                            @endif
                             <td class="px-4 py-3 text-slate-600 dark:text-[#8aa39a]">{{ $contact->tipo ?? '-' }}</td>
                             <td class="px-4 py-3">
                                 @if($contact->last_login_at)
