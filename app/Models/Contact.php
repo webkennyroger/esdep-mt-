@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -18,6 +19,7 @@ class Contact extends Authenticatable
         'password',
         'cpf',
         'tipo',
+        'admin_user_id',
         'setor',
         'autorizado_at',
         'last_login_at',
@@ -43,6 +45,11 @@ class Contact extends Authenticatable
     public function groups(): BelongsToMany
     {
         return $this->belongsToMany(ContactGroup::class, 'contact_contact_group')->withPivot(['is_responsible', 'sort_order']);
+    }
+
+    public function adminUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'admin_user_id');
     }
 
     public function scopeActive($query)

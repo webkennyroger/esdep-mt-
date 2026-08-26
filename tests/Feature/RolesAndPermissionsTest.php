@@ -63,5 +63,5 @@ test('roles and permissions seeder creates the expected structure', function () 
     expect(\Spatie\Permission\Models\Role::where('name', 'admin')->exists())->toBeTrue()
         ->and(\Spatie\Permission\Models\Role::where('name', 'super-admin')->exists())->toBeTrue()
         ->and(\Spatie\Permission\Models\Role::findByName('super-admin', 'web')->permissions->pluck('name')->sort()->values()->all())
-        ->toBe(['access-activity-log', 'access-contacts', 'access-reports']);
+        ->toBe(['access-activity-log', 'access-contacts', 'access-reports', 'manage-users']);
 });

@@ -61,7 +61,7 @@ class ContactGroups extends ContactManager
     public function createContact(): void
     {
         $this->validate(['newName' => 'required|string|max:255', 'newEmail' => 'required|email|max:255|unique:contacts,email', 'newPassword' => 'nullable|string|min:8']);
-        $contact = Contact::create(['name' => $this->newName, 'email' => strtolower(trim($this->newEmail)), 'password' => $this->newPassword ?: null, 'cpf' => $this->newCpf ?: null, 'tipo' => $this->newTipo ?: null, 'setor' => $this->newSetor ?: null, 'autorizado_at' => $this->newAutorizado ? now() : null, 'is_active' => true, 'subscribed_at' => now()]);
+        $contact = Contact::create(['name' => $this->newName, 'email' => strtolower(trim($this->newEmail)), 'password' => $this->newPassword ?: null, 'cpf' => $this->newCpf ?: null, 'tipo' => $this->newTipo ?: null, 'setor' => $this->newSetor ?: null, 'is_active' => true, 'subscribed_at' => now()]);
         $group = $this->ownedGroupForSector($this->newSetor);
         if ($group) {
             $contact->groups()->attach($group, ['is_responsible' => false]);
@@ -84,7 +84,6 @@ class ContactGroups extends ContactManager
         $this->editCpf = $contact->cpf ?? '';
         $this->editTipo = $contact->tipo ?? '';
         $this->editSetor = $contact->setor ?? '';
-        $this->editAutorizado = $contact->autorizado_at !== null;
         $this->editGroupIds = $contact->groups->pluck('id')->intersect($allowed)->values()->all();
         $this->editResponsibleGroupIds = $contact->groups->whereIn('id', $allowed)
             ->filter(fn ($group) => (bool) $group->getRelation('pivot')->getAttribute('is_responsible'))->pluck('id')->all();
@@ -97,7 +96,7 @@ class ContactGroups extends ContactManager
         $contact = $this->allowedContact($this->editContactId);
         $this->validate(['editName' => 'required|string|max:255', 'editEmail' => ['required', 'email', 'max:255', Rule::unique('contacts', 'email')->ignore($contact->id)], 'editPassword' => 'nullable|string|min:8']);
         $old = $contact->toArray();
-        $data = ['name' => $this->editName, 'email' => strtolower(trim($this->editEmail)), 'cpf' => $this->editCpf ?: null, 'tipo' => $this->editTipo ?: null, 'setor' => $this->editSetor ?: null, 'autorizado_at' => $this->editAutorizado ? ($contact->autorizado_at ?? now()) : null];
+        $data = ['name' => $this->editName, 'email' => strtolower(trim($this->editEmail)), 'cpf' => $this->editCpf ?: null, 'tipo' => $this->editTipo ?: null, 'setor' => $this->editSetor ?: null];
         if ($this->editPassword !== '') {
             $data['password'] = $this->editPassword;
         }

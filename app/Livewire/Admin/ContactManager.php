@@ -6,6 +6,7 @@ use App\Models\Contact;
 use App\Models\ContactGroup;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\User;
 use App\Rules\MultipleEmails;
 use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\DB;
@@ -70,10 +71,6 @@ class ContactManager extends Component
 
     public string $newSetor = '';
 
-    public bool $newAutorizado = false;
-
-    public bool $newIsResponsible = false;
-
     /** @deprecated Mantido apenas para compatibilidade com chamadas antigas. */
     public array $newGroupIds = [];
 
@@ -94,10 +91,6 @@ class ContactManager extends Component
     public string $editTipo = '';
 
     public string $editSetor = '';
-
-    public bool $editAutorizado = false;
-
-    public bool $editIsResponsible = false;
 
     /** @deprecated Mantido apenas para compatibilidade com chamadas antigas. */
     public array $editGroupIds = [];
@@ -147,7 +140,7 @@ class ContactManager extends Component
 
     public function openCreateModal(): void
     {
-        $this->reset(['newName', 'newEmail', 'newPassword', 'newCpf', 'newTipo', 'newSetor', 'newAutorizado', 'newIsResponsible', 'newGroupIds', 'newResponsibleGroupIds']);
+        $this->reset(['newName', 'newEmail', 'newPassword', 'newCpf', 'newTipo', 'newSetor', 'newGroupIds', 'newResponsibleGroupIds']);
         $this->resetValidation();
         $this->showCreateModal = true;
     }
@@ -160,11 +153,21 @@ class ContactManager extends Component
 
     public function createContact(): void
     {
+        $wantsAdmin = $this->newTipo === 'Admin';
+
+        abort_if($wantsAdmin && ! $this->canManageAdmins(), 403);
+
+        $emailRules = ['required', 'email', 'max:255', 'unique:contacts,email'];
+        if ($wantsAdmin) {
+            $emailRules[] = Rule::unique('users', 'email');
+        }
+
         $this->validate([
             'newName' => 'required|string|max:255',
-            'newEmail' => 'required|email|max:255|unique:contacts,email',
-            'newPassword' => 'nullable|string|min:8',
+            'newEmail' => $emailRules,
+            'newPassword' => $wantsAdmin ? 'required|string|min:8' : 'nullable|string|min:8',
             'newSetor' => ['nullable', 'string', Rule::exists('contact_groups', 'name')->whereNull('owner_contact_id')],
+            'newTipo' => ['nullable', 'string', Rule::in($this->allowedCargos())],
         ]);
 
         $contact = Contact::create([
@@ -174,15 +177,18 @@ class ContactManager extends Component
             'cpf' => $this->newCpf ?: null,
             'tipo' => $this->newTipo ?: null,
             'setor' => $this->newSetor ?: null,
-            'autorizado_at' => $this->newAutorizado ? now() : null,
             'is_active' => true,
             'subscribed_at' => now(),
         ]);
 
         if ($this->newSetor !== '') {
-            $this->syncContactSector($contact, $this->newSetor, $this->newIsResponsible);
+            $this->syncContactSector($contact, $this->newSetor, $this->newTipo === 'Gerente');
         } elseif ($this->newGroupIds !== []) {
             $this->syncLegacyGroups($contact, $this->newGroupIds, $this->newResponsibleGroupIds);
+        }
+
+        if ($wantsAdmin) {
+            $this->syncAdminAccount($contact, $this->newPassword);
         }
 
         ActivityLogger::created($contact, "Contato \"{$contact->name}\" criado");
@@ -202,12 +208,10 @@ class ContactManager extends Component
         $this->editCpf = $contact->cpf ?? '';
         $this->editTipo = $contact->tipo ?? '';
         $this->editSetor = $contact->setor ?? '';
-        $this->editAutorizado = $contact->autorizado_at !== null;
         $globalGroupIds = ContactGroup::whereNull('owner_contact_id')->pluck('id');
         $this->editGroupIds = $contact->groups->pluck('id')->intersect($globalGroupIds)->values()->all();
         $this->editResponsibleGroupIds = $contact->groups->whereIn('id', $globalGroupIds)
             ->filter(fn ($group) => (bool) $group->getRelation('pivot')->getAttribute('is_responsible'))->pluck('id')->all();
-        $this->editIsResponsible = $contact->groups->firstWhere('name', $this->editSetor)?->pivot?->is_responsible ?? false;
         $this->resetValidation();
         $this->showEditModal = true;
     }
@@ -220,13 +224,28 @@ class ContactManager extends Component
 
     public function updateContact(): void
     {
+        $contact = Contact::findOrFail($this->editContactId);
+        $wasAdmin = $contact->admin_user_id !== null;
+        $wantsAdmin = $this->editTipo === 'Admin';
+
+        abort_if(($wasAdmin || $wantsAdmin) && ! $this->canManageAdmins(), 403);
+
+        $emailRules = ['required', 'email', 'max:255', Rule::unique('contacts', 'email')->ignore($this->editContactId)];
+        if ($wantsAdmin) {
+            $usersUniqueRule = Rule::unique('users', 'email');
+            if ($wasAdmin) {
+                $usersUniqueRule->ignore($contact->admin_user_id);
+            }
+            $emailRules[] = $usersUniqueRule;
+        }
+
         $this->validate([
             'editName' => 'required|string|max:255',
-            'editEmail' => 'required|email|max:255|unique:contacts,email,'.$this->editContactId,
+            'editEmail' => $emailRules,
+            'editPassword' => ($wantsAdmin && ! $wasAdmin) ? 'required|string|min:8' : 'nullable|string|min:8',
             'editSetor' => ['nullable', 'string', Rule::exists('contact_groups', 'name')->whereNull('owner_contact_id')],
+            'editTipo' => ['nullable', 'string', Rule::in($this->allowedCargos())],
         ]);
-
-        $contact = Contact::findOrFail($this->editContactId);
 
         $oldValues = $contact->toArray();
 
@@ -236,7 +255,6 @@ class ContactManager extends Component
             'cpf' => $this->editCpf ?: null,
             'tipo' => $this->editTipo ?: null,
             'setor' => $this->editSetor ?: null,
-            'autorizado_at' => $this->editAutorizado ? ($contact->autorizado_at ?? now()) : null,
         ];
 
         if ($this->editPassword) {
@@ -244,12 +262,18 @@ class ContactManager extends Component
         }
 
         $legacyGroupsChanged = $this->editSetor === '' && ($this->editGroupIds !== [] || $contact->groups->whereNull('owner_contact_id')->isNotEmpty());
-        DB::transaction(function () use ($contact, $data, $legacyGroupsChanged): void {
+        DB::transaction(function () use ($contact, $data, $legacyGroupsChanged, $wantsAdmin, $wasAdmin): void {
             $contact->update($data);
             if ($this->editSetor !== '') {
-                $this->syncContactSector($contact, $this->editSetor, $this->editIsResponsible);
+                $this->syncContactSector($contact, $this->editSetor, $this->editTipo === 'Gerente');
             } elseif ($legacyGroupsChanged) {
                 $this->syncLegacyGroups($contact, $this->editGroupIds, $this->editResponsibleGroupIds);
+            }
+
+            if ($wantsAdmin) {
+                $this->syncAdminAccount($contact, $this->editPassword ?: null);
+            } elseif ($wasAdmin) {
+                $this->demoteAdminAccount($contact);
             }
         });
 
@@ -258,6 +282,53 @@ class ContactManager extends Component
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Contato atualizado com sucesso.' } }))");
         $this->dispatch('contactUpdated');
         $this->closeEditModal();
+    }
+
+    private function canManageAdmins(): bool
+    {
+        return (bool) auth('web')->user()?->can('manage-users');
+    }
+
+    private function allowedCargos(): array
+    {
+        $base = ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiario'];
+
+        return $this->canManageAdmins() ? array_merge(['Admin'], $base) : $base;
+    }
+
+    private function syncAdminAccount(Contact $contact, ?string $plainPassword): void
+    {
+        $data = [
+            'name' => $contact->name,
+            'email' => $contact->email,
+            'role' => 'admin',
+        ];
+
+        if ($plainPassword) {
+            $data['password'] = bcrypt($plainPassword);
+        }
+
+        if ($contact->admin_user_id) {
+            User::whereKey($contact->admin_user_id)->update($data);
+
+            return;
+        }
+
+        $user = User::create($data);
+        $contact->update(['admin_user_id' => $user->id]);
+    }
+
+    private function demoteAdminAccount(Contact $contact): void
+    {
+        if (! $contact->admin_user_id) {
+            return;
+        }
+
+        if ($contact->admin_user_id !== auth()->id()) {
+            User::whereKey($contact->admin_user_id)->delete();
+        }
+
+        $contact->update(['admin_user_id' => null]);
     }
 
     private function syncContactSector(Contact $contact, ?string $sector, bool $isResponsible = false): void
@@ -330,6 +401,9 @@ class ContactManager extends Component
     public function deleteContact(int $id): void
     {
         $contact = Contact::findOrFail($id);
+
+        abort_if($contact->admin_user_id && ! $this->canManageAdmins(), 403);
+
         if (Reservation::where('requester_email', strtolower($contact->email))->exists()) {
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Não é possível excluir um contato com histórico de reservas. Desative-o.' } }))");
             $this->closeDeleteContactModal();
@@ -342,8 +416,17 @@ class ContactManager extends Component
 
             return;
         }
+        if ($contact->admin_user_id && $contact->admin_user_id === auth()->id()) {
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Você não pode excluir sua própria conta por aqui.' } }))");
+            $this->closeDeleteContactModal();
+
+            return;
+        }
         $name = $contact->name;
         $contact->groups()->detach();
+        if ($contact->admin_user_id) {
+            User::whereKey($contact->admin_user_id)->delete();
+        }
         $contact->delete();
 
         ActivityLogger::log('deleted', "Contato \"{$name}\" excluido", null, ['name' => $name, 'id' => $id]);
@@ -620,6 +703,7 @@ class ContactManager extends Component
         }
 
         $groups = ContactGroup::whereNull('owner_contact_id')->withCount(['contacts', 'rooms'])->orderBy('sort_order')->orderBy('name')->get();
+        $isSuperAdmin = (bool) auth('web')->user()?->isSuperAdmin();
 
         return view('livewire.admin.contact-manager', [
             'contacts' => $query->paginate(15),
@@ -627,8 +711,8 @@ class ContactManager extends Component
             'rooms' => Room::with('contactGroup')->where(fn ($rooms) => $rooms->whereNull('contact_group_id')->orWhereHas('contactGroup', fn ($groups) => $groups->whereNull('owner_contact_id')))->orderBy('name')->get(),
             'contactsForGroups' => Contact::orderBy('name')->get(['id', 'name', 'email']),
             'sectors' => $groups->pluck('name')->values()->all(),
-            'cargos' => ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiario'],
-            'isSuperAdmin' => (bool) auth('web')->user()?->isSuperAdmin(),
+            'cargos' => $this->allowedCargos(),
+            'isSuperAdmin' => $isSuperAdmin,
         ]);
     }
 }

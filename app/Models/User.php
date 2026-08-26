@@ -17,7 +17,7 @@ class User extends Authenticatable
      * Permissoes exclusivas do papel "super-admin" (alem do acesso geral que
      * "admin" e "super-admin" compartilham para salas e reservas).
      */
-    private const SUPER_ADMIN_PERMISSIONS = ['access-contacts', 'access-reports', 'access-activity-log'];
+    private const SUPER_ADMIN_PERMISSIONS = ['access-contacts', 'access-reports', 'access-activity-log', 'manage-users'];
 
     protected $fillable = [
         'name',
