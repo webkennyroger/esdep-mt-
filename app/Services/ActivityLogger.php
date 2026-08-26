@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ActivityLog;
 use App\Models\Room;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class ActivityLogger
@@ -115,6 +116,10 @@ class ActivityLogger
 
         $descriptions = [];
 
+        $roomNames = isset($changes['room_id'])
+            ? Room::whereIn('id', array_filter([(int) $changes['room_id'], (int) $reservation->room_id]))->pluck('name', 'id')
+            : collect();
+
         foreach ($changes as $field => $oldValue) {
             $newValue = $reservation->{$field};
 
@@ -124,8 +129,8 @@ class ActivityLogger
             }
 
             [$label, $verb] = $labels[$field] ?? [ucfirst(str_replace('_', ' ', $field)), 'alterado'];
-            $oldLabel = self::formatReservationValue($field, $oldValue);
-            $newLabel = self::formatReservationValue($field, $newValue);
+            $oldLabel = self::formatReservationValue($field, $oldValue, $roomNames);
+            $newLabel = self::formatReservationValue($field, $newValue, $roomNames);
 
             $descriptions[] = "{$label} {$verb} de \"{$oldLabel}\" para \"{$newLabel}\"";
         }
@@ -158,14 +163,14 @@ class ActivityLogger
         };
     }
 
-    private static function formatReservationValue(string $field, mixed $value): string
+    private static function formatReservationValue(string $field, mixed $value, ?Collection $roomNames = null): string
     {
         if ($value === null || $value === '') {
             return 'nao definido';
         }
 
         return match ($field) {
-            'room_id' => Room::find((int) $value)->name ?? 'Sala #'.$value,
+            'room_id' => $roomNames?->get((int) $value) ?? 'Sala #'.$value,
             'date' => $value instanceof Carbon
                 ? $value->format('d/m/Y')
                 : Carbon::parse($value)->format('d/m/Y'),
@@ -173,16 +178,6 @@ class ActivityLogger
             'start_time', 'end_time' => substr((string) $value, 0, 5),
             default => (string) $value,
         };
-    }
-
-    public static function userCreated(object $user): ActivityLog
-    {
-        return self::log(
-            'created',
-            "Usuario \"{$user->name}\" criado",
-            $user,
-            ['name' => $user->name, 'email' => $user->email, 'role' => $user->role]
-        );
     }
 
     public static function userUpdated(object $user, array $oldValues, array $newValues): ActivityLog

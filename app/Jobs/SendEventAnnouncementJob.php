@@ -31,20 +31,25 @@ class SendEventAnnouncementJob implements ShouldQueue
 
         $contacts = \App\Models\Contact::whereIn('id', $this->contactIds)->get(['id', 'name', 'email']);
 
+        $sent = 0;
+        $failed = 0;
+
         foreach ($contacts as $contact) {
             try {
                 Mail::to($contact->email)->send(
                     new EventAnnouncementMail($announcement->reservation, $contact->name, $announcement->message)
                 );
 
-                $announcement->increment('sent_count');
+                $sent++;
             } catch (\Exception $e) {
-                $announcement->increment('failed_count');
+                $failed++;
                 Log::error("Erro ao enviar email para {$contact->email}: ".$e->getMessage());
             }
         }
 
         $announcement->update([
+            'sent_count' => $announcement->sent_count + $sent,
+            'failed_count' => $announcement->failed_count + $failed,
             'status' => 'completed',
             'sent_at' => now(),
         ]);

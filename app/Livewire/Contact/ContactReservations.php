@@ -115,12 +115,6 @@ class ContactReservations extends Component
         $this->toast('Reserva autorizada com sucesso.');
     }
 
-    public function approve(int $id): void
-    {
-        app(ApproveReservationAction::class)->execute($this->managedReservation($id));
-        $this->toast('Reserva autorizada com sucesso.');
-    }
-
     public function openRejectModal(int $id, string $name): void
     {
         $this->managedReservation($id);
@@ -149,12 +143,6 @@ class ContactReservations extends Component
         }
         app(RejectReservationAction::class)->execute($this->managedReservation($reservationId), $this->rejectReason ?: 'Rejeitada pelo responsável da sala');
         $this->closeRejectModal();
-        $this->toast('Reserva rejeitada.');
-    }
-
-    public function reject(int $id): void
-    {
-        app(RejectReservationAction::class)->execute($this->managedReservation($id), 'Rejeitada pelo responsável da sala');
         $this->toast('Reserva rejeitada.');
     }
 

@@ -8,7 +8,6 @@ use App\Jobs\SyncGoogleCalendarJob;
 use App\Models\Reservation;
 use App\Services\ActivityLogger;
 use App\Services\ConflictCheckerService;
-use Illuminate\Support\Facades\Auth;
 
 class ApproveReservationAction
 {
@@ -42,12 +41,6 @@ class ApproveReservationAction
 
         // Registrar no historico de atividades
         ActivityLogger::reservationApproved($reservation);
-
-        $reservation->logs()->create([
-            'user_id' => Auth::guard('web')->id(),
-            'action' => 'approved',
-            'reason' => Auth::guard('web')->check() ? 'Reserva autorizada pelo administrador' : 'Reserva autorizada pelo responsável da sala',
-        ]);
 
         event(new ReservationApproved($reservation));
 

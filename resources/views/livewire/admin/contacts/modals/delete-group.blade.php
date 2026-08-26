@@ -13,7 +13,7 @@
                         <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Tem certeza que deseja excluir o grupo <strong>{{ $deleteGroupName }}</strong>?</p>
                     </div>
                 </div>
-                <button type="button" wire:click="closeDeleteGroupModal" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#e6f2ec]">
+                <button type="button" wire:click="closeDeleteGroupModal" class="rounded-lg p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#e6f2ec]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>

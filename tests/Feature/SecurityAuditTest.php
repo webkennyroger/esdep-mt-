@@ -26,6 +26,22 @@ test('login route has rate limiting active', function () {
     $response->assertStatus(429);
 });
 
+test('contact login route has rate limiting active', function () {
+    for ($i = 0; $i < 5; $i++) {
+        $this->post('/contato/login', [
+            'email' => 'invalid@esdep.mt.gov.br',
+            'password' => 'wrong-password',
+        ]);
+    }
+
+    $response = $this->post('/contato/login', [
+        'email' => 'invalid@esdep.mt.gov.br',
+        'password' => 'wrong-password',
+    ]);
+
+    $response->assertStatus(429);
+});
+
 test('contact import validates email format per line', function () {
     $admin = User::factory()->create(['role' => 'super_admin']);
 

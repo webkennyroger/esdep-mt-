@@ -1,4 +1,4 @@
-<div wire:poll.5s>
+<div wire:poll.30s>
     <div class="mb-8">
         <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>

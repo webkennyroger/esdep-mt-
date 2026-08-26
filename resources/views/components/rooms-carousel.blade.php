@@ -1,3 +1,24 @@
+{{-- Versao mobile: lista com rolagem horizontal, sem o efeito 3D --}}
+<div class="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory lg:hidden">
+    @foreach([
+        ['name' => 'Sala Horizonte', 'capacity' => 'ATÉ 60 PESSOAS', 'from' => '#006b48', 'to' => '#004d3c'],
+        ['name' => 'Sala Ipê', 'capacity' => 'ATÉ 30 PESSOAS', 'from' => '#00b98b', 'to' => '#00856b'],
+        ['name' => 'Sala 165', 'capacity' => 'ATÉ 10 PESSOAS', 'from' => '#00856b', 'to' => '#004d3c'],
+        ['name' => 'Sede Auditório', 'capacity' => 'ATÉ 10 PESSOAS', 'from' => '#4fd1a5', 'to' => '#00856b'],
+        ['name' => 'Sede Reuniões', 'capacity' => 'ATÉ 60 PESSOAS', 'from' => '#004d3c', 'to' => '#003f32'],
+        ['name' => 'Sala Conselho', 'capacity' => 'ATÉ 15 PESSOAS', 'from' => '#2c4a3e', 'to' => '#1a2e26'],
+    ] as $room)
+        <div class="relative h-56 w-48 shrink-0 snap-start overflow-hidden rounded-2xl ring-1 ring-white/10"
+            style="background: linear-gradient(to bottom right, {{ $room['from'] }}, {{ $room['to'] }});">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+            <div class="absolute bottom-4 left-4 right-4">
+                <p class="text-base font-semibold text-white tracking-tight mb-1">{{ $room['name'] }}</p>
+                <p class="text-xs text-white/70">{{ $room['capacity'] }}</p>
+            </div>
+        </div>
+    @endforeach
+</div>
+
 <div class="hidden lg:flex lg:justify-end">
     <div class="relative flex w-full max-w-[700px] items-center justify-center" style="perspective: 1200px;">
 

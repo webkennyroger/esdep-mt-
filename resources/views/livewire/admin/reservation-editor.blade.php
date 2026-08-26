@@ -6,7 +6,7 @@
 
         <div class="mb-5 flex items-center justify-between">
             <h3 class="text-lg font-bold text-slate-900 dark:text-[#e6f2ec]">Editar Reserva</h3>
-            <button wire:click="close" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#e6f2ec]">
+            <button wire:click="close" class="rounded-lg p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#e6f2ec]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -16,7 +16,7 @@
         <form wire:submit="save" class="space-y-5">
 
             {{-- Nome do Responsavel e Evento --}}
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do responsavel <span class="text-red-500">*</span></label>
                     <input wire:model="requesterName" type="text" placeholder="Ex.: Ana Martins"
@@ -72,7 +72,7 @@
             </div>
 
             {{-- Data e Horarios --}}
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Data do evento <span class="text-red-500">*</span></label>
                     <input wire:model.live="date" type="date"
@@ -148,7 +148,7 @@
             {{-- Servicos Adicionais --}}
             <fieldset class="rounded-lg border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#081712]/50">
                 <legend class="px-2 text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Servicos adicionais</legend>
-                <div class="grid grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <fieldset class="border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#0c221a]/40">
                         <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Coffee break</legend>
                         <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">

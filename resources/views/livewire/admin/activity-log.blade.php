@@ -217,7 +217,7 @@
     @if($showDetailModal && $selectedLog)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data>
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" wire:click="closeDetailModal"></div>
-            <div class="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:border dark:border-[#16352a] dark:bg-[#0c221a]">
+            <div class="relative w-full max-w-2xl overflow-y-auto max-h-[90vh] rounded-2xl bg-white shadow-2xl dark:border dark:border-[#16352a] dark:bg-[#0c221a]">
                 
                 {{-- Header --}}
                 @php
@@ -231,7 +231,7 @@
                     };
                 @endphp
                 <div class="relative bg-gradient-to-r {{ $headerColor }} px-6 py-5">
-                    <button wire:click="closeDetailModal" class="absolute right-4 top-4 rounded-lg bg-white/20 p-1.5 text-white backdrop-blur-sm hover:bg-white/30">
+                    <button wire:click="closeDetailModal" class="absolute right-4 top-4 rounded-lg bg-white/20 p-2.5 text-white backdrop-blur-sm hover:bg-white/30">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>

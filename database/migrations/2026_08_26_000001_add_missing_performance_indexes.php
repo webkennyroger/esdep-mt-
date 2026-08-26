@@ -1,0 +1,38 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('rooms', function (Blueprint $table) {
+            $table->index('contact_group_id');
+        });
+
+        Schema::table('contact_groups', function (Blueprint $table) {
+            $table->index('owner_contact_id');
+        });
+
+        Schema::table('contact_contact_group', function (Blueprint $table) {
+            $table->index('contact_group_id');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('rooms', function (Blueprint $table) {
+            $table->dropIndex(['contact_group_id']);
+        });
+
+        Schema::table('contact_groups', function (Blueprint $table) {
+            $table->dropIndex(['owner_contact_id']);
+        });
+
+        Schema::table('contact_contact_group', function (Blueprint $table) {
+            $table->dropIndex(['contact_group_id']);
+        });
+    }
+};

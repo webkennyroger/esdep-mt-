@@ -9,7 +9,6 @@ use App\Models\Reservation;
 use App\Models\Room;
 use App\Services\ActivityLogger;
 use App\Services\ConflictCheckerService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -54,12 +53,6 @@ class CreateReservationAction
 
         // Registrar no historico de atividades
         ActivityLogger::reservationCreated($reservation);
-
-        $reservation->logs()->create([
-            'user_id' => Auth::id(),
-            'action' => 'created',
-            'reason' => 'Solicitação registrada pelo formulário',
-        ]);
 
         event(new ReservationRequested($reservation));
 

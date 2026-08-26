@@ -105,7 +105,7 @@
     @if($showDeleteModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data>
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" wire:click="closeDeleteModal"></div>
-            <div class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:border dark:border-[#16352a] dark:bg-[#0c221a]">
+            <div class="relative w-full max-w-md overflow-y-auto max-h-[90vh] rounded-2xl bg-white shadow-2xl dark:border dark:border-[#16352a] dark:bg-[#0c221a]">
                 <div class="px-6 py-5">
                     <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/50">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

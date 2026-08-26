@@ -688,7 +688,7 @@ class ContactManager extends Component
             'contacts' => $query->paginate(15),
             'groups' => $groups,
             'rooms' => Room::with('contactGroup')->where(fn ($rooms) => $rooms->whereNull('contact_group_id')->orWhereHas('contactGroup', fn ($groups) => $groups->whereNull('owner_contact_id')))->orderBy('name')->get(),
-            'contactsForGroups' => Contact::orderBy('name')->get(['id', 'name', 'email']),
+            'contactsForGroups' => Contact::orderBy('name')->limit(300)->get(['id', 'name', 'email']),
             'sectors' => $groups->pluck('name')->values()->all(),
             'cargos' => $this->allowedCargos(),
             'isSuperAdmin' => $isSuperAdmin,

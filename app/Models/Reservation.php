@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /** @property-read Room|null $room */
 class Reservation extends Model
@@ -67,11 +66,6 @@ class Reservation extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
-    }
-
-    public function logs(): HasMany
-    {
-        return $this->hasMany(ReservationLog::class)->latest();
     }
 
     public function scopeAccessibleTo(Builder $query, ?User $user): Builder

@@ -188,11 +188,11 @@ test('responsible contact can approve own group reservation but not another grou
     $contact->groups()->attach($groupA, ['is_responsible' => true]);
 
     Livewire::actingAs($contact, 'contact')->test(ContactReservations::class)
-        ->call('approve', $ownGroupReservation->id);
+        ->call('confirmApprove', $ownGroupReservation->id);
     expect($ownGroupReservation->fresh()->status->value)->toBe('authorized');
 
     expect(fn () => Livewire::actingAs($contact, 'contact')->test(ContactReservations::class)
-        ->call('approve', $foreignReservation->id))
+        ->call('openApproveModal', $foreignReservation->id, 'Reserva B'))
         ->toThrow(ModelNotFoundException::class);
 });
 
@@ -564,4 +564,74 @@ test('group user can persist drag and drop order only inside own scope', functio
         ->and($roomB->fresh()->sort_order)->toBe(0)->and($roomA->fresh()->sort_order)->toBe(1)
         ->and($reservationB->fresh()->sort_order)->toBe(0)->and($reservationA->fresh()->sort_order)->toBe(1)
         ->and($contactB->fresh()->sort_order)->toBe(0)->and($contactA->fresh()->sort_order)->toBe(1);
+});
+
+test('a contact cannot set their own or another contacts cargo to admin', function () {
+    $group = ContactGroup::create(['name' => 'GRUPO SEGURANCA', 'color' => '#008b5c']);
+    $contact = Contact::create(['name' => 'Tentativa Admin', 'email' => 'tentativa-admin@example.com', 'password' => 'password', 'is_active' => true]);
+    $contact->groups()->attach($group);
+
+    Livewire::actingAs($contact, 'contact')->test(ContactGroups::class)
+        ->set('newName', 'Novo Contato')
+        ->set('newEmail', 'novo-contato-admin@example.com')
+        ->set('newTipo', 'Admin')
+        ->call('createContact')
+        ->assertHasErrors(['newTipo']);
+
+    expect(Contact::where('email', 'novo-contato-admin@example.com')->exists())->toBeFalse();
+
+    Livewire::actingAs($contact, 'contact')->test(ContactGroups::class)
+        ->call('openEditModal', $contact->id)
+        ->set('editTipo', 'Admin')
+        ->call('updateContact')
+        ->assertHasErrors(['editTipo']);
+
+    expect($contact->fresh()->tipo)->not->toBe('Admin');
+});
+
+test('a contact cannot edit or delete a contact linked to an admin account', function () {
+    $group = ContactGroup::create(['name' => 'GRUPO ADMIN LINK', 'color' => '#008b5c']);
+    $admin = User::factory()->create(['role' => 'super_admin']);
+    $linkedContact = Contact::create(['name' => 'Ligado ao Admin', 'email' => 'ligado-admin@example.com', 'password' => 'password', 'is_active' => true, 'tipo' => 'Admin', 'admin_user_id' => $admin->id]);
+    $linkedContact->groups()->attach($group);
+    $manager = Contact::create(['name' => 'Gestor Grupo Admin', 'email' => 'gestor-grupo-admin@example.com', 'password' => 'password', 'is_active' => true]);
+    $manager->groups()->attach($group, ['is_responsible' => true]);
+
+    Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
+        ->call('openEditModal', $linkedContact->id)
+        ->set('editName', 'Renomeado')
+        ->call('updateContact');
+
+    expect($linkedContact->fresh()->name)->toBe('Ligado ao Admin');
+
+    Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
+        ->call('deleteContact', $linkedContact->id);
+
+    expect(Contact::find($linkedContact->id))->not->toBeNull();
+});
+
+test('a group member who is not the responsible manager cannot edit or delete the sector group', function () {
+    $group = ContactGroup::create(['name' => 'GRUPO MEMBRO COMUM', 'color' => '#008b5c']);
+    $manager = Contact::create(['name' => 'Gestor Responsavel', 'email' => 'gestor-responsavel@example.com', 'password' => 'password', 'is_active' => true]);
+    $manager->groups()->attach($group, ['is_responsible' => true]);
+    $plainMember = Contact::create(['name' => 'Membro Comum', 'email' => 'membro-comum@example.com', 'password' => 'password', 'is_active' => true]);
+    $plainMember->groups()->attach($group);
+
+    expect(fn () => Livewire::actingAs($plainMember, 'contact')->test(ContactGroups::class)
+        ->call('openEditGroupModal', $group->id))
+        ->toThrow(ModelNotFoundException::class);
+
+    expect(fn () => Livewire::actingAs($plainMember, 'contact')->test(ContactGroups::class)
+        ->call('deleteGroup', $group->id))
+        ->toThrow(ModelNotFoundException::class);
+
+    expect(ContactGroup::find($group->id))->not->toBeNull();
+
+    Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
+        ->call('openEditGroupModal', $group->id)
+        ->set('editGroupName', 'RENOMEADO')
+        ->call('updateGroup')
+        ->assertHasNoErrors();
+
+    expect($group->fresh()->name)->toBe('RENOMEADO');
 });

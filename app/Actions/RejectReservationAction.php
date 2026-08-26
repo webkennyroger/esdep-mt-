@@ -6,7 +6,6 @@ use App\Enums\ReservationStatus;
 use App\Events\ReservationRejected;
 use App\Models\Reservation;
 use App\Services\ActivityLogger;
-use Illuminate\Support\Facades\Auth;
 
 class RejectReservationAction
 {
@@ -22,12 +21,6 @@ class RejectReservationAction
 
         // Registrar no historico de atividades
         ActivityLogger::reservationRejected($reservation, $reason);
-
-        $reservation->logs()->create([
-            'user_id' => Auth::guard('web')->id(),
-            'action' => 'rejected',
-            'reason' => $reason ?? 'Reserva rejeitada pelo administrador',
-        ]);
 
         event(new ReservationRejected($reservation));
 

@@ -7,7 +7,6 @@ use App\Models\Reservation;
 use App\Models\Room;
 use App\Services\ActivityLogger;
 use App\Services\ConflictCheckerService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class UpdateReservationAction
@@ -37,17 +36,7 @@ class UpdateReservationAction
             // Registrar no historico de atividades
             ActivityLogger::reservationUpdated($reservation, $changes);
 
-            $reservation->logs()->create([
-                'user_id' => Auth::guard('web')->id(),
-                'action' => 'updated',
-                'changes' => $changes,
-                'reason' => Auth::guard('web')->check()
-                    ? 'Reserva atualizada pelo administrador'
-                    : 'Reserva atualizada pelo contato responsável',
-            ]);
-
             event(new ReservationUpdated($reservation));
-
         });
 
         return $reservation;

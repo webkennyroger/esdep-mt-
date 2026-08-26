@@ -112,16 +112,14 @@
     {{-- Create Room Modal --}}
     @if($showCreateModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" wire:click="closeCreateModal">
-            <div class="mx-4 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-[#0c221a]" wire:click.stop>
+            <div class="mx-4 w-full max-w-lg overflow-y-auto max-h-[90vh] rounded-2xl bg-white p-6 shadow-xl dark:bg-[#0c221a]" wire:click.stop>
                 <h3 class="text-lg font-bold text-slate-900 dark:text-[#e6f2ec]">Nova Sala</h3>
                 <form wire:submit="createRoom" class="mt-4 space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Nome da Sala *</label>
-                            <input type="text" wire:model="name" placeholder="Ex: Auditório Principal"
-                                class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
-                            @error('name') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-                        </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Nome da Sala *</label>
+                        <input type="text" wire:model="name" placeholder="Ex: Auditório Principal"
+                            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
+                        @error('name') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -140,7 +138,7 @@
                         @error('notificationEmail') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Capacidade (Pessoas) *</label>
                             <input type="number" min="1" wire:model="capacity"
@@ -193,16 +191,14 @@
     {{-- Edit Room Modal --}}
     @if($showEditModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" wire:click="closeEditModal">
-            <div class="mx-4 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-[#0c221a]" wire:click.stop>
+            <div class="mx-4 w-full max-w-lg overflow-y-auto max-h-[90vh] rounded-2xl bg-white p-6 shadow-xl dark:bg-[#0c221a]" wire:click.stop>
                 <h3 class="text-lg font-bold text-slate-900 dark:text-[#e6f2ec]">Editar Sala</h3>
                 <form wire:submit="updateRoom" class="mt-4 space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Nome da Sala *</label>
-                            <input type="text" wire:model="editName"
-                                class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
-                            @error('editName') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-                        </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Nome da Sala *</label>
+                        <input type="text" wire:model="editName"
+                            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
+                        @error('editName') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -221,7 +217,7 @@
                         @error('editNotificationEmail') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Capacidade (Pessoas) *</label>
                             <input type="number" min="1" wire:model="editCapacity"
