@@ -166,13 +166,6 @@ class ContactGroups extends ContactManager
         $allowed = $this->allowedGroupIds();
         $willBeOrphaned = ! $contact->groups()->whereNotIn('contact_groups.id', $allowed)->exists();
 
-        if ($willBeOrphaned && Reservation::where('requester_email', strtolower($contact->email))->exists()) {
-            $this->closeDeleteContactModal();
-            $this->toast('Não é possível excluir um contato com histórico de reservas. Desative-o.', 'error');
-
-            return;
-        }
-
         if ($willBeOrphaned && ContactGroup::where('owner_contact_id', $contact->id)->exists()) {
             $this->closeDeleteContactModal();
             $this->toast('Não é possível excluir um contato responsável por um grupo. Exclua o grupo primeiro.', 'error');

@@ -368,21 +368,6 @@ class ContactManager extends Component
         $this->viewContact = null;
     }
 
-    public function toggleActive(int $id): void
-    {
-        $contact = Contact::findOrFail($id);
-
-        if ($contact->is_active) {
-            $contact->unsubscribe();
-        } else {
-            $contact->subscribe();
-        }
-
-        $status = $contact->is_active ? 'ativado' : 'desativado';
-        ActivityLogger::log('updated', "Contato \"{$contact->name}\" {$status}", $contact, ['is_active' => $contact->is_active]);
-        $this->dispatch('contactUpdated');
-    }
-
     public function confirmDeleteContact(int $id): void
     {
         $contact = Contact::findOrFail($id);
@@ -404,12 +389,6 @@ class ContactManager extends Component
 
         abort_if($contact->admin_user_id && ! $this->canManageAdmins(), 403);
 
-        if (Reservation::where('requester_email', strtolower($contact->email))->exists()) {
-            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Não é possível excluir um contato com histórico de reservas. Desative-o.' } }))");
-            $this->closeDeleteContactModal();
-
-            return;
-        }
         if (ContactGroup::where('owner_contact_id', $contact->id)->exists()) {
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Não é possível excluir um contato responsável por um grupo. Transfira ou exclua o grupo primeiro.' } }))");
             $this->closeDeleteContactModal();

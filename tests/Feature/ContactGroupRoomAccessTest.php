@@ -382,7 +382,7 @@ test('group user cannot delete a contact that owns another private group', funct
         ->and(ContactGroup::find($secondaryGroup->id))->not->toBeNull();
 });
 
-test('group user cannot delete a contact with reservation history', function () {
+test('group user can delete a contact with reservation history and the reservation is preserved', function () {
     $manager = Contact::create(['name' => 'Gestor', 'email' => 'gestor-historico@example.com', 'password' => 'password', 'is_active' => true]);
     $group = ContactGroup::create(['name' => 'GRUPO HISTORICO', 'color' => '#008b5c']);
     $manager->groups()->attach($group, ['is_responsible' => true]);
@@ -390,7 +390,7 @@ test('group user cannot delete a contact with reservation history', function () 
     $requester = Contact::create(['name' => 'Solicitante com historico', 'email' => 'com-historico@example.com', 'password' => 'password', 'is_active' => true]);
     $requester->groups()->attach($group);
     $room = Room::factory()->create();
-    Reservation::create([
+    $reservation = Reservation::create([
         'room_id' => $room->id, 'event_name' => 'Evento antigo', 'requester_name' => 'Solicitante com historico',
         'requester_email' => 'com-historico@example.com', 'date' => now()->subDays(10),
         'start_time' => '09:00', 'end_time' => '10:00', 'attendees_count' => 5, 'status' => 'authorized',
@@ -399,7 +399,8 @@ test('group user cannot delete a contact with reservation history', function () 
     Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
         ->call('deleteContact', $requester->id);
 
-    expect(Contact::find($requester->id))->not->toBeNull();
+    expect(Contact::find($requester->id))->toBeNull();
+    expect(Reservation::find($reservation->id))->not->toBeNull();
 });
 
 test('group user can move a contact between groups owned by their account', function () {

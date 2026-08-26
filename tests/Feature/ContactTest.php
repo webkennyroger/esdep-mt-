@@ -37,20 +37,30 @@ test('cannot create duplicate email', function () {
         ->assertHasErrors(['newEmail']);
 });
 
-test('toggle contact active', function () {
+test('a contact with reservation history can still be deleted', function () {
     $contact = Contact::create([
         'name' => 'Carlos',
         'email' => 'carlos@test.com',
         'is_active' => true,
-        'subscribed_at' => now(),
+    ]);
+    $room = \App\Models\Room::factory()->create();
+    \App\Models\Reservation::create([
+        'room_id' => $room->id,
+        'event_name' => 'Evento',
+        'requester_name' => 'Carlos',
+        'requester_email' => 'carlos@test.com',
+        'date' => now()->addDays(2),
+        'start_time' => '09:00',
+        'end_time' => '10:00',
+        'attendees_count' => 5,
+        'status' => 'pending',
     ]);
 
     Livewire::test(ContactManager::class)
-        ->call('toggleActive', $contact->id);
+        ->call('deleteContact', $contact->id);
 
-    $contact->refresh();
-    expect($contact->is_active)->toBeFalse();
-    expect($contact->unsubscribed_at)->not->toBeNull();
+    $this->assertDatabaseMissing('contacts', ['id' => $contact->id]);
+    $this->assertDatabaseHas('reservations', ['requester_email' => 'carlos@test.com']);
 });
 
 test('create group', function () {
