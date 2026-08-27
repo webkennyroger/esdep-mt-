@@ -78,6 +78,11 @@ class Reservation extends Model
             return $query;
         }
 
-        return $query->whereRaw('1 = 0');
+        // Espelha Contact::accessibleReservations(): a pessoa enxerga o que ela
+        // mesma solicitou, mais tudo das salas dos setores a que pertence.
+        return $query->where(function (Builder $scoped) use ($user): void {
+            $scoped->where('requester_email', strtolower($user->email))
+                ->orWhereIn('room_id', $user->managedRoomIds());
+        });
     }
 }

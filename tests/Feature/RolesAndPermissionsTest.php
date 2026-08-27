@@ -1,9 +1,16 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Models\Role;
 
-test('creating a user syncs the legacy role column into a real spatie role', function () {
-    $user = User::factory()->create(['role' => 'admin']);
+test('a coluna legada role nao existe mais: o spatie e a unica fonte de verdade', function () {
+    expect(Schema::hasColumn('users', 'role'))->toBeFalse();
+});
+
+test('o papel admin e uma atribuicao real do spatie', function () {
+    $user = User::factory()->admin()->create();
 
     expect($user->hasRole('admin'))->toBeTrue()
         ->and($user->hasRole('super-admin'))->toBeFalse()
@@ -11,36 +18,39 @@ test('creating a user syncs the legacy role column into a real spatie role', fun
         ->and($user->isSuperAdmin())->toBeFalse();
 });
 
-test('both super_admin and super-admin legacy spellings map to the same spatie role', function () {
-    $underscore = User::factory()->create(['role' => 'super_admin']);
-    $hyphen = User::factory()->create(['role' => 'super-admin']);
-
-    expect($underscore->hasRole('super-admin'))->toBeTrue()
-        ->and($hyphen->hasRole('super-admin'))->toBeTrue()
-        ->and($underscore->isSuperAdmin())->toBeTrue()
-        ->and($hyphen->isSuperAdmin())->toBeTrue();
-});
-
-test('a plain user gets no admin role at all', function () {
-    $user = User::factory()->create(['role' => 'user']);
+test('um usuario comum nao recebe papel algum', function () {
+    $user = User::factory()->create();
 
     expect($user->is_admin)->toBeFalse()
         ->and($user->isSuperAdmin())->toBeFalse()
         ->and($user->roles()->count())->toBe(0);
 });
 
-test('changing role later updates the spatie role assignment', function () {
-    $user = User::factory()->create(['role' => 'admin']);
-    expect($user->isSuperAdmin())->toBeFalse();
+test('mudar o papel pelo spatie sobrevive a um save do usuario', function () {
+    // Regressao: um hook no model ressincronizava os papeis a partir da coluna
+    // legada `role` a cada `save()`. Como o login grava `last_login_at`, qualquer
+    // papel atribuido pela interface era desfeito no acesso seguinte.
+    $user = User::factory()->admin()->create();
 
-    $user->update(['role' => 'super_admin']);
+    $user->syncRoles(['super-admin']);
+    $user->forceFill(['last_login_at' => now()])->save();
+    $user->refresh();
 
     expect($user->isSuperAdmin())->toBeTrue()
         ->and($user->hasRole('admin'))->toBeFalse();
 });
 
+test('as migrations criam os papeis canonicos sem depender de seeder', function () {
+    // O hook antigo criava os papeis sob demanda com findOrCreate; sem ele, um
+    // banco recem-migrado precisa ja vir com a estrutura pronta.
+    expect(Role::where('name', 'admin')->exists())->toBeTrue()
+        ->and(Role::where('name', 'super-admin')->exists())->toBeTrue()
+        ->and(Role::findByName('super-admin', 'web')->permissions->pluck('name')->sort()->values()->all())
+        ->toBe(['access-activity-log', 'access-contacts', 'access-reports', 'manage-users']);
+});
+
 test('admin role can manage rooms and reservations but not contacts, reports or activity log', function () {
-    $admin = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)->get(route('admin.rooms.index'))->assertOk();
     $this->actingAs($admin)->get(route('admin.contacts.index'))->assertForbidden();
@@ -49,7 +59,7 @@ test('admin role can manage rooms and reservations but not contacts, reports or 
 });
 
 test('super-admin can access every admin area including contacts, reports and activity log', function () {
-    $superAdmin = User::factory()->create(['role' => 'super_admin']);
+    $superAdmin = User::factory()->superAdmin()->create();
 
     $this->actingAs($superAdmin)->get(route('admin.rooms.index'))->assertOk();
     $this->actingAs($superAdmin)->get(route('admin.contacts.index'))->assertOk();
@@ -58,10 +68,10 @@ test('super-admin can access every admin area including contacts, reports and ac
 });
 
 test('roles and permissions seeder creates the expected structure', function () {
-    $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
-    expect(\Spatie\Permission\Models\Role::where('name', 'admin')->exists())->toBeTrue()
-        ->and(\Spatie\Permission\Models\Role::where('name', 'super-admin')->exists())->toBeTrue()
-        ->and(\Spatie\Permission\Models\Role::findByName('super-admin', 'web')->permissions->pluck('name')->sort()->values()->all())
+    expect(Role::where('name', 'admin')->exists())->toBeTrue()
+        ->and(Role::where('name', 'super-admin')->exists())->toBeTrue()
+        ->and(Role::findByName('super-admin', 'web')->permissions->pluck('name')->sort()->values()->all())
         ->toBe(['access-activity-log', 'access-contacts', 'access-reports', 'manage-users']);
 });

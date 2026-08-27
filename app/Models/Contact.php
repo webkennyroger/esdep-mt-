@@ -19,7 +19,7 @@ class Contact extends Authenticatable
         'password',
         'cpf',
         'tipo',
-        'admin_user_id',
+        'user_id',
         'setor',
         'autorizado_at',
         'last_login_at',
@@ -47,9 +47,12 @@ class Contact extends Authenticatable
         return $this->belongsToMany(ContactGroup::class, 'contact_contact_group')->withPivot(['is_responsible', 'sort_order']);
     }
 
-    public function adminUser(): BelongsTo
+    /**
+     * Conta de login vinculada a este contato, quando existir.
+     */
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'admin_user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function scopeActive($query)

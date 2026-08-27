@@ -83,6 +83,16 @@
                             </svg>
                             Contatos & Grupos
                         </a>
+                        @php($pendingAccessCount = \App\Models\User::where('is_active', false)->count())
+                        <a href="{{ route('admin.users.index') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs('admin.users.*') ? 'bg-green-50 text-green-800 dark:bg-[#16352a] dark:text-[#4fd1a5]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Usuarios & Acessos
+                            @if($pendingAccessCount > 0)
+                                <span class="ml-auto rounded-full bg-amber-500 px-2 py-0.5 text-xs font-bold text-white">{{ $pendingAccessCount }}</span>
+                            @endif
+                        </a>
                         <a href="{{ route('admin.reports') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs('admin.reports') ? 'bg-green-50 text-green-800 dark:bg-[#16352a] dark:text-[#4fd1a5]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -108,7 +118,7 @@
                         </a>
                         <div class="min-w-0 flex-1">
                             <a href="{{ route('admin.profile') }}" class="block truncate text-sm font-semibold text-slate-900 transition hover:text-green-700 dark:text-[#e6f2ec] dark:hover:text-[#4fd1a5]">{{ Auth::user()->name ?? 'Admin' }}</a>
-                            <p class="truncate text-xs text-slate-500 dark:text-[#8aa39a]">{{ Auth::user()->role ?? 'admin' }}</p>
+                            <p class="truncate text-xs text-slate-500 dark:text-[#8aa39a]">{{ Auth::user()->roles->pluck('name')->implode(', ') ?: 'sem perfil' }}</p>
                         </div>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

@@ -7,7 +7,7 @@ use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['role' => 'admin']);
+    $this->admin = User::factory()->admin()->create();
 });
 
 test('admin can access room manager page', function () {

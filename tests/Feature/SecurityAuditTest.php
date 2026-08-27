@@ -51,7 +51,7 @@ test('contact login route has rate limiting active', function () {
 });
 
 test('contact import validates email format per line', function () {
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
 
     $csvData = "Valido Silva, valido@esdep.mt.gov.br\nInvalido Santos, email-sem-arroba\n";
 

@@ -82,7 +82,7 @@ test('approval notification also copies the room owner email', function () {
         'status' => ReservationStatus::AUTHORIZED,
         'requester_email' => 'solicitante@example.com',
     ]);
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
 
     app(SendEventAnnouncementAction::class)->execute($reservation, ['recipient_type' => 'contacts', 'contact_ids' => []], $admin);
 
@@ -99,7 +99,7 @@ test('rejection notification also copies the group owner email when the room has
         'status' => ReservationStatus::REJECTED,
         'requester_email' => 'solicitante@example.com',
     ]);
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
 
     app(SendEventAnnouncementAction::class)->execute($reservation, ['recipient_type' => 'contacts', 'contact_ids' => []], $admin);
 
@@ -107,7 +107,7 @@ test('rejection notification also copies the group owner email when the room has
 });
 
 test('multiple-email field rejects a list containing an invalid address', function () {
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
 
     Livewire::actingAs($admin)->test(RoomManager::class)
         ->call('openCreateModal')

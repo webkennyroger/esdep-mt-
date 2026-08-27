@@ -34,7 +34,7 @@ function managedReservation(Room $room, string $name): Reservation
 }
 
 test('existing contact group crud synchronizes its managed rooms', function () {
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
     $roomA = Room::factory()->create(['code' => 'GR-A']);
     $roomB = Room::factory()->create(['code' => 'GR-B']);
 
@@ -51,7 +51,7 @@ test('existing contact group crud synchronizes its managed rooms', function () {
 });
 
 test('deleting a group unlinks its rooms and contacts without deleting them', function () {
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
     $group = ContactGroup::create(['name' => 'GRUPO PARA EXCLUIR', 'color' => '#008b5c']);
     $room = Room::factory()->create(['contact_group_id' => $group->id]);
     $contact = Contact::create(['name' => 'Contato do grupo', 'email' => 'contato-grupo-excluido@example.com', 'password' => 'password', 'is_active' => true]);
@@ -67,7 +67,7 @@ test('deleting a group unlinks its rooms and contacts without deleting them', fu
 });
 
 test('admin can select contacts when creating and editing a group', function () {
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
     $alice = Contact::create(['name' => 'Alice', 'email' => 'alice@example.com', 'password' => 'password', 'is_active' => true]);
     $bob = Contact::create(['name' => 'Bob', 'email' => 'bob@example.com', 'password' => 'password', 'is_active' => true]);
 
@@ -234,7 +234,7 @@ test('authorized reservation moved to today appears on both dashboards and calen
     $reservation->update(['date' => today(), 'status' => 'authorized']);
     $contact = Contact::create(['name' => 'Usuário do grupo', 'email' => 'grupo@example.com', 'password' => 'password', 'is_active' => true]);
     $contact->groups()->attach($group, ['is_responsible' => false]);
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
 
     Livewire::actingAs($admin)->test(Dashboard::class)->assertSee('Evento autorizado de hoje');
     Livewire::actingAs($admin)->test(AdminCalendar::class)->call('selectDate', today()->toDateString())->assertSee('Evento autorizado de hoje');
@@ -297,7 +297,7 @@ test('status changes do not send email before the reservation is disclosed', fun
     Mail::fake();
     $room = Room::factory()->create();
     $reservation = managedReservation($room, 'Reserva sem notificação automática');
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
 
     Livewire::actingAs($admin)->test(ReservationManager::class)
         ->call('openApproveModal', $reservation->id, $reservation->event_name)
@@ -443,7 +443,7 @@ test('group user cannot remove a contact from the access group defined by super 
 });
 
 test('super admin can move a contact between global groups without changing private groups', function () {
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
     $owner = Contact::create(['name' => 'Proprietário', 'email' => 'proprietario@example.com', 'password' => 'password', 'is_active' => true]);
     $target = Contact::create(['name' => 'Contato global', 'email' => 'global@example.com', 'password' => 'password', 'is_active' => true]);
     $groupA = ContactGroup::create(['name' => 'GLOBAL A', 'color' => '#008b5c']);
@@ -469,7 +469,7 @@ test('super admin can move a contact between global groups without changing priv
 });
 
 test('contact table refreshes when super admin moves another contact into its group', function () {
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
     $groupA = ContactGroup::create(['name' => 'EQUIPE A', 'color' => '#008b5c']);
     $groupB = ContactGroup::create(['name' => 'EQUIPE B', 'color' => '#2563eb']);
     $manager = Contact::create(['name' => 'Gestor da equipe B', 'email' => 'gestor-b@example.com', 'password' => 'password', 'is_active' => true]);
@@ -501,7 +501,7 @@ test('legacy contact without membership is linked to matching global group', fun
 });
 
 test('group color selection is visibly preserved for admin and group user', function () {
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
     Livewire::actingAs($admin)->test(ContactManager::class)
         ->call('openGroupModal')
         ->set('groupColor', '#2563eb')
@@ -534,7 +534,7 @@ test('group created by contact is private and hidden from super admin', function
     $privateGroup = ContactGroup::where('name', 'GRUPO PARTICULAR')->firstOrFail();
     expect($privateGroup->owner_contact_id)->toBe($contact->id);
 
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
     Livewire::actingAs($admin)->test(ContactManager::class)->assertDontSee('GRUPO PARTICULAR');
     expect(fn () => Livewire::actingAs($admin)->test(ContactManager::class)->call('confirmDeleteGroup', $privateGroup->id))
         ->toThrow(ModelNotFoundException::class);
@@ -591,8 +591,8 @@ test('a contact cannot set their own or another contacts cargo to admin', functi
 
 test('a contact cannot edit or delete a contact linked to an admin account', function () {
     $group = ContactGroup::create(['name' => 'GRUPO ADMIN LINK', 'color' => '#008b5c']);
-    $admin = User::factory()->create(['role' => 'super_admin']);
-    $linkedContact = Contact::create(['name' => 'Ligado ao Admin', 'email' => 'ligado-admin@example.com', 'password' => 'password', 'is_active' => true, 'tipo' => 'Admin', 'admin_user_id' => $admin->id]);
+    $admin = User::factory()->superAdmin()->create();
+    $linkedContact = Contact::create(['name' => 'Ligado ao Admin', 'email' => 'ligado-admin@example.com', 'password' => 'password', 'is_active' => true, 'tipo' => 'Admin', 'user_id' => $admin->id]);
     $linkedContact->groups()->attach($group);
     $manager = Contact::create(['name' => 'Gestor Grupo Admin', 'email' => 'gestor-grupo-admin@example.com', 'password' => 'password', 'is_active' => true]);
     $manager->groups()->attach($group, ['is_responsible' => true]);

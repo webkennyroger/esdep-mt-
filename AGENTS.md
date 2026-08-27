@@ -116,6 +116,112 @@
   - Protocolo da reserva
   - Mensagem complementar (se digitada)
 
+### 2026-08-27: SSO Keycloak (Fase 1 — autenticacao no guard `web`)
+- **Decisao central**: o Keycloak responde apenas **quem e** o usuario. Nenhum
+  papel ou permissao e lido do token — a autorizacao vive **inteiramente no
+  Spatie**, dentro da aplicacao. Isso desacopla o projeto da equipe que
+  administra o realm `defensoria` (mudar papel nao depende de chamado).
+- **Chave de vinculo**: `users.keycloak_id` guarda o `sub` do token, que e
+  imutavel. O e-mail e usado **so no primeiro pareamento** — depois disso pode
+  mudar no realm sem que o usuario perca conta, papeis ou historico.
+- **`email_verified` nao e exigido**: o realm entrega `false` para contas
+  provisionadas pela TI/AD, o que e artefato do provisionamento e nao significa
+  e-mail nao confiavel. Como o realm **nao permite auto-cadastro**, o pareamento
+  por e-mail e seguro. **Se o realm passar a permitir auto-registro, essa
+  checagem precisa voltar** — sem ela, alguem poderia registrar o e-mail de um
+  admin e herdar a conta dele no passo 2 da `ResolveKeycloakUserAction`.
+- **Ambiente (Windows/XAMPP)**: o PHP precisa de CA bundle configurado
+  (`curl.cainfo` e `openssl.cafile` no php.ini), senao a troca do `code` pelo
+  token falha com `cURL error 60`. O navegador funciona e o PHP nao, porque essa
+  chamada e servidor-para-servidor.
+- **Primeiro acesso**: qualquer servidor do realm autentica com sucesso, entao
+  quem nunca usou o sistema e provisionado com `is_active = false` e cai na tela
+  `auth/aguardando-liberacao` ate um admin liberar (fail closed).
+- **Arquivos**:
+  - Migration: `2026_08_27_000001_add_keycloak_sso_to_users_table.php`
+    (`keycloak_id`, `is_active`, `activated_at`, `activated_by_id`,
+    `last_login_at`; `password` passa a ser nullable)
+  - Config: `config/services.php` (bloco `keycloak`)
+  - Provider: `AppServiceProvider` registra `SocialiteWasCalled`
+  - Controller: `app/Http/Controllers/Auth/KeycloakController.php`
+  - Action: `app/Actions/Auth/ResolveKeycloakUserAction.php`
+  - Middleware: `app/Http/Middleware/EnsureUserIsActive.php` (no grupo `web`)
+  - Views: `resources/views/auth/sso-pending.blade.php`, botao em `login.blade.php`
+  - Testes: `tests/Feature/KeycloakSsoTest.php`
+- **Logout federado**: `POST /logout` detecta `isSsoUser()` e encerra tambem a
+  sessao no Keycloak, usando o `id_token` guardado em sessao. Sem isso, o proximo
+  login entraria direto, sem pedir credenciais.
+- **Pendente (Fase 3, etapa 2)**: trocar efetivamente o guard `contact` pelo
+  `web` nos 10 componentes `app/Livewire/Contact/*` (~1.374 linhas) e nas views
+  do admin que hoje sao compartilhadas pelos dois guards.
+
+### 2026-08-27: Spatie como unica fonte de verdade dos papeis (Fase 2)
+- **Problema**: a coluna `users.role` era a fonte de verdade real. Um hook
+  `saved()` no model ressincronizava os papeis do Spatie a partir dela a cada
+  `save()`. Como o login grava `last_login_at`, **qualquer `assignRole()` era
+  desfeito no acesso seguinte** — gestao de papeis pela interface era ilusoria.
+- **Solucao**: coluna `role` removida, hook removido, Spatie passa a ser a unica
+  fonte. Papeis atribuidos com `assignRole()` / `syncRoles()`.
+- **Migration**: `2026_08_27_000002_retire_legacy_role_column.php` — converte os
+  valores legados em atribuicoes reais antes de dropar a coluna, e **cria os
+  papeis canonicos** (`admin`, `super-admin` + as 4 permissoes). Isso ultimo e
+  essencial: o hook antigo criava os papeis sob demanda com `findOrCreate`, entao
+  sem isso um banco recem-migrado (inclusive o de teste) ficaria sem papel algum.
+  O `down()` repovoa a coluna a partir dos papeis, para nao perder dados.
+- **Factory**: use `User::factory()->admin()` e `->superAdmin()` nos testes.
+  `->pending()` cria uma conta SSO aguardando liberacao.
+- **Nota**: `'manager'` nunca foi um papel de User — o "Gerente" do sistema e um
+  cargo de `Contact` (`contacts.tipo`), usado para responsabilidade por setor.
+
+### 2026-08-27: Tela de Usuarios & Acessos (`/admin/users`)
+- **Objetivo**: liberar quem entrou pelo SSO e nasceu inativo. Sem ela, todo
+  servidor que logava ficava num beco sem saida dependendo de `tinker`.
+- **Arquivos**: `app/Livewire/Admin/UserManager.php`,
+  `resources/views/livewire/admin/user-manager.blade.php`,
+  `tests/Feature/UserManagerTest.php`
+- **Permissao**: `manage-users` (exclusiva do super-admin)
+- **Funcoes**: fila de pendentes com contador no menu lateral, liberar acesso
+  concedendo perfil, trocar perfil, revogar acesso.
+- **Travas contra lockout**: ninguem pode revogar o proprio acesso nem remover o
+  proprio perfil de super-admin; o papel recebido do formulario e validado contra
+  `UserManager::ASSIGNABLE_ROLES`.
+
+### 2026-08-27: Autorizacao por setor migrada para o User (Fase 3, etapa 1)
+- **Problema**: as regras de "responsavel pelo setor" viviam so no `Contact`,
+  atreladas ao guard `contact`. `Reservation::accessibleTo()` e
+  `Room::accessibleTo()` devolviam **tudo** para admin e **nada** para os demais.
+- **Solucao**: o `User` ganhou `contact()`, `managedRoomIds()`,
+  `responsibleRoomIds()` e `canManageReservation()`, e os dois scopes passaram a
+  aplicar o mesmo criterio que o guard `contact` ja usava. Os dois guards seguem
+  de pe — esta etapa move as **regras**, nao a identidade.
+- **Vinculo**: `contacts.admin_user_id` renomeado para `contacts.user_id`
+  (migration `2026_08_27_000003`). O nome antigo mentia: com o SSO, qualquer
+  contato pode ter conta de login, nao apenas os de cargo "Admin".
+- **`ResolveKeycloakUserAction`** liga a conta ao contato de mesmo e-mail no
+  login, e **nunca rouba** um contato ja vinculado a outra conta.
+- **Testes**: `tests/Feature/UserSectorAccessTest.php`
+
+### 2026-08-27: Senha local restrita ao super-admin (break-glass)
+- No guard `web`, o login por senha so completa para quem tem `super-admin`; os
+  demais recebem orientacao para usar o SSO. Existe para o caso de o Keycloak
+  ficar indisponivel.
+- **Nao afeta** o guard `contact`, que continua com senha propria ate a etapa 2.
+- Arquivo: `routes/auth.php`
+
+### 2026-08-27: Comando `user:super-admin`
+- **Para que serve**: primeiro acesso em producao. Sem um super-admin ninguem
+  consegue liberar os demais na tela de Usuarios & Acessos — e, como o login por
+  senha sobrevive so para esse papel, e tambem a porta de entrada caso o
+  Keycloak fique fora do ar.
+- **Arquivo**: `app/Console/Commands/CreateSuperAdminCommand.php`
+- **Uso**: `php artisan user:super-admin` (pergunta e-mail, nome e senha, sem
+  ecoar a senha). Aceita `--email`, `--name`, `--password` para automacao.
+- **Comportamento**: cria ou **promove** uma conta existente sem duplicar,
+  preservando `keycloak_id` e historico; sempre deixa a conta ativa. Senha
+  minima de 12 caracteres. Com `-n` e sem `--password`, cria uma conta que so
+  entra pelo SSO (e avisa que nao havera break-glass).
+- Pede confirmacao em producao (`ConfirmableTrait`), a menos que `--force`.
+
 ## Convencoes
 
 ### Toast Notifications

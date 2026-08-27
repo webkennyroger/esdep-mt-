@@ -4,10 +4,9 @@ use App\Models\User;
 
 function createAdminUser(): User
 {
-    return User::factory()->create([
+    return User::factory()->admin()->create([
         'email' => 'admin@esdep.mt.gov.br',
         'password' => bcrypt('password'),
-        'role' => 'admin',
     ]);
 }
 
@@ -16,7 +15,6 @@ function createRegularUser(): User
     return User::factory()->create([
         'email' => 'user@esdep.mt.gov.br',
         'password' => bcrypt('password'),
-        'role' => 'user',
     ]);
 }
 

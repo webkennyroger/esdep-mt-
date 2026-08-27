@@ -8,6 +8,7 @@ use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\Reports;
 use App\Livewire\Admin\ReservationManager;
 use App\Livewire\Admin\RoomManager;
+use App\Livewire\Admin\UserManager;
 use App\Livewire\Admin\UserProfile;
 use App\Livewire\Contact\ContactActivity;
 use App\Livewire\Contact\ContactBooking;
@@ -37,6 +38,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('calendar', AdminCalendar::class)->name('calendar');
         Route::get('rooms', RoomManager::class)->name('rooms.index');
         Route::get('contacts', ContactManager::class)->name('contacts.index');
+        Route::get('users', UserManager::class)->name('users.index');
         Route::get('activity', ActivityLogController::class)->name('activity');
         Route::get('reports', Reports::class)->name('reports');
         Route::get('profile', UserProfile::class)->name('profile');

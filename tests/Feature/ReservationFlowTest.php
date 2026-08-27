@@ -9,10 +9,11 @@ use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->actingAs(User::factory()->create(['role' => 'super_admin']));
+    $this->actingAs(User::factory()->superAdmin()->create());
 });
 
 function createFlowTestRoom(): Room
@@ -67,7 +68,7 @@ test('public booking form saves all fields to database', function () {
 });
 
 test('admin reservation editor updates all fields', function () {
-    \Illuminate\Support\Facades\Mail::fake();
+    Mail::fake();
     $room = createFlowTestRoom();
     $date = now()->addDays(3)->toDateString();
 
@@ -106,7 +107,7 @@ test('admin reservation editor updates all fields', function () {
     expect($fresh->sonorizacao)->toBeTrue();
     expect($fresh->transmissao)->toBeTrue();
     expect($fresh->attendees_count)->toBe(25);
-    \Illuminate\Support\Facades\Mail::assertNothingSent();
+    Mail::assertNothingSent();
 });
 
 test('reservation editor rejects attendees above room capacity', function () {
