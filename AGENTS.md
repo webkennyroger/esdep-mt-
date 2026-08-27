@@ -208,6 +208,20 @@
 - **Nao afeta** o guard `contact`, que continua com senha propria ate a etapa 2.
 - Arquivo: `routes/auth.php`
 
+### 2026-08-27: Comando `user:super-admin`
+- **Para que serve**: primeiro acesso em producao. Sem um super-admin ninguem
+  consegue liberar os demais na tela de Usuarios & Acessos — e, como o login por
+  senha sobrevive so para esse papel, e tambem a porta de entrada caso o
+  Keycloak fique fora do ar.
+- **Arquivo**: `app/Console/Commands/CreateSuperAdminCommand.php`
+- **Uso**: `php artisan user:super-admin` (pergunta e-mail, nome e senha, sem
+  ecoar a senha). Aceita `--email`, `--name`, `--password` para automacao.
+- **Comportamento**: cria ou **promove** uma conta existente sem duplicar,
+  preservando `keycloak_id` e historico; sempre deixa a conta ativa. Senha
+  minima de 12 caracteres. Com `-n` e sem `--password`, cria uma conta que so
+  entra pelo SSO (e avisa que nao havera break-glass).
+- Pede confirmacao em producao (`ConfirmableTrait`), a menos que `--force`.
+
 ## Convencoes
 
 ### Toast Notifications
