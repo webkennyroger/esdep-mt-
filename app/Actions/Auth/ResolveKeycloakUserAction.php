@@ -3,6 +3,7 @@
 namespace App\Actions\Auth;
 
 use App\Exceptions\SsoAuthenticationException;
+use App\Models\Contact;
 use App\Models\User;
 use Laravel\Socialite\Two\User as SocialiteUser;
 
@@ -36,7 +37,7 @@ class ResolveKeycloakUserAction
         if ($user) {
             $user->forceFill(['name' => $name, 'email' => $email])->save();
 
-            return $user;
+            return $this->linkContact($user);
         }
 
         // 2. Primeiro login de alguem que ja tem conta local: vincula pelo e-mail.
@@ -46,17 +47,35 @@ class ResolveKeycloakUserAction
         if ($user) {
             $user->forceFill(['keycloak_id' => $keycloakId, 'name' => $name])->save();
 
-            return $user;
+            return $this->linkContact($user);
         }
 
         // 3. Rosto novo: provisiona inativo e sem papel nenhum, aguardando que um
         //    administrador libere o acesso e defina o que a pessoa pode fazer.
-        return User::create([
+        $user = User::create([
             'name' => $name,
             'email' => $email,
             'keycloak_id' => $keycloakId,
             'is_active' => false,
             'password' => null,
         ]);
+
+        return $this->linkContact($user);
+    }
+
+    /**
+     * Liga a conta ao cadastro de contato de mesmo e-mail, quando houver. E dai
+     * que vem a lotacao e a responsabilidade por salas do setor — sem esse elo,
+     * quem entra pelo SSO nao herda o que ja fazia como contato.
+     */
+    private function linkContact(User $user): User
+    {
+        $contact = Contact::whereRaw('LOWER(email) = ?', [strtolower($user->email)])
+            ->whereNull('user_id')
+            ->first();
+
+        $contact?->update(['user_id' => $user->id]);
+
+        return $user;
     }
 }

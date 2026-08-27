@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * @property-read Contact|null $contact
+ */
 class User extends Authenticatable
 {
     use HasFactory, HasRoles, Notifiable;
@@ -56,6 +61,41 @@ class User extends Authenticatable
             'activated_at' => now(),
             'activated_by_id' => $by?->id,
         ])->save();
+    }
+
+    /**
+     * Cadastro de contato correspondente a esta conta, quando existir. E dele
+     * que vem a lotacao (setor) e a responsabilidade por salas do setor.
+     */
+    public function contact(): HasOne
+    {
+        return $this->hasOne(Contact::class);
+    }
+
+    /**
+     * Salas dos setores aos quais a pessoa pertence — o que ela pode enxergar.
+     */
+    public function managedRoomIds(): Builder
+    {
+        return $this->contact?->managedRoomIds() ?? Room::query()->whereRaw('1 = 0')->select('rooms.id');
+    }
+
+    /**
+     * Salas dos setores pelos quais a pessoa e responsavel — o que ela pode
+     * gerenciar (aprovar, rejeitar, editar reservas).
+     */
+    public function responsibleRoomIds(): Builder
+    {
+        return $this->contact?->responsibleRoomIds() ?? Room::query()->whereRaw('1 = 0')->select('rooms.id');
+    }
+
+    public function canManageReservation(Reservation $reservation): bool
+    {
+        if ($this->is_admin) {
+            return true;
+        }
+
+        return $this->responsibleRoomIds()->whereKey($reservation->room_id)->exists();
     }
 
     public function getIsAdminAttribute(): bool

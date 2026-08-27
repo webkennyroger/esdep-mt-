@@ -150,6 +150,34 @@ test('desativar um usuario logado derruba a sessao na proxima requisicao', funct
     expect(Auth::check())->toBeFalse();
 });
 
+test('a senha local sobrevive apenas para o super-admin (break-glass)', function () {
+    User::factory()->superAdmin()->create([
+        'email' => 'super@defensoria.mt.def.br',
+        'password' => bcrypt('segredo123'),
+    ]);
+
+    $this->post(route('login.post'), [
+        'email' => 'super@defensoria.mt.def.br',
+        'password' => 'segredo123',
+    ])->assertRedirect(route('dashboard'));
+
+    expect(Auth::check())->toBeTrue();
+});
+
+test('um admin comum nao entra mais por senha, e direcionado ao sso', function () {
+    User::factory()->admin()->create([
+        'email' => 'admin.comum@defensoria.mt.def.br',
+        'password' => bcrypt('segredo123'),
+    ]);
+
+    $this->post(route('login.post'), [
+        'email' => 'admin.comum@defensoria.mt.def.br',
+        'password' => 'segredo123',
+    ])->assertSessionHasErrors('email');
+
+    expect(Auth::check())->toBeFalse();
+});
+
 test('login por senha e recusado para conta inativa', function () {
     User::factory()->create([
         'email' => 'inativo@defensoria.mt.def.br',

@@ -140,9 +140,9 @@ test('super-admin can create a contact with cargo admin which also creates a lin
         ->assertHasNoErrors();
 
     $contact = Contact::where('email', 'nova-admin@test.com')->firstOrFail();
-    expect($contact->admin_user_id)->not->toBeNull();
+    expect($contact->user_id)->not->toBeNull();
 
-    $user = User::find($contact->admin_user_id);
+    $user = User::find($contact->user_id);
     expect($user)->not->toBeNull()
         ->and($user->email)->toBe('nova-admin@test.com')
         ->and($user->is_admin)->toBeTrue()
@@ -179,8 +179,8 @@ test('changing a contact cargo to admin later creates the linked login', functio
         ->call('updateContact')
         ->assertHasNoErrors();
 
-    expect($contact->fresh()->admin_user_id)->not->toBeNull();
-    expect(User::find($contact->fresh()->admin_user_id)->email)->toBe('vira-admin@test.com');
+    expect($contact->fresh()->user_id)->not->toBeNull();
+    expect(User::find($contact->fresh()->user_id)->email)->toBe('vira-admin@test.com');
 });
 
 test('changing a contact cargo away from admin deletes the linked login', function () {
@@ -193,7 +193,7 @@ test('changing a contact cargo away from admin deletes the linked login', functi
         ->call('updateContact')
         ->assertHasNoErrors();
 
-    $adminUserId = $contact->fresh()->admin_user_id;
+    $adminUserId = $contact->fresh()->user_id;
     expect($adminUserId)->not->toBeNull();
 
     Livewire::test(ContactManager::class)
@@ -202,7 +202,7 @@ test('changing a contact cargo away from admin deletes the linked login', functi
         ->call('updateContact')
         ->assertHasNoErrors();
 
-    expect($contact->fresh()->admin_user_id)->toBeNull();
+    expect($contact->fresh()->user_id)->toBeNull();
     expect(User::find($adminUserId))->toBeNull();
 });
 
@@ -216,7 +216,7 @@ test('deleting a contact with cargo admin also removes the linked login', functi
         ->call('updateContact')
         ->assertHasNoErrors();
 
-    $adminUserId = $contact->fresh()->admin_user_id;
+    $adminUserId = $contact->fresh()->user_id;
 
     Livewire::test(ContactManager::class)
         ->call('deleteContact', $contact->id);

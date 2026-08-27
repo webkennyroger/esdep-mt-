@@ -151,8 +151,9 @@
 - **Logout federado**: `POST /logout` detecta `isSsoUser()` e encerra tambem a
   sessao no Keycloak, usando o `id_token` guardado em sessao. Sem isso, o proximo
   login entraria direto, sem pedir credenciais.
-- **Pendente (Fase 3)**: unificar o guard `contact` no `web`; restringir o login
-  por senha ao super-admin (break-glass).
+- **Pendente (Fase 3, etapa 2)**: trocar efetivamente o guard `contact` pelo
+  `web` nos 10 componentes `app/Livewire/Contact/*` (~1.374 linhas) e nas views
+  do admin que hoje sao compartilhadas pelos dois guards.
 
 ### 2026-08-27: Spatie como unica fonte de verdade dos papeis (Fase 2)
 - **Problema**: a coluna `users.role` era a fonte de verdade real. Um hook
@@ -184,6 +185,28 @@
 - **Travas contra lockout**: ninguem pode revogar o proprio acesso nem remover o
   proprio perfil de super-admin; o papel recebido do formulario e validado contra
   `UserManager::ASSIGNABLE_ROLES`.
+
+### 2026-08-27: Autorizacao por setor migrada para o User (Fase 3, etapa 1)
+- **Problema**: as regras de "responsavel pelo setor" viviam so no `Contact`,
+  atreladas ao guard `contact`. `Reservation::accessibleTo()` e
+  `Room::accessibleTo()` devolviam **tudo** para admin e **nada** para os demais.
+- **Solucao**: o `User` ganhou `contact()`, `managedRoomIds()`,
+  `responsibleRoomIds()` e `canManageReservation()`, e os dois scopes passaram a
+  aplicar o mesmo criterio que o guard `contact` ja usava. Os dois guards seguem
+  de pe — esta etapa move as **regras**, nao a identidade.
+- **Vinculo**: `contacts.admin_user_id` renomeado para `contacts.user_id`
+  (migration `2026_08_27_000003`). O nome antigo mentia: com o SSO, qualquer
+  contato pode ter conta de login, nao apenas os de cargo "Admin".
+- **`ResolveKeycloakUserAction`** liga a conta ao contato de mesmo e-mail no
+  login, e **nunca rouba** um contato ja vinculado a outra conta.
+- **Testes**: `tests/Feature/UserSectorAccessTest.php`
+
+### 2026-08-27: Senha local restrita ao super-admin (break-glass)
+- No guard `web`, o login por senha so completa para quem tem `super-admin`; os
+  demais recebem orientacao para usar o SSO. Existe para o caso de o Keycloak
+  ficar indisponivel.
+- **Nao afeta** o guard `contact`, que continua com senha propria ate a etapa 2.
+- Arquivo: `routes/auth.php`
 
 ## Convencoes
 

@@ -33,6 +33,21 @@ Route::post('login', function () {
     $credentials['email'] = strtolower(trim($credentials['email']));
 
     if (Auth::attempt($credentials + ['is_active' => true], request()->boolean('remember'))) {
+        // Break-glass: a senha local sobrevive apenas para o super-admin, para
+        // que exista uma porta de entrada caso o Keycloak fique indisponivel.
+        // Todos os demais entram exclusivamente pelo SSO institucional.
+        $authenticated = Auth::user();
+
+        if (! $authenticated instanceof User || ! $authenticated->isSuperAdmin()) {
+            Auth::logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Sua conta entra pelo login institucional. Use o botao "Entrar com a conta institucional".',
+            ])->onlyInput('email');
+        }
+
         request()->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));

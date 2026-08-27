@@ -592,7 +592,7 @@ test('a contact cannot set their own or another contacts cargo to admin', functi
 test('a contact cannot edit or delete a contact linked to an admin account', function () {
     $group = ContactGroup::create(['name' => 'GRUPO ADMIN LINK', 'color' => '#008b5c']);
     $admin = User::factory()->superAdmin()->create();
-    $linkedContact = Contact::create(['name' => 'Ligado ao Admin', 'email' => 'ligado-admin@example.com', 'password' => 'password', 'is_active' => true, 'tipo' => 'Admin', 'admin_user_id' => $admin->id]);
+    $linkedContact = Contact::create(['name' => 'Ligado ao Admin', 'email' => 'ligado-admin@example.com', 'password' => 'password', 'is_active' => true, 'tipo' => 'Admin', 'user_id' => $admin->id]);
     $linkedContact->groups()->attach($group);
     $manager = Contact::create(['name' => 'Gestor Grupo Admin', 'email' => 'gestor-grupo-admin@example.com', 'password' => 'password', 'is_active' => true]);
     $manager->groups()->attach($group, ['is_responsible' => true]);

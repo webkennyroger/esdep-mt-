@@ -225,7 +225,7 @@ class ContactManager extends Component
     public function updateContact(): void
     {
         $contact = Contact::findOrFail($this->editContactId);
-        $wasAdmin = $contact->admin_user_id !== null;
+        $wasAdmin = $contact->user_id !== null;
         $wantsAdmin = $this->editTipo === 'Admin';
 
         abort_if(($wasAdmin || $wantsAdmin) && ! $this->canManageAdmins(), 403);
@@ -234,7 +234,7 @@ class ContactManager extends Component
         if ($wantsAdmin) {
             $usersUniqueRule = Rule::unique('users', 'email');
             if ($wasAdmin) {
-                $usersUniqueRule->ignore($contact->admin_user_id);
+                $usersUniqueRule->ignore($contact->user_id);
             }
             $emailRules[] = $usersUniqueRule;
         }
@@ -310,7 +310,7 @@ class ContactManager extends Component
             $data['password'] = bcrypt($plainPassword);
         }
 
-        if ($contact->admin_user_id && $user = User::find($contact->admin_user_id)) {
+        if ($contact->user_id && $user = User::find($contact->user_id)) {
             $user->update($data);
             $user->syncRoles(['admin']);
 
@@ -319,20 +319,20 @@ class ContactManager extends Component
 
         $user = User::create($data);
         $user->assignRole('admin');
-        $contact->update(['admin_user_id' => $user->id]);
+        $contact->update(['user_id' => $user->id]);
     }
 
     private function demoteAdminAccount(Contact $contact): void
     {
-        if (! $contact->admin_user_id) {
+        if (! $contact->user_id) {
             return;
         }
 
-        if ($contact->admin_user_id !== auth()->id()) {
-            User::whereKey($contact->admin_user_id)->delete();
+        if ($contact->user_id !== auth()->id()) {
+            User::whereKey($contact->user_id)->delete();
         }
 
-        $contact->update(['admin_user_id' => null]);
+        $contact->update(['user_id' => null]);
     }
 
     private function syncContactSector(Contact $contact, ?string $sector, bool $isResponsible = false): void
@@ -391,7 +391,7 @@ class ContactManager extends Component
     {
         $contact = Contact::findOrFail($id);
 
-        abort_if($contact->admin_user_id && ! $this->canManageAdmins(), 403);
+        abort_if($contact->user_id && ! $this->canManageAdmins(), 403);
 
         if (ContactGroup::where('owner_contact_id', $contact->id)->exists()) {
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Não é possível excluir um contato responsável por um grupo. Transfira ou exclua o grupo primeiro.' } }))");
@@ -399,7 +399,7 @@ class ContactManager extends Component
 
             return;
         }
-        if ($contact->admin_user_id && $contact->admin_user_id === auth()->id()) {
+        if ($contact->user_id && $contact->user_id === auth()->id()) {
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Você não pode excluir sua própria conta por aqui.' } }))");
             $this->closeDeleteContactModal();
 
@@ -407,8 +407,8 @@ class ContactManager extends Component
         }
         $name = $contact->name;
         $contact->groups()->detach();
-        if ($contact->admin_user_id) {
-            User::whereKey($contact->admin_user_id)->delete();
+        if ($contact->user_id) {
+            User::whereKey($contact->user_id)->delete();
         }
         $contact->delete();
 

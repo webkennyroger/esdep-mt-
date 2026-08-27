@@ -115,7 +115,7 @@ class ContactGroups extends ContactManager
     public function updateContact(): void
     {
         $contact = $this->allowedContact($this->editContactId);
-        abort_if($contact->admin_user_id !== null, 403);
+        abort_if($contact->user_id !== null, 403);
         $this->validate([
             'editName' => 'required|string|max:255',
             'editEmail' => ['required', 'email', 'max:255', Rule::unique('contacts', 'email')->ignore($contact->id)],
@@ -190,7 +190,7 @@ class ContactGroups extends ContactManager
     {
         abort_if($id === auth('contact')->id(), 403);
         $contact = $this->allowedContact($id);
-        abort_if($contact->admin_user_id !== null, 403);
+        abort_if($contact->user_id !== null, 403);
         $allowed = $this->allowedGroupIds();
         $willBeOrphaned = ! $contact->groups()->whereNotIn('contact_groups.id', $allowed)->exists();
 

@@ -89,6 +89,8 @@ class Room extends Model
             return $query;
         }
 
-        return $query->whereRaw('1 = 0');
+        // Sem papel administrativo, a pessoa so alcanca as salas dos setores a
+        // que pertence — o mesmo criterio que ja valia para o guard `contact`.
+        return $query->whereIn('rooms.id', $user->managedRoomIds());
     }
 }
