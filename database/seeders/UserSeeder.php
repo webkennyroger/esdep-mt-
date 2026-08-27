@@ -10,11 +10,13 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOrCreate(
+        $superAdmin = User::updateOrCreate(
             ['email' => 'superadmin@esdep.mt.gov.br'],
-            ['name' => 'Super Admin', 'role' => 'super-admin', 'password' => Hash::make('TroqueEstaSenha!2026')]
+            ['name' => 'Super Admin', 'is_active' => true, 'password' => Hash::make('TroqueEstaSenha!2026')]
         );
 
-        User::factory()->count(10)->create(['role' => 'admin']);
+        $superAdmin->syncRoles(['super-admin']);
+
+        User::factory()->count(10)->admin()->create();
     }
 }

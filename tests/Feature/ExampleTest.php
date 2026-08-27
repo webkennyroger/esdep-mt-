@@ -10,10 +10,9 @@ test('the application returns a successful response', function () {
 });
 
 test('admin can login', function () {
-    User::factory()->create([
+    User::factory()->admin()->create([
         'email' => 'admin@esdep.mt.gov.br',
         'password' => Hash::make('password'),
-        'role' => 'admin',
     ]);
 
     $response = $this->post('/login', [

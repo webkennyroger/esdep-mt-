@@ -116,6 +116,75 @@
   - Protocolo da reserva
   - Mensagem complementar (se digitada)
 
+### 2026-08-27: SSO Keycloak (Fase 1 — autenticacao no guard `web`)
+- **Decisao central**: o Keycloak responde apenas **quem e** o usuario. Nenhum
+  papel ou permissao e lido do token — a autorizacao vive **inteiramente no
+  Spatie**, dentro da aplicacao. Isso desacopla o projeto da equipe que
+  administra o realm `defensoria` (mudar papel nao depende de chamado).
+- **Chave de vinculo**: `users.keycloak_id` guarda o `sub` do token, que e
+  imutavel. O e-mail e usado **so no primeiro pareamento** — depois disso pode
+  mudar no realm sem que o usuario perca conta, papeis ou historico.
+- **`email_verified` nao e exigido**: o realm entrega `false` para contas
+  provisionadas pela TI/AD, o que e artefato do provisionamento e nao significa
+  e-mail nao confiavel. Como o realm **nao permite auto-cadastro**, o pareamento
+  por e-mail e seguro. **Se o realm passar a permitir auto-registro, essa
+  checagem precisa voltar** — sem ela, alguem poderia registrar o e-mail de um
+  admin e herdar a conta dele no passo 2 da `ResolveKeycloakUserAction`.
+- **Ambiente (Windows/XAMPP)**: o PHP precisa de CA bundle configurado
+  (`curl.cainfo` e `openssl.cafile` no php.ini), senao a troca do `code` pelo
+  token falha com `cURL error 60`. O navegador funciona e o PHP nao, porque essa
+  chamada e servidor-para-servidor.
+- **Primeiro acesso**: qualquer servidor do realm autentica com sucesso, entao
+  quem nunca usou o sistema e provisionado com `is_active = false` e cai na tela
+  `auth/aguardando-liberacao` ate um admin liberar (fail closed).
+- **Arquivos**:
+  - Migration: `2026_08_27_000001_add_keycloak_sso_to_users_table.php`
+    (`keycloak_id`, `is_active`, `activated_at`, `activated_by_id`,
+    `last_login_at`; `password` passa a ser nullable)
+  - Config: `config/services.php` (bloco `keycloak`)
+  - Provider: `AppServiceProvider` registra `SocialiteWasCalled`
+  - Controller: `app/Http/Controllers/Auth/KeycloakController.php`
+  - Action: `app/Actions/Auth/ResolveKeycloakUserAction.php`
+  - Middleware: `app/Http/Middleware/EnsureUserIsActive.php` (no grupo `web`)
+  - Views: `resources/views/auth/sso-pending.blade.php`, botao em `login.blade.php`
+  - Testes: `tests/Feature/KeycloakSsoTest.php`
+- **Logout federado**: `POST /logout` detecta `isSsoUser()` e encerra tambem a
+  sessao no Keycloak, usando o `id_token` guardado em sessao. Sem isso, o proximo
+  login entraria direto, sem pedir credenciais.
+- **Pendente (Fase 3)**: unificar o guard `contact` no `web`; restringir o login
+  por senha ao super-admin (break-glass).
+
+### 2026-08-27: Spatie como unica fonte de verdade dos papeis (Fase 2)
+- **Problema**: a coluna `users.role` era a fonte de verdade real. Um hook
+  `saved()` no model ressincronizava os papeis do Spatie a partir dela a cada
+  `save()`. Como o login grava `last_login_at`, **qualquer `assignRole()` era
+  desfeito no acesso seguinte** — gestao de papeis pela interface era ilusoria.
+- **Solucao**: coluna `role` removida, hook removido, Spatie passa a ser a unica
+  fonte. Papeis atribuidos com `assignRole()` / `syncRoles()`.
+- **Migration**: `2026_08_27_000002_retire_legacy_role_column.php` — converte os
+  valores legados em atribuicoes reais antes de dropar a coluna, e **cria os
+  papeis canonicos** (`admin`, `super-admin` + as 4 permissoes). Isso ultimo e
+  essencial: o hook antigo criava os papeis sob demanda com `findOrCreate`, entao
+  sem isso um banco recem-migrado (inclusive o de teste) ficaria sem papel algum.
+  O `down()` repovoa a coluna a partir dos papeis, para nao perder dados.
+- **Factory**: use `User::factory()->admin()` e `->superAdmin()` nos testes.
+  `->pending()` cria uma conta SSO aguardando liberacao.
+- **Nota**: `'manager'` nunca foi um papel de User — o "Gerente" do sistema e um
+  cargo de `Contact` (`contacts.tipo`), usado para responsabilidade por setor.
+
+### 2026-08-27: Tela de Usuarios & Acessos (`/admin/users`)
+- **Objetivo**: liberar quem entrou pelo SSO e nasceu inativo. Sem ela, todo
+  servidor que logava ficava num beco sem saida dependendo de `tinker`.
+- **Arquivos**: `app/Livewire/Admin/UserManager.php`,
+  `resources/views/livewire/admin/user-manager.blade.php`,
+  `tests/Feature/UserManagerTest.php`
+- **Permissao**: `manage-users` (exclusiva do super-admin)
+- **Funcoes**: fila de pendentes com contador no menu lateral, liberar acesso
+  concedendo perfil, trocar perfil, revogar acesso.
+- **Travas contra lockout**: ninguem pode revogar o proprio acesso nem remover o
+  proprio perfil de super-admin; o papel recebido do formulario e validado contra
+  `UserManager::ASSIGNABLE_ROLES`.
+
 ## Convencoes
 
 ### Toast Notifications

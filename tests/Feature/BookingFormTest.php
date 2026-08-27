@@ -18,10 +18,9 @@ function createBookingRoom(): Room
 
 function createAdminForBooking(): User
 {
-    return User::factory()->create([
+    return User::factory()->admin()->create([
         'email' => 'admin@esdep.mt.gov.br',
         'password' => bcrypt('password'),
-        'role' => 'admin',
     ]);
 }
 

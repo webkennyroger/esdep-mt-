@@ -1,8 +1,18 @@
 <?php
 
+use App\Http\Controllers\Auth\KeycloakController;
 use App\Models\Contact;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+/*
+| SSO institucional (Keycloak). O callback precisa continuar batendo com a
+| URI cadastrada em Valid Redirect URIs no client `agenda` do realm.
+*/
+Route::get('auth/keycloak/redirect', [KeycloakController::class, 'redirect'])->name('sso.redirect');
+Route::get('auth/keycloak/callback', [KeycloakController::class, 'callback'])->name('sso.callback');
+Route::view('auth/aguardando-liberacao', 'auth.sso-pending')->name('sso.pending');
 
 Route::get('login', function () {
     if (Auth::check()) {
@@ -22,7 +32,7 @@ Route::post('login', function () {
     ]);
     $credentials['email'] = strtolower(trim($credentials['email']));
 
-    if (Auth::attempt($credentials, request()->boolean('remember'))) {
+    if (Auth::attempt($credentials + ['is_active' => true], request()->boolean('remember'))) {
         request()->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));
@@ -49,6 +59,14 @@ Route::post('login', function () {
 })->name('login.post')->middleware('throttle:5,1');
 
 Route::post('logout', function () {
+    // Quem entrou pelo SSO precisa encerrar tambem a sessao no Keycloak, senao
+    // o proximo login volta direto, sem passar pela tela de credenciais.
+    $user = Auth::user();
+
+    if ($user instanceof User && $user->isSsoUser()) {
+        return app(KeycloakController::class)->logout(request());
+    }
+
     Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();

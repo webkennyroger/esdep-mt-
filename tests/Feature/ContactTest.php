@@ -2,11 +2,14 @@
 
 use App\Livewire\Admin\ContactManager;
 use App\Models\Contact;
+use App\Models\ContactGroup;
+use App\Models\Reservation;
+use App\Models\Room;
 use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->actingAs(User::factory()->create(['role' => 'super_admin']));
+    $this->actingAs(User::factory()->superAdmin()->create());
 });
 
 test('create contact', function () {
@@ -43,8 +46,8 @@ test('a contact with reservation history can still be deleted', function () {
         'email' => 'carlos@test.com',
         'is_active' => true,
     ]);
-    $room = \App\Models\Room::factory()->create();
-    \App\Models\Reservation::create([
+    $room = Room::factory()->create();
+    Reservation::create([
         'room_id' => $room->id,
         'event_name' => 'Evento',
         'requester_name' => 'Carlos',
@@ -99,7 +102,7 @@ test('delete contact', function () {
 });
 
 test('cargo gerente with a setor automatically grants responsibility', function () {
-    $group = \App\Models\ContactGroup::create(['name' => 'SETOR Y', 'color' => '#059669']);
+    $group = ContactGroup::create(['name' => 'SETOR Y', 'color' => '#059669']);
 
     Livewire::test(ContactManager::class)
         ->set('newName', 'Nova Gerente')
@@ -114,7 +117,7 @@ test('cargo gerente with a setor automatically grants responsibility', function 
 });
 
 test('a setor without cargo gerente does not grant responsibility', function () {
-    $group = \App\Models\ContactGroup::create(['name' => 'SETOR Z', 'color' => '#059669']);
+    $group = ContactGroup::create(['name' => 'SETOR Z', 'color' => '#059669']);
 
     Livewire::test(ContactManager::class)
         ->set('newName', 'Contato Comum')
@@ -156,7 +159,7 @@ test('cargo admin requires a password since it creates a real login', function (
 });
 
 test('a plain admin cannot create a contact with cargo admin', function () {
-    $admin = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->admin()->create();
 
     Livewire::actingAs($admin)->test(ContactManager::class)
         ->set('newName', 'Tentativa')

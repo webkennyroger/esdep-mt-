@@ -27,11 +27,42 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'role' => 'user',
+            'is_active' => true,
+            'activated_at' => now(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * Administrador: gerencia salas, reservas e calendario.
+     */
+    public function admin(): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole('admin'));
+    }
+
+    /**
+     * Super-administrador: tudo do admin, mais contatos, relatorios, historico
+     * de atividades e gestao de usuarios.
+     */
+    public function superAdmin(): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole('super-admin'));
+    }
+
+    /**
+     * Conta provisionada pelo SSO que ainda aguarda liberacao de um admin.
+     */
+    public function pending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+            'activated_at' => null,
+            'password' => null,
+            'keycloak_id' => fake()->uuid(),
+        ]);
     }
 
     /**

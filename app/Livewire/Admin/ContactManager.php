@@ -10,10 +10,10 @@ use App\Models\User;
 use App\Rules\MultipleEmails;
 use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Validation\Rule;
 
 #[Layout('components.layouts.app')]
 class ContactManager extends Component
@@ -301,20 +301,24 @@ class ContactManager extends Component
         $data = [
             'name' => $contact->name,
             'email' => $contact->email,
-            'role' => 'admin',
+            // Criada deliberadamente por um administrador, entao ja nasce ativa
+            // (o padrao inativo vale para contas auto-provisionadas pelo SSO).
+            'is_active' => true,
         ];
 
         if ($plainPassword) {
             $data['password'] = bcrypt($plainPassword);
         }
 
-        if ($contact->admin_user_id) {
-            User::whereKey($contact->admin_user_id)->update($data);
+        if ($contact->admin_user_id && $user = User::find($contact->admin_user_id)) {
+            $user->update($data);
+            $user->syncRoles(['admin']);
 
             return;
         }
 
         $user = User::create($data);
+        $user->assignRole('admin');
         $contact->update(['admin_user_id' => $user->id]);
     }
 

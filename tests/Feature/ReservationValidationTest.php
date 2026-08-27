@@ -7,7 +7,7 @@ use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->actingAs(User::factory()->create(['role' => 'super_admin']));
+    $this->actingAs(User::factory()->superAdmin()->create());
 });
 
 function createValidationTestRoom(): Room

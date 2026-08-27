@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Livewire;
 
 test('contact updated by administrator can authenticate through main login', function () {
-    $admin = User::factory()->create(['role' => 'super_admin']);
+    $admin = User::factory()->superAdmin()->create();
     $contact = Contact::create([
         'name' => 'Contato Antigo', 'email' => 'antigo@example.com',
         'password' => 'senha-antiga', 'is_active' => true,

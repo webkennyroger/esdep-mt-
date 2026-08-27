@@ -27,6 +27,20 @@
             </div>
         @endif
 
+        <a href="{{ route('sso.redirect') }}"
+            class="flex w-full items-center justify-center gap-2 rounded-lg bg-[#003f32] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#008b5c] dark:bg-[#008b5c] dark:hover:bg-[#4fd1a5] dark:hover:text-[#003f32]">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z" />
+            </svg>
+            Entrar com a conta institucional
+        </a>
+
+        <div class="my-6 flex items-center gap-3">
+            <span class="h-px flex-1 bg-slate-200 dark:bg-[#2c4a3e]"></span>
+            <span class="text-xs text-slate-400 dark:text-[#8aa39a]">ou</span>
+            <span class="h-px flex-1 bg-slate-200 dark:bg-[#2c4a3e]"></span>
+        </div>
+
         <form method="POST" action="{{ route('login.post') }}" class="space-y-4">
             @csrf
             <div>

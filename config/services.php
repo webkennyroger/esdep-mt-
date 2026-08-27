@@ -35,6 +35,19 @@ return [
         ],
     ],
 
+    /*
+    | SSO institucional da Defensoria. O Keycloak responde apenas "quem e" o
+    | usuario; as permissoes ficam integralmente no Spatie, dentro da aplicacao.
+    */
+    'keycloak' => [
+        'client_id' => env('KEYCLOAK_CLIENT_ID'),
+        'client_secret' => env('KEYCLOAK_CLIENT_SECRET'),
+        'redirect' => env('KEYCLOAK_REDIRECT_URI'),
+        'base_url' => env('KEYCLOAK_BASE_URL'),
+        'realms' => env('KEYCLOAK_REALM'),
+        'logout_redirect' => env('KEYCLOAK_LOGOUT_REDIRECT', env('APP_URL')),
+    ],
+
     'google_calendar' => [
         'enabled' => env('GOOGLE_CALENDAR_ENABLED', false),
         'calendar_id' => env('GOOGLE_CALENDAR_ID', 'primary'),

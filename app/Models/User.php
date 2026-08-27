@@ -5,24 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     use HasFactory, HasRoles, Notifiable;
 
-    /**
-     * Permissoes exclusivas do papel "super-admin" (alem do acesso geral que
-     * "admin" e "super-admin" compartilham para salas e reservas).
-     */
-    private const SUPER_ADMIN_PERMISSIONS = ['access-contacts', 'access-reports', 'access-activity-log', 'manage-users'];
-
     protected $fillable = [
         'name',
         'email',
-        'role',
+        'keycloak_id',
+        'is_active',
+        'activated_at',
+        'activated_by_id',
+        'last_login_at',
         'password',
     ];
 
@@ -31,51 +27,35 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected static function booted(): void
-    {
-        static::saved(function (User $user): void {
-            $user->syncRoleFromLegacyColumn();
-        });
-    }
-
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'activated_at' => 'datetime',
+            'last_login_at' => 'datetime',
         ];
     }
 
     /**
-     * Mantem o papel do Spatie sincronizado com a coluna legada `role`, criando
-     * o cargo (e, no caso do super-admin, suas permissoes) se ainda nao existir.
-     * Isso garante que o sistema funcione mesmo sem depender da ordem de seeders.
+     * Vinculado a uma conta do SSO institucional.
      */
-    public function syncRoleFromLegacyColumn(): void
+    public function isSsoUser(): bool
     {
-        $roleName = match ($this->role) {
-            'super_admin', 'super-admin' => 'super-admin',
-            'admin', 'manager' => 'admin',
-            default => null,
-        };
+        return $this->keycloak_id !== null;
+    }
 
-        if (! $roleName) {
-            $this->syncRoles([]);
-
-            return;
-        }
-
-        $role = Role::findOrCreate($roleName, 'web');
-
-        if ($roleName === 'super-admin') {
-            $permissions = array_map(
-                fn (string $name) => Permission::findOrCreate($name, 'web'),
-                self::SUPER_ADMIN_PERMISSIONS
-            );
-            $role->syncPermissions($permissions);
-        }
-
-        $this->syncRoles([$role]);
+    /**
+     * Libera o acesso de um usuario provisionado pelo SSO que estava aguardando.
+     */
+    public function activate(?User $by = null): void
+    {
+        $this->forceFill([
+            'is_active' => true,
+            'activated_at' => now(),
+            'activated_by_id' => $by?->id,
+        ])->save();
     }
 
     public function getIsAdminAttribute(): bool
