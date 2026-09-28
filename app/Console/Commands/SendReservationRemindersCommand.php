@@ -13,7 +13,7 @@ class SendReservationRemindersCommand extends Command
 {
     protected $signature = 'reservations:send-reminders';
 
-    protected $description = 'Envia lembretes para solicitantes com reservas nas proximas 24h';
+    protected $description = 'Envia lembretes para solicitantes com reservas nas próximas 24h';
 
     public function handle(): int
     {

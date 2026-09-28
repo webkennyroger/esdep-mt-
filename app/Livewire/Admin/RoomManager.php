@@ -17,6 +17,11 @@ class RoomManager extends Component
 {
     use AuthorizesRequests, WithPagination;
 
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->is_admin, 403);
+    }
+
     public string $search = '';
 
     // Modals
@@ -251,13 +256,7 @@ class RoomManager extends Component
             'colors' => [
                 '#008b5c' => 'Verde ESDEP',
                 '#003f32' => 'Verde Escuro',
-                '#2563eb' => 'Azul',
-                '#7c3aed' => 'Roxo',
-                '#d97706' => 'Âmbar',
-                '#dc2626' => 'Vermelho',
-                '#0891b2' => 'Ciano',
-                '#475569' => 'Cinza',
-            ],
+            ] + \App\Support\TailwindColors::palette(),
         ]);
     }
 }

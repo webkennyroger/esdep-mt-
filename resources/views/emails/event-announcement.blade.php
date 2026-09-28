@@ -35,8 +35,8 @@
                     {{-- Greeting --}}
                     <tr>
                         <td style="padding: 25px 40px 15px;">
-                            <p style="margin: 0; color: #003f32; font-size: 15px;">Ola, <strong>{{ $recipientName }}</strong>,</p>
-                            <p style="margin: 8px 0 0; color: #64748b; font-size: 13px;">Segue abaixo as informacoes do evento agendado:</p>
+                            <p style="margin: 0; color: #003f32; font-size: 15px;">Olá, <strong>{{ $recipientName }}</strong>,</p>
+                            <p style="margin: 8px 0 0; color: #64748b; font-size: 13px;">Segue abaixo as informações do evento agendado:</p>
                         </td>
                     </tr>
 
@@ -50,9 +50,9 @@
                                         <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8faf9; border: 1px solid #e2e8f0; border-radius: 10px;">
                                             <tr>
                                                 <td style="padding: 15px;">
-                                                    <p style="margin: 0 0 8px; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">&#128336; Data e Horario</p>
-                                                    <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600;">{{ \Carbon\Carbon::parse($reservation->date)->locale('pt_BR')->translatedFormat('d \\d\\e F \\d\\e Y') }}</p>
-                                                    <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">{{ $reservation->start_time }} - {{ $reservation->end_time }}</p>
+                                                    <p style="margin: 0 0 8px; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">&#128336; Data e Horário</p>
+                                                    <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600;">{{ \Carbon\Carbon::parse($reservation->date)->locale('pt_BR')->translatedFormat('d \\d\\e ') }}{{ \Illuminate\Support\Str::ucfirst(\Carbon\Carbon::parse($reservation->date)->locale('pt_BR')->translatedFormat('F \\d\\e Y')) }}</p>
+                                                    <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">{{ $reservation->formattedStartTime() }} - {{ $reservation->formattedEndTime() }}</p>
                                                 </td>
                                             </tr>
                                         </table>
@@ -64,7 +64,7 @@
                                             <tr>
                                                 <td style="padding: 15px;">
                                                     <p style="margin: 0 0 8px; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">&#127970; Sala</p>
-                                                    <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600;">{{ $reservation->room?->name ?? 'Nao informada' }}</p>
+                                                    <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600;">{{ $reservation->room?->name ?? 'Não informada' }}</p>
                                                     <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Capacidade: {{ $reservation->room?->capacity ?? '-' }} pessoas</p>
                                                 </td>
                                             </tr>
@@ -91,7 +91,7 @@
                                         <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8faf9; border: 1px solid #e2e8f0; border-radius: 10px;">
                                             <tr>
                                                 <td style="padding: 15px;">
-                                                    <p style="margin: 0 0 8px; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">&#128101; Publico Estimado</p>
+                                                    <p style="margin: 0 0 8px; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">&#128101; Público Estimado</p>
                                                     <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600;">{{ $reservation->attendees_count }} pessoas</p>
                                                     @if($reservation->room && $reservation->attendees_count <= $reservation->room->capacity)
                                                         <p style="margin: 4px 0 0; color: #059669; font-size: 12px;">Dentro da capacidade</p>
@@ -110,7 +110,7 @@
                     {{-- Servicos --}}
                     <tr>
                         <td style="padding: 5px 40px 20px;">
-                            <p style="margin: 0 0 10px; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Servicos Solicitados</p>
+                            <p style="margin: 0 0 10px; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Serviços Solicitados</p>
                             <table cellpadding="0" cellspacing="0">
                                 <tr>
                                     @if($reservation->coffee_break)
@@ -120,12 +120,12 @@
                                     @endif
                                     @if($reservation->sonorizacao)
                                         <td style="padding: 0 6px 6px 0;">
-                                            <span style="display: inline-block; background-color: #dbeafe; color: #1e40af; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;">&#128266; Sonorizacao</span>
+                                            <span style="display: inline-block; background-color: #dbeafe; color: #1e40af; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;">&#128266; Sonorização</span>
                                         </td>
                                     @endif
                                     @if($reservation->transmissao)
                                         <td style="padding: 0 6px 6px 0;">
-                                            <span style="display: inline-block; background-color: #f3e8ff; color: #7c3aed; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;">&#127909; Transmissao</span>
+                                            <span style="display: inline-block; background-color: #f3e8ff; color: #7c3aed; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;">&#127909; Transmissão</span>
                                         </td>
                                     @endif
                                     @if($reservation->projetor)
@@ -135,7 +135,7 @@
                                     @endif
                                     @if(!$reservation->coffee_break && !$reservation->sonorizacao && !$reservation->transmissao && !$reservation->projetor)
                                         <td>
-                                            <span style="color: #94a3b8; font-size: 13px; font-style: italic;">Nenhum servico solicitado</span>
+                                            <span style="color: #94a3b8; font-size: 13px; font-style: italic;">Nenhum serviço solicitado</span>
                                         </td>
                                     @endif
                                 </tr>
@@ -169,10 +169,10 @@
                     <tr>
                         <td style="background-color: #f8faf9; padding: 20px 40px; border-top: 1px solid #e2e8f0; text-align: center;">
                             <p style="margin: 0 0 5px; color: #64748b; font-size: 12px;">
-                                ESDEP-MT - Escola Superior da Defensoria Publica do Estado de Mato Grosso
+                                ESDEP-MT - Escola Superior da Defensoria Pública do Estado de Mato Grosso
                             </p>
                             <p style="margin: 0; color: #94a3b8; font-size: 11px;">
-                                Sistema de Reserva de Espacos - Duvidas? Entre em contato com a administracao.
+                                Sistema de Reserva de Espaços - Dúvidas? Entre em contato com a administração.
                             </p>
                         </td>
                     </tr>

@@ -1,8 +1,8 @@
 <div>
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-[#e6f2ec]">Historico de Atividades</h1>
-            <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Registro completo de todas as acoes realizadas no sistema.</p>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-[#e6f2ec]">Histórico de Atividades</h1>
+            <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Registro completo de todas as ações realizadas no sistema.</p>
         </div>
     </div>
 
@@ -68,9 +68,9 @@
     {{-- Filtros --}}
     <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
         <div class="flex flex-wrap items-end gap-4">
-            <div class="flex-1 min-w-[200px]">
+            <div class="flex-1 min-w-50">
                 <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Buscar</label>
-                <input type="text" wire:model.live="search" placeholder="Buscar por descricao ou usuario..."
+                <input type="text" wire:model.live="search" placeholder="Buscar por descrição ou usuário..."
                     class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d]">
             </div>
             <div>
@@ -79,13 +79,13 @@
                     class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-green-600 focus:outline-none focus:ring-1 focus:ring-green-600 dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
                     <option value="">Todos os tipos</option>
                     <option value="App\Models\Reservation">Reservas</option>
-                    <option value="App\Models\User">Usuarios</option>
+                    <option value="App\Models\User">Usuários</option>
                     <option value="App\Models\Room">Salas</option>
                     <option value="App\Models\Contact">Contatos</option>
                 </select>
             </div>
             <div>
-                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Data Inicio</label>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Data Início</label>
                 <input type="date" wire:model.live="dateFrom"
                     class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-green-600 focus:outline-none focus:ring-1 focus:ring-green-600 dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
             </div>
@@ -101,11 +101,11 @@
             @php
                 $actionFilters = [
                     '' => 'Todas',
-                    'created' => 'Criacoes',
-                    'updated' => 'Atualizacoes',
-                    'approved' => 'Aprovacoes',
-                    'rejected' => 'Rejeicoes',
-                    'deleted' => 'Exclusoes',
+                    'created' => 'Criações',
+                    'updated' => 'Atualizações',
+                    'approved' => 'Aprovações',
+                    'rejected' => 'Rejeições',
+                    'deleted' => 'Exclusões',
                 ];
                 $actionColors = [
                     '' => 'bg-green-100 text-green-700 dark:bg-[#16352a] dark:text-[#4fd1a5]',
@@ -139,10 +139,10 @@
                 <table class="min-w-full">
                     <thead>
                         <tr class="border-b border-slate-200 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:border-[#16352a] dark:text-[#8aa39a]">
-                            <th class="px-6 py-3">Acao</th>
-                            <th class="px-6 py-3">Descricao</th>
+                            <th class="px-6 py-3">Ação</th>
+                            <th class="px-6 py-3">Descrição</th>
                             <th class="px-6 py-3">Agenda</th>
-                            <th class="px-6 py-3">Usuario</th>
+                            <th class="px-6 py-3">Usuário</th>
                             <th class="px-6 py-3">Data/Hora</th>
                             <th class="px-6 py-3 text-right">Detalhes</th>
                         </tr>
@@ -262,7 +262,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
-                                Descricao
+                                Descrição
                             </div>
                             <p class="text-sm text-slate-900 dark:text-[#e6f2ec]">{{ $selectedLog->description }}</p>
                         </div>
@@ -273,7 +273,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
-                                Usuario
+                                Usuário
                             </div>
                             @if($selectedLog->user)
                                 <div class="flex items-center gap-3">
@@ -286,7 +286,7 @@
                                     </div>
                                 </div>
                             @else
-                                <p class="text-sm text-slate-500 italic dark:text-[#8aa39a]">Acao do sistema</p>
+                                <p class="text-sm text-slate-500 italic dark:text-[#8aa39a]">Ação do sistema</p>
                             @endif
                         </div>
 
@@ -308,7 +308,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>
-                                    Historico de Alteracoes
+                                    Histórico de Alterações
                                 </div>
                                 <div class="space-y-2">
                                     @foreach($selectedLog->formatted_changes as $label => $change)

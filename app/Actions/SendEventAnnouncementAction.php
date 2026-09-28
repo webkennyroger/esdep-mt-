@@ -58,7 +58,7 @@ class SendEventAnnouncementAction
             Mail::to($reservation->requester_email)->cc($ownerEmails)->send($mail);
             $reservation->update(['status_notification_sent_for' => $status]);
         } catch (\Throwable $exception) {
-            Log::error('Erro ao enviar notificacao de status da reserva: '.$exception->getMessage());
+            Log::error('Erro ao enviar notificação de status da reserva: '.$exception->getMessage());
         }
     }
 

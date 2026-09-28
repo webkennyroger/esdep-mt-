@@ -37,7 +37,7 @@ class ContactReports extends Component
             $handle = fopen('php://output', 'w');
             fputcsv($handle, ['Protocolo', 'Evento', 'Sala', 'Data', 'Horário', 'Solicitante', 'Público', 'Status'], ';');
             foreach ($rows as $reservation) {
-                fputcsv($handle, [$reservation->protocol, $reservation->event_name, $reservation->room->name, $reservation->date->format('d/m/Y'), $reservation->start_time.' - '.$reservation->end_time, $reservation->requester_name, $reservation->attendees_count, $reservation->status->label()], ';');
+                fputcsv($handle, [$reservation->protocol, $reservation->event_name, $reservation->room->name, $reservation->date->format('d/m/Y'), $reservation->formattedStartTime().' - '.$reservation->formattedEndTime(), $reservation->requester_name, $reservation->attendees_count, $reservation->status->label()], ';');
             }
             fclose($handle);
         }, 'relatorio-reservas-'.$this->startDate.'-'.$this->endDate.'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

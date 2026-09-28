@@ -10,7 +10,7 @@ use Livewire\WithPagination;
 
 /**
  * Libera (ou revoga) o acesso de contas provisionadas pelo SSO e define o papel
- * de cada operador. Quem entra pelo Keycloak nasce inativo e sem papel: esta e
+ * de cada operador. Quem entra pelo Keycloak nasce inativo e sem papel: esta é
  * a tela que transforma "identificado" em "autorizado".
  */
 #[Layout('components.layouts.app')]
@@ -19,18 +19,19 @@ class UserManager extends Component
     use WithPagination;
 
     /**
-     * Papeis atribuiveis pela interface. A chave vazia representa o usuario sem
-     * papel algum — pode entrar, mas so enxerga o que for aberto a todos.
+     * Papéis atribuíveis pela interface. A chave vazia representa o usuário sem
+     * papel algum — pode entrar, mas só enxerga o que for aberto a todos.
      */
     public const ASSIGNABLE_ROLES = [
         '' => 'Sem perfil',
+        'gerenciador' => 'Gerenciador de setor',
         'admin' => 'Administrador',
         'super-admin' => 'Super administrador',
     ];
 
     public string $search = '';
 
-    /** Papel escolhido para cada conta pendente, indexado pelo id do usuario. */
+    /** Papel escolhido para cada conta pendente, indexado pelo id do usuário. */
     public array $roleChoice = [];
 
     public function mount(): void
@@ -64,9 +65,9 @@ class UserManager extends Component
     {
         $user = User::findOrFail($id);
 
-        // Sem isso, um super-admin distraido se tranca para fora do sistema.
+        // Sem isso, um super-admin distraído se tranca para fora do sistema.
         if ($user->id === auth()->id()) {
-            $this->toast('error', 'Voce nao pode revogar o proprio acesso.');
+            $this->toast('error', 'Você não pode revogar o próprio acesso.');
 
             return;
         }
@@ -86,7 +87,7 @@ class UserManager extends Component
 
         // Rebaixar a si mesmo removeria o acesso a esta propria tela.
         if ($user->id === auth()->id() && $role !== 'super-admin') {
-            $this->toast('error', 'Voce nao pode remover o proprio perfil de super administrador.');
+            $this->toast('error', 'Você não pode remover o próprio perfil de super administrador.');
 
             return;
         }
@@ -99,8 +100,8 @@ class UserManager extends Component
     }
 
     /**
-     * Le a escolha feita na linha do usuario, recusando qualquer papel que nao
-     * esteja na lista — o valor chega do navegador e nao merece confianca.
+     * Lê a escolha feita na linha do usuário, recusando qualquer papel que não
+     * esteja na lista — o valor chega do navegador e não merece confiança.
      */
     private function validatedRole(int $id): string
     {
@@ -131,8 +132,8 @@ class UserManager extends Component
             ->orderBy('name')
             ->paginate(15);
 
-        // Pre-seleciona o papel atual de cada linha, sem sobrescrever o que o
-        // usuario ja escolheu mas ainda nao salvou.
+        // Pré-seleciona o papel atual de cada linha, sem sobrescrever o que o
+        // usuário já escolheu mas ainda não salvou.
         foreach ($pending->concat($active->getCollection()) as $user) {
             $this->roleChoice[$user->id] ??= $user->roles->pluck('name')->first() ?? '';
         }

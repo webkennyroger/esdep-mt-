@@ -5,7 +5,7 @@
     <div class="relative mx-4 w-full max-w-2xl rounded-xl bg-white p-6 shadow-2xl dark:border dark:border-[#16352a] dark:bg-[#0c221a] overflow-y-auto max-h-[90vh]">
 
         <div class="mb-5 flex items-center justify-between">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-[#e6f2ec]">Editar Reserva</h3>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-[#e6f2ec]">{{ $reservationId === 0 ? 'Nova Reserva' : 'Editar Reserva' }}</h3>
             <button wire:click="close" class="rounded-lg p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#e6f2ec]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -18,14 +18,14 @@
             {{-- Nome do Responsavel e Evento --}}
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                    <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do responsavel <span class="text-red-500">*</span></label>
+                    <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do responsável <span class="text-red-500">*</span></label>
                     <input wire:model="requesterName" type="text" placeholder="Ex.: Ana Martins"
                         class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
                     @error('requesterName') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do evento <span class="text-red-500">*</span></label>
-                    <input wire:model="eventName" type="text" placeholder="Ex.: Encontro de liderancas"
+                    <input wire:model="eventName" type="text" placeholder="Ex.: Encontro de lideranças"
                         class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
                     @error('eventName') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
@@ -48,8 +48,8 @@
                             <div class="w-full shrink-0 px-1 sm:w-1/3">
                                 <label class="flex items-center gap-3 border border-[#d2ded9] bg-white p-4 cursor-pointer transition-all duration-200 hover:border-[#008b5c] hover:bg-[#eef7f2] has-[:checked]:border-[#008b5c] has-[:checked]:bg-[#eef7f2] has-[:checked]:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:hover:border-[#00a477] dark:hover:bg-[#16352a] dark:has-[:checked]:border-[#00a477] dark:has-[:checked]:bg-[#0c221a]">
                                     <input wire:model.live="roomId" value="{{ $room->id }}" type="radio" name="admin_room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
-                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style="background-color: {{ $room->theme_color }}20;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" style="color: {{ $room->theme_color }};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" data-color="{{ $room->theme_color }}" style="background-color: color-mix(in srgb, var(--swatch, {{ $room->theme_color }}) 20%, transparent);">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" data-color="{{ $room->theme_color }}" style="color: var(--swatch, {{ $room->theme_color }});" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                         </svg>
                                     </div>
@@ -80,13 +80,13 @@
                     @error('date') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horario de inicio <span class="text-red-500">*</span></label>
+                    <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horário de início <span class="text-red-500">*</span></label>
                     <input wire:model.live="startTime" type="time"
                         class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:[color-scheme:dark]">
                     @error('startTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horario de termino <span class="text-red-500">*</span></label>
+                    <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horário de término <span class="text-red-500">*</span></label>
                     <input wire:model.live="endTime" type="time"
                         class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:[color-scheme:dark]">
                     @error('endTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
@@ -104,7 +104,7 @@
 
             {{-- Participantes --}}
             <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Previsao de publico <span class="text-red-500">*</span></label>
+                <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Previsão de público <span class="text-red-500">*</span></label>
                 <input wire:model="attendeesCount" type="number" min="1"
                     class="h-[42px] w-[120px] rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
                 <span class="ml-2 text-[11px] text-[#70847d] dark:text-[#8aa39a]">pessoas</span>
@@ -113,14 +113,14 @@
 
             {{-- Descricao --}}
             <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Descricao</label>
+                <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Descrição</label>
                 <div class="overflow-hidden rounded-lg border border-[#b8c9c2] dark:border-[#2c4a3e]">
                     <div class="flex items-center gap-1 border-b border-[#b8c9c2] bg-slate-50 px-3 py-1.5 dark:border-[#2c4a3e] dark:bg-[#0a1a14]">
                         <button type="button" onclick="document.execCommand('bold')" title="Negrito"
                             class="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg>
                         </button>
-                        <button type="button" onclick="document.execCommand('italic')" title="Italico"
+                        <button type="button" onclick="document.execCommand('italic')" title="Itálico"
                             class="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 4h4m-2 0l-4 16m-2 0h4m2-16l4 16"/></svg>
                         </button>
@@ -137,7 +137,7 @@
                     <div id="description-editor"
                         wire:ignore
                         contenteditable="true"
-                        data-placeholder="Descricao do evento (opcional)"
+                        data-placeholder="Descrição do evento (opcional)"
                         x-data="{ val: @js($description) }"
                         x-init="$el.innerHTML = val"
                         @input="$wire.set('description', $el.innerHTML)"
@@ -147,29 +147,29 @@
 
             {{-- Servicos Adicionais --}}
             <fieldset class="rounded-lg border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#081712]/50">
-                <legend class="px-2 text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Servicos adicionais</legend>
+                <legend class="px-2 text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Serviços adicionais</legend>
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <fieldset class="border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#0c221a]/40">
                         <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Coffee break</legend>
                         <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
                             <label class="flex items-center gap-2 cursor-pointer"><input wire:model="coffeeBreak" type="radio" name="admin_coffee" value="1" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Sim</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input wire:model="coffeeBreak" type="radio" name="admin_coffee" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Nao</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input wire:model="coffeeBreak" type="radio" name="admin_coffee" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Não</label>
                         </div>
                     </fieldset>
 
                     <fieldset class="border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#0c221a]/40">
-                        <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Sonorizacao</legend>
+                        <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Sonorização</legend>
                         <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
                             <label class="flex items-center gap-2 cursor-pointer"><input wire:model="sonorizacao" type="radio" name="admin_sound" value="1" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Sim</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input wire:model="sonorizacao" type="radio" name="admin_sound" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Nao</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input wire:model="sonorizacao" type="radio" name="admin_sound" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Não</label>
                         </div>
                     </fieldset>
 
                     <fieldset class="border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#0c221a]/40">
-                        <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Transmissao</legend>
+                        <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Transmissão</legend>
                         <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
                             <label class="flex items-center gap-2 cursor-pointer"><input wire:model="transmissao" type="radio" name="admin_streaming" value="1" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Sim</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input wire:model="transmissao" type="radio" name="admin_streaming" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Nao</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input wire:model="transmissao" type="radio" name="admin_streaming" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Não</label>
                         </div>
                     </fieldset>
 
@@ -177,10 +177,33 @@
                         <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Projetor</legend>
                         <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
                             <label class="flex items-center gap-2 cursor-pointer"><input wire:model="projetor" type="radio" name="admin_projector" value="1" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Sim</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input wire:model="projetor" type="radio" name="admin_projector" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Nao</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input wire:model="projetor" type="radio" name="admin_projector" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Não</label>
                         </div>
                     </fieldset>
                 </div>
+            </fieldset>
+
+            {{-- Anexo --}}
+            <fieldset class="rounded-lg border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#081712]/50">
+                <legend class="px-2 text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Anexo / Recibo</legend>
+
+                @if($existingAttachmentPath && ! $removeExistingAttachment && ! $attachment)
+                    <div class="flex items-center justify-between gap-3 rounded-lg border border-[#b8c9c2] bg-white px-3 py-2.5 dark:border-[#2c4a3e] dark:bg-[#081712]">
+                        <a href="{{ Storage::disk('public')->url($existingAttachmentPath) }}" target="_blank" class="flex items-center gap-2 text-[13px] font-medium text-[#003f32] hover:underline dark:text-[#4fd1a5]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 10-5.656-5.656l-6.415 6.585a6 6 0 108.485 8.486L20.5 13" />
+                            </svg>
+                            {{ $existingAttachmentName }}
+                        </a>
+                        <button type="button" wire:click="markAttachmentForRemoval" class="text-xs font-semibold text-red-600 hover:underline dark:text-red-400">Remover</button>
+                    </div>
+                @else
+                    <input type="file" wire:model="attachment" accept=".pdf,.png,.jpg,.jpeg"
+                        class="w-full text-[13px] text-[#003f32] dark:text-[#e6f2ec] file:mr-3 file:rounded-lg file:border-0 file:bg-[#008b5c] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white file:hover:bg-[#006e49] dark:file:bg-[#00a477]">
+                    <p class="mt-1 text-[11px] text-[#70847d]">PDF, PNG ou JPG, até 5MB.</p>
+                    <div wire:loading wire:target="attachment" class="mt-1 text-[11px] text-[#70847d]">Enviando...</div>
+                @endif
+                @error('attachment') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </fieldset>
 
             {{-- Acoes --}}
@@ -194,8 +217,8 @@
                     wire:loading.class="opacity-60 cursor-not-allowed"
                     @if($conflictError) disabled @endif
                     class="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors @if($conflictError) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-[#008b5c] hover:bg-[#006e49] dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
-                    <span wire:loading.remove>Salvar Alteracoes</span>
-                    <span wire:loading>Salvando...</span>
+                    <span wire:loading.remove>{{ $reservationId === 0 ? 'Criar Reserva' : 'Salvar Alterações' }}</span>
+                    <span wire:loading>{{ $reservationId === 0 ? 'Criando...' : 'Salvando...' }}</span>
                 </button>
             </div>
         </form>

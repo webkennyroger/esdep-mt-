@@ -27,7 +27,7 @@
     <div x-show="dropdownOpen" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-4 sm:left-6 xl:left-auto xl:right-0 mt-[17px] flex max-h-[70vh] w-[calc(100vw-2rem)] max-w-[361px] flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-xl dark:border-[#16352a] dark:bg-[#0c221a]" style="display: none;">
         <!-- Dropdown Header -->
         <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-[#16352a]">
-            <h5 class="text-lg font-semibold text-slate-900 dark:text-[#e6f2ec]">Notificacoes</h5>
+            <h5 class="text-lg font-semibold text-slate-900 dark:text-[#e6f2ec]">Notificações</h5>
 
             <button @click="closeDropdown()" class="text-slate-400 dark:text-[#8aa39a]" type="button">
                 <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -91,14 +91,14 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-10 w-10 text-slate-300 dark:text-[#2c4a3e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-[#8aa39a]">Nenhuma notificacao</p>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-[#8aa39a]">Nenhuma notificação</p>
                 </li>
             @endforelse
         </ul>
 
         <!-- View All Button -->
         <a href="{{ route('admin.reservations.index') }}" @click="closeDropdown()" class="mt-3 flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-[#16352a] dark:bg-[#112a21] dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]">
-            Ver todas as notificacoes
+            Ver todas as notificações
         </a>
     </div>
     <!-- Dropdown End -->

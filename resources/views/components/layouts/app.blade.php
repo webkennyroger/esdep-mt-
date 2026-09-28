@@ -61,8 +61,8 @@
                         </a>
                     </div>
 
-                    @if(Auth::user()->is_admin)
-                    <p class="mb-3 mt-8 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#70847d]">Administracao</p>
+                    @if(Auth::user()->canAccessAdminPanel())
+                    <p class="mb-3 mt-8 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#70847d]">Administração</p>
                     <div class="space-y-1">
                         <a href="{{ route('admin.reservations.index') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs('admin.reservations.*') ? 'bg-green-50 text-green-800 dark:bg-[#16352a] dark:text-[#4fd1a5]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -70,42 +70,44 @@
                             </svg>
                             Gerenciar Reservas
                         </a>
+                        @if(Auth::user()->is_admin)
                         <a href="{{ route('admin.rooms.index') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs('admin.rooms.*') ? 'bg-green-50 text-green-800 dark:bg-[#16352a] dark:text-[#4fd1a5]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
                             Salas & Espaços
                         </a>
-                        @if(Auth::user()->isSuperAdmin())
                         <a href="{{ route('admin.contacts.index') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs('admin.contacts.*') ? 'bg-green-50 text-green-800 dark:bg-[#16352a] dark:text-[#4fd1a5]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                             Contatos & Grupos
                         </a>
+                        @endif
+                        @if(Auth::user()->isSuperAdmin())
                         @php($pendingAccessCount = \App\Models\User::where('is_active', false)->count())
                         <a href="{{ route('admin.users.index') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs('admin.users.*') ? 'bg-green-50 text-green-800 dark:bg-[#16352a] dark:text-[#4fd1a5]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
-                            Usuarios & Acessos
+                            Usuários & Acessos
                             @if($pendingAccessCount > 0)
                                 <span class="ml-auto rounded-full bg-amber-500 px-2 py-0.5 text-xs font-bold text-white">{{ $pendingAccessCount }}</span>
                             @endif
                         </a>
+                        @endif
                         <a href="{{ route('admin.reports') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs('admin.reports') ? 'bg-green-50 text-green-800 dark:bg-[#16352a] dark:text-[#4fd1a5]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
-                            Relatorios
+                            Relatórios
                         </a>
                         <a href="{{ route('admin.activity') }}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs('admin.activity') ? 'bg-green-50 text-green-800 dark:bg-[#16352a] dark:text-[#4fd1a5]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            Historico de Atividades
+                            Histórico de Atividades
                         </a>
-                        @endif
                     </div>
                     @endif
                 </nav>
@@ -165,7 +167,7 @@
 
                         <livewire:notification-dropdown />
 
-                        <a href="{{ route('home') }}" target="_blank" class="flex items-center justify-center text-slate-500 transition-colors bg-slate-100 border border-slate-200 rounded-full h-11 w-11 hover:bg-slate-200 hover:text-slate-700 dark:bg-[#112a21] dark:border-[#16352a] dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]" title="Abrir site publico">
+                        <a href="{{ route('home') }}" target="_blank" class="flex items-center justify-center text-slate-500 transition-colors bg-slate-100 border border-slate-200 rounded-full h-11 w-11 hover:bg-slate-200 hover:text-slate-700 dark:bg-[#112a21] dark:border-[#16352a] dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]" title="Abrir site público">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                             </svg>

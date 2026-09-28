@@ -138,7 +138,7 @@ class BookingForm extends Component
 
         $room = Room::find((int) $this->roomId);
         if ($room && $this->attendeesCount > $room->capacity) {
-            $this->capacityError = "O numero de participantes ({$this->attendeesCount}) excede a capacidade da sala \"{$room->name}\" ({$room->capacity} pessoas).";
+            $this->capacityError = "O número de participantes ({$this->attendeesCount}) excede a capacidade da sala \"{$room->name}\" ({$room->capacity} pessoas).";
         }
     }
 

@@ -12,7 +12,7 @@ class RejectReservationAction
     public function execute(Reservation $reservation, ?string $reason = null): Reservation
     {
         if ($reservation->status === ReservationStatus::REJECTED) {
-            throw new \Exception('Esta reserva ja foi rejeitada anteriormente.');
+            throw new \Exception('Esta reserva já foi rejeitada anteriormente.');
         }
 
         $reservation->status = ReservationStatus::REJECTED;

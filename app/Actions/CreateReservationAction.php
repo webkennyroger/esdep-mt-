@@ -21,7 +21,7 @@ class CreateReservationAction
         $this->conflictChecker = $conflictChecker ?? app(ConflictCheckerService::class);
     }
 
-    public function execute(array $data): Reservation
+    public function execute(array $data, bool $notify = true): Reservation
     {
         $room = Room::where('is_active', true)->findOrFail($data['room_id']);
 
@@ -37,7 +37,7 @@ class CreateReservationAction
             'start_time' => $data['start_time'],
             'end_time' => $data['end_time'],
             'attendees_count' => $data['attendees_count'],
-            'status' => ReservationStatus::PENDING->value,
+            'status' => $data['status'] ?? ReservationStatus::PENDING->value,
             'coffee_break' => $data['coffee_break'] ?? false,
             'sonorizacao' => $data['sonorizacao'] ?? false,
             'transmissao' => $data['transmissao'] ?? false,
@@ -56,11 +56,13 @@ class CreateReservationAction
 
         event(new ReservationRequested($reservation));
 
-        try {
-            $notifyEmails = $room->ownerEmails() ?: [config('app.admin_email', 'admin@esdep.mt.gov.br')];
-            Mail::to($notifyEmails)->send(new ReservationRequestedMail($reservation));
-        } catch (\Exception $e) {
-            Log::error('Erro ao enviar email de notificacao: '.$e->getMessage());
+        if ($notify) {
+            try {
+                $notifyEmails = $room->ownerEmails() ?: [config('app.admin_email', 'admin@esdep.mt.gov.br')];
+                Mail::to($notifyEmails)->send(new ReservationRequestedMail($reservation));
+            } catch (\Exception $e) {
+                Log::error('Erro ao enviar email de notificação: '.$e->getMessage());
+            }
         }
 
         return $reservation;

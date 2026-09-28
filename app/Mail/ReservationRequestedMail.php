@@ -20,7 +20,7 @@ class ReservationRequestedMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Nova Solicitacao de Reserva - {$this->reservation->event_name}",
+            subject: "Nova Solicitação de Reserva - {$this->reservation->event_name}",
         );
     }
 

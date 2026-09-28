@@ -63,7 +63,7 @@
             <div class="flex items-center gap-3">
                 <span
                     class="flex h-[28px] w-[28px] items-center justify-center bg-[#00a477] font-mono text-[9px] font-bold text-white">02</span>
-                <p class="m-0 font-mono text-[10px] font-bold uppercase tracking-[0.14em]">Proximos eventos
+                <p class="m-0 font-mono text-[10px] font-bold uppercase tracking-[0.14em]">Próximos eventos
                 </p>
             </div>
         </div>

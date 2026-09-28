@@ -57,7 +57,7 @@ class ActivityLogger
     public static function deleted(object $subject, ?string $description = null): ActivityLog
     {
         $modelName = class_basename(get_class($subject));
-        $desc = $description ?? "{$modelName} excluido(a)";
+        $desc = $description ?? "{$modelName} excluído(a)";
 
         return self::log('deleted', $desc, $subject, $subject->toArray());
     }
@@ -100,17 +100,17 @@ class ActivityLogger
     {
         $labels = [
             'event_name' => ['Nome do evento', 'alterado'],
-            'description' => ['Descricao', 'alterada'],
+            'description' => ['Descrição', 'alterada'],
             'date' => ['Data', 'alterada'],
-            'start_time' => ['Horario inicial', 'alterado'],
-            'end_time' => ['Horario final', 'alterado'],
+            'start_time' => ['Horário inicial', 'alterado'],
+            'end_time' => ['Horário final', 'alterado'],
             'room_id' => ['Sala', 'alterada'],
             'requester_name' => ['Solicitante', 'alterado'],
             'requester_email' => ['Email do solicitante', 'alterado'],
-            'attendees_count' => ['Numero de participantes', 'alterado'],
+            'attendees_count' => ['Número de participantes', 'alterado'],
             'coffee_break' => ['Coffee break', 'alterado'],
-            'sonorizacao' => ['Sonorizacao', 'alterada'],
-            'transmissao' => ['Transmissao', 'alterada'],
+            'sonorizacao' => ['Sonorização', 'alterada'],
+            'transmissao' => ['Transmissão', 'alterada'],
             'projetor' => ['Projetor', 'alterado'],
         ];
 
@@ -166,7 +166,7 @@ class ActivityLogger
     private static function formatReservationValue(string $field, mixed $value, ?Collection $roomNames = null): string
     {
         if ($value === null || $value === '') {
-            return 'nao definido';
+            return 'não definido';
         }
 
         return match ($field) {
@@ -174,7 +174,7 @@ class ActivityLogger
             'date' => $value instanceof Carbon
                 ? $value->format('d/m/Y')
                 : Carbon::parse($value)->format('d/m/Y'),
-            'coffee_break', 'sonorizacao', 'transmissao', 'projetor' => $value ? 'Sim' : 'Nao',
+            'coffee_break', 'sonorizacao', 'transmissao', 'projetor' => $value ? 'Sim' : 'Não',
             'start_time', 'end_time' => substr((string) $value, 0, 5),
             default => (string) $value,
         };
@@ -184,7 +184,7 @@ class ActivityLogger
     {
         return self::log(
             'updated',
-            "Usuario \"{$user->name}\" atualizado",
+            "Usuário \"{$user->name}\" atualizado",
             $user,
             $newValues
         );
@@ -194,7 +194,7 @@ class ActivityLogger
     {
         return self::log(
             'deleted',
-            "Usuario \"{$user->name}\" excluido",
+            "Usuário \"{$user->name}\" excluído",
             $user,
             ['name' => $user->name, 'email' => $user->email]
         );
@@ -224,7 +224,7 @@ class ActivityLogger
     {
         return self::log(
             'deleted',
-            "Sala \"{$room->name}\" excluida",
+            "Sala \"{$room->name}\" excluída",
             $room,
             ['name' => $room->name]
         );

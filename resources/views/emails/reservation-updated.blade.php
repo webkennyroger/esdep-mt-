@@ -29,7 +29,7 @@
                 <p><span class="label">Evento:</span> {{ $reservation->event_name }}</p>
                 <p><span class="label">Sala:</span> {{ $reservation->room->name }}</p>
                 <p><span class="label">Data:</span> {{ \Carbon\Carbon::parse($reservation->date)->format('d/m/Y') }}</p>
-                <p><span class="label">Horário:</span> {{ \Carbon\Carbon::parse($reservation->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($reservation->end_time)->format('H:i') }}</p>
+                <p><span class="label">Horário:</span> {{ $reservation->formattedStartTime() }} - {{ $reservation->formattedEndTime() }}</p>
                 <p><span class="label">Participantes:</span> {{ $reservation->attendees_count }}</p>
             </div>
 

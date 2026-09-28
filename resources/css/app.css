@@ -13,3 +13,34 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/*
+ * Paleta de cores escolhidas pelo usuario (sala, grupo de contato, etc).
+ * O valor salvo no banco e o hex claro (usado direto via var(--swatch, <hex>)).
+ * Aqui so declaramos a variante escura, por familia de cor do Tailwind — quando
+ * o tema dark esta ativo, o seletor de atributo troca o tom sem nenhuma logica
+ * em PHP. Cores fora dessa lista (marca ESDEP, hex customizado antigo) caem no
+ * fallback do var() e ficam com o mesmo tom nos dois temas.
+ */
+.dark [data-color="#475569"] { --swatch: #94a3b8; } /* Ardósia */
+.dark [data-color="#4b5563"] { --swatch: #9ca3af; } /* Cinza */
+.dark [data-color="#52525b"] { --swatch: #a1a1aa; } /* Zinco */
+.dark [data-color="#525252"] { --swatch: #a3a3a3; } /* Neutro */
+.dark [data-color="#57534e"] { --swatch: #a8a29e; } /* Pedra */
+.dark [data-color="#dc2626"] { --swatch: #f87171; } /* Vermelho */
+.dark [data-color="#ea580c"] { --swatch: #fb923c; } /* Laranja */
+.dark [data-color="#d97706"] { --swatch: #fbbf24; } /* Âmbar */
+.dark [data-color="#ca8a04"] { --swatch: #facc15; } /* Amarelo */
+.dark [data-color="#65a30d"] { --swatch: #a3e635; } /* Lima */
+.dark [data-color="#16a34a"] { --swatch: #4ade80; } /* Verde */
+.dark [data-color="#059669"] { --swatch: #34d399; } /* Esmeralda */
+.dark [data-color="#0d9488"] { --swatch: #2dd4bf; } /* Verde-azulado */
+.dark [data-color="#0891b2"] { --swatch: #22d3ee; } /* Ciano */
+.dark [data-color="#0284c7"] { --swatch: #38bdf8; } /* Azul-celeste */
+.dark [data-color="#2563eb"] { --swatch: #60a5fa; } /* Azul */
+.dark [data-color="#4f46e5"] { --swatch: #818cf8; } /* Índigo */
+.dark [data-color="#7c3aed"] { --swatch: #a78bfa; } /* Violeta */
+.dark [data-color="#9333ea"] { --swatch: #c084fc; } /* Púrpura */
+.dark [data-color="#c026d3"] { --swatch: #e879f9; } /* Magenta */
+.dark [data-color="#db2777"] { --swatch: #f472b6; } /* Rosa */
+.dark [data-color="#e11d48"] { --swatch: #fb7185; } /* Rosé */

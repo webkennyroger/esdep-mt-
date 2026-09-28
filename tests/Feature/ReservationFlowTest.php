@@ -163,8 +163,12 @@ test('admin approves and reservation appears in calendar', function () {
         'status' => 'authorized',
     ]);
 
-    // Check in AdminCalendar
-    $calendar = Livewire::test(AdminCalendar::class);
+    // Check in AdminCalendar (aponta o calendario para o mes da reserva, que
+    // pode nao ser o mes atual quando o teste roda perto da virada do mes)
+    $reservationDate = Carbon::parse($date);
+    $calendar = Livewire::test(AdminCalendar::class)
+        ->set('currentMonth', $reservationDate->month)
+        ->set('currentYear', $reservationDate->year);
     $calendar->call('loadReservations');
 
     $reservations = $calendar->get('reservations');

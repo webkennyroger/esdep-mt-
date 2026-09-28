@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Enums\ReservationStatus;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 /** @property-read Room|null $room */
 class Reservation extends Model
@@ -66,6 +68,48 @@ class Reservation extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
+    }
+
+    /**
+     * As colunas start_time/end_time sao `time` no banco e voltam como string crua
+     * ("09:00:00"). Estes helpers garantem que a exibicao seja sempre "H:i".
+     */
+    public function formattedStartTime(): string
+    {
+        return $this->formatTimeColumn($this->start_time);
+    }
+
+    public function formattedEndTime(): string
+    {
+        return $this->formatTimeColumn($this->end_time);
+    }
+
+    private function formatTimeColumn(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        return Carbon::parse($value)->format('H:i');
+    }
+
+    public function hasAttachment(): bool
+    {
+        return ! empty($this->attachment_path);
+    }
+
+    public function isAttachmentImage(): bool
+    {
+        if (! $this->hasAttachment()) {
+            return false;
+        }
+
+        return in_array(strtolower(pathinfo($this->attachment_path, PATHINFO_EXTENSION)), ['png', 'jpg', 'jpeg']);
+    }
+
+    protected function getAttachmentUrlAttribute(): ?string
+    {
+        return $this->hasAttachment() ? Storage::disk('public')->url($this->attachment_path) : null;
     }
 
     public function scopeAccessibleTo(Builder $query, ?User $user): Builder

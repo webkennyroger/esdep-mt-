@@ -80,7 +80,7 @@ class ContactGroups extends ContactManager
             'newName' => 'required|string|max:255',
             'newEmail' => 'required|email|max:255|unique:contacts,email',
             'newPassword' => 'nullable|string|min:8',
-            'newTipo' => ['nullable', 'string', Rule::notIn(['Admin'])],
+            'newTipo' => 'nullable|string',
         ]);
         $contact = Contact::create(['name' => $this->newName, 'email' => strtolower(trim($this->newEmail)), 'password' => $this->newPassword ?: null, 'cpf' => $this->newCpf ?: null, 'tipo' => $this->newTipo ?: null, 'setor' => $this->newSetor ?: null, 'is_active' => true, 'subscribed_at' => now()]);
         $group = $this->ownedGroupForSector($this->newSetor);
@@ -120,7 +120,7 @@ class ContactGroups extends ContactManager
             'editName' => 'required|string|max:255',
             'editEmail' => ['required', 'email', 'max:255', Rule::unique('contacts', 'email')->ignore($contact->id)],
             'editPassword' => 'nullable|string|min:8',
-            'editTipo' => ['nullable', 'string', Rule::notIn(['Admin'])],
+            'editTipo' => 'nullable|string',
         ]);
         $old = $contact->toArray();
         $data = ['name' => $this->editName, 'email' => strtolower(trim($this->editEmail)), 'cpf' => $this->editCpf ?: null, 'tipo' => $this->editTipo ?: null, 'setor' => $this->editSetor ?: null];
@@ -365,6 +365,6 @@ class ContactGroups extends ContactManager
             $query->whereHas('groups', fn ($filter) => $filter->where('contact_groups.id', $this->filterGroupId));
         }
 
-        return view('livewire.admin.contact-manager', ['contacts' => $query->paginate(15), 'groups' => $groups, 'rooms' => Room::whereIn('id', auth('contact')->user()->responsibleRoomIds())->orderBy('name')->get(), 'contactsForGroups' => $this->allowedContacts()->orderBy('name')->limit(300)->get(['contacts.id', 'contacts.name', 'contacts.email']), 'sectors' => $groups->pluck('name')->values()->all(), 'cargos' => ['Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiário'], 'isSuperAdmin' => false]);
+        return view('livewire.admin.contact-manager', ['contacts' => $query->paginate(15), 'groups' => $groups, 'rooms' => Room::whereIn('id', auth('contact')->user()->responsibleRoomIds())->orderBy('name')->get(), 'contactsForGroups' => $this->allowedContacts()->orderBy('name')->limit(300)->get(['contacts.id', 'contacts.name', 'contacts.email']), 'sectors' => $groups->pluck('name')->values()->all(), 'cargos' => ['Assessor', 'Defensor', 'Diretor', 'Coordenador', 'Gerente', 'Estagiário'], 'isSuperAdmin' => false]);
     }
 }

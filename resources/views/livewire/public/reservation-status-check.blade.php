@@ -8,7 +8,7 @@
             Consultar Status da disponibilidade 
         </h1>
         <p class="mx-auto mt-3 max-w-xl text-sm text-slate-600 dark:text-[#8aa39a]">
-            Busque por protocolo, evento, sala, data, horário ou solicitante.
+            Busque por código do protocolo, nome do evento, nome da sala ou data (dd/mm/aaaa).
         </p>
     </div>
 
@@ -21,8 +21,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
-                <input type="text" wire:model="searchQuery" required placeholder="Ex: RES-2026-0001, Workshop, Sala Horizonte, 20/08, Joao..."
-                    class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-green-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600/20 dark:border-[#16352a] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#5a7068] dark:focus:border-[#00a477]" />
+                <input type="text" wire:model="searchQuery" required placeholder="Ex: RES-2026-0001, Sala Horizonte, 20/08/2026..."
+                    class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-green-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600/20 dark:border-[#16352a] dark:bg-[#081712] dark:text-[#4fd1a5] dark:placeholder:text-[#5a7068] dark:focus:border-[#00a477]" />
             </div>
             <div class="flex gap-2">
                 <button type="submit"
@@ -58,7 +58,7 @@
                     </div>
                     <h3 class="mt-4 text-base font-semibold text-slate-900 dark:text-[#e6f2ec]">Nenhuma reserva encontrada</h3>
                     <p class="mt-1 text-xs text-slate-500 dark:text-[#8aa39a]">
-                        Tente buscar por protocolo, nome do evento, sala, data ou nome do solicitante.
+                        Tente buscar por código do protocolo, nome do evento, nome da sala ou data (dd/mm/aaaa).
                     </p>
                 </div>
             @else
@@ -116,7 +116,7 @@
                                         <p class="mt-1 font-semibold text-slate-900 dark:text-[#e6f2ec]">
                                             {{ \Carbon\Carbon::parse($res->date)->format('d/m/Y') }}
                                         </p>
-                                        <p class="text-xs text-slate-500 dark:text-[#8aa39a]">{{ $res->start_time }} às {{ $res->end_time }}</p>
+                                        <p class="text-xs text-slate-500 dark:text-[#8aa39a]">{{ $res->formattedStartTime() }} às {{ $res->formattedEndTime() }}</p>
                                     </div>
                                     <div class="rounded-xl border border-slate-100 bg-slate-50 p-3.5 dark:border-[#16352a] dark:bg-[#081712]">
                                         <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-[#5a7068]">Solicitante</span>

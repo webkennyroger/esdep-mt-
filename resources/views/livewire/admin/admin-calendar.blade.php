@@ -2,7 +2,7 @@
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-slate-900 dark:text-[#e6f2ec]">Agenda</h1>
-            <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Visualize as reservas confirmadas no calendario.</p>
+            <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Visualize as reservas confirmadas no calendário.</p>
         </div>
         <div class="flex items-center justify-center gap-2">
             <button wire:click="previousMonth" class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-50 dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:hover:bg-[#16352a]">&lsaquo; Anterior</button>
@@ -69,7 +69,7 @@
         <div class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
             <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-[#16352a] dark:bg-[#112a21]">
                 <div>
-                    <h2 class="text-base font-bold text-slate-900 dark:text-[#e6f2ec] sm:text-lg">{{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('l, d \\d\\e F \\d\\e Y') }}</h2>
+                    <h2 class="text-base font-bold text-slate-900 dark:text-[#e6f2ec] sm:text-lg">{{ $this->selected_date_label }}</h2>
                     <p class="mt-0.5 text-xs text-slate-500 dark:text-[#8aa39a]">{{ count($dayReservations) }} evento(s) autorizado(s)</p>
                 </div>
                 <button wire:click="$set('selectedDate', '')" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]">
@@ -127,12 +127,12 @@
                                     @endif
                                     @if($res['sonorizacao'])
                                         <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                                            🎙 Sonorizacao
+                                            🎙 Sonorização
                                         </span>
                                     @endif
                                     @if($res['transmissao'])
                                         <span class="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-                                            📡 Transmissao
+                                            📡 Transmissão
                                         </span>
                                     @endif
                                 </div>

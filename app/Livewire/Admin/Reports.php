@@ -5,10 +5,12 @@ namespace App\Livewire\Admin;
 use App\Enums\ReservationStatus;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Services\ReservationExportService;
 use Carbon\Carbon;
+use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Layout('components.layouts.app')]
 /** @property-read array<string, mixed> $stats */
@@ -65,13 +67,19 @@ class Reports extends Component
 
         $occupancyRate = $total > 0 ? round(($approved / $total) * 100, 1) : 0;
 
+        $statusBreakdown = [
+            'approved' => ['label' => 'Autorizada', 'value' => $approved, 'pct' => $total > 0 ? round(($approved / $total) * 100, 1) : 0],
+            'pending' => ['label' => 'Pendente', 'value' => $pending, 'pct' => $total > 0 ? round(($pending / $total) * 100, 1) : 0],
+            'rejected' => ['label' => 'Rejeitada', 'value' => $rejected, 'pct' => $total > 0 ? round(($rejected / $total) * 100, 1) : 0],
+        ];
+
         return compact(
             'total', 'approved', 'rejected', 'pending',
-            'totalAttendees', 'byRoom', 'byService', 'occupancyRate'
+            'totalAttendees', 'byRoom', 'byService', 'occupancyRate', 'statusBreakdown'
         );
     }
 
-    public function exportCsv(): StreamedResponse
+    private function reservationsForExport(): Collection
     {
         $query = Reservation::accessibleTo(auth()->user())->with('room')
             ->whereBetween('date', [$this->startDate, $this->endDate])
@@ -81,38 +89,49 @@ class Reports extends Component
             $query->where('room_id', $this->roomId);
         }
 
-        $reservations = $query->get();
+        return $query->get();
+    }
 
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="relatorio-reservas-'.$this->startDate.'-'.$this->endDate.'.csv"',
-        ];
+    public function exportExcel(): Response
+    {
+        $bytes = app(ReservationExportService::class)->toXlsx($this->reservationsForExport());
 
-        return response()->stream(function () use ($reservations) {
-            $handle = fopen('php://output', 'w');
+        return response($bytes, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="relatorio-reservas-'.$this->startDate.'-'.$this->endDate.'.xlsx"',
+        ]);
+    }
 
-            fputcsv($handle, ['Protocolo', 'Evento', 'Sala', 'Data', 'Horario', 'Solicitante', 'Email', 'Publico', 'Status', 'Coffee Break', 'Sonorizacao', 'Transmissao', 'Projetor'], ';');
+    public function exportPdf(): Response
+    {
+        $bytes = app(ReservationExportService::class)->toPdf($this->reservationsForExport());
 
-            foreach ($reservations as $r) {
-                fputcsv($handle, [
-                    $r->protocol,
-                    $r->event_name,
-                    $r->room->name ?? '-',
-                    $r->date->format('d/m/Y'),
-                    "{$r->start_time} - {$r->end_time}",
-                    $r->requester_name,
-                    $r->requester_email,
-                    $r->attendees_count,
-                    $r->status->label(),
-                    $r->coffee_break ? 'Sim' : 'Nao',
-                    $r->sonorizacao ? 'Sim' : 'Nao',
-                    $r->transmissao ? 'Sim' : 'Nao',
-                    $r->projetor ? 'Sim' : 'Nao',
-                ], ';');
-            }
+        return response($bytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="relatorio-reservas-'.$this->startDate.'-'.$this->endDate.'.pdf"',
+        ]);
+    }
 
-            fclose($handle);
-        }, 200, $headers);
+    public function copyText(): string
+    {
+        $service = app(ReservationExportService::class);
+
+        $lines = [implode("\t", ReservationExportService::HEADERS)];
+        foreach ($service->rows($this->reservationsForExport()) as $row) {
+            $lines[] = implode("\t", $row);
+        }
+
+        return implode("\n", $lines);
+    }
+
+    public function printHtml(): string
+    {
+        $service = app(ReservationExportService::class);
+
+        return view('exports.print-table', [
+            'headers' => ReservationExportService::HEADERS,
+            'rows' => $service->rows($this->reservationsForExport()),
+        ])->render();
     }
 
     public function render()

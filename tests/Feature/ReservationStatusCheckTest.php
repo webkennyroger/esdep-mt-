@@ -68,9 +68,9 @@ test('user can search reservation by exact protocol', function () {
         ->assertSee('Pendente de Aprovação');
 });
 
-test('user can search reservation by email', function () {
+test('search by requester email no longer matches', function () {
     $action = app(CreateReservationAction::class);
-    $reservation = $action->execute([
+    $action->execute([
         'room_id' => $this->room->id,
         'event_name' => 'Oficina Prática',
         'requester_name' => 'Carlos Solicitante',
@@ -84,7 +84,27 @@ test('user can search reservation by email', function () {
     Livewire::test(ReservationStatusCheck::class)
         ->set('searchQuery', 'carlos.oficina@defensoria.mt.def.br')
         ->call('search')
-        ->assertSee('Oficina Prática')
+        ->assertDontSee('Oficina Prática')
+        ->assertSee('Nenhuma reserva encontrada');
+});
+
+test('user can search reservation by partial protocol code', function () {
+    $action = app(CreateReservationAction::class);
+    $reservation = $action->execute([
+        'room_id' => $this->room->id,
+        'event_name' => 'Congresso Anual',
+        'requester_name' => 'Beatriz Souza',
+        'requester_email' => 'beatriz@defensoria.mt.def.br',
+        'date' => now()->addDays(18)->toDateString(),
+        'start_time' => '08:00',
+        'end_time' => '18:00',
+        'attendees_count' => 200,
+    ]);
+
+    Livewire::test(ReservationStatusCheck::class)
+        ->set('searchQuery', substr($reservation->protocol, -4))
+        ->call('search')
+        ->assertSee('Congresso Anual')
         ->assertSee($reservation->protocol);
 });
 
@@ -135,9 +155,9 @@ test('user can search reservation by room name', function () {
         ->assertSee($reservation->protocol);
 });
 
-test('user can search reservation by requester name', function () {
+test('search by requester name no longer matches', function () {
     $action = app(CreateReservationAction::class);
-    $reservation = $action->execute([
+    $action->execute([
         'room_id' => $this->room->id,
         'event_name' => 'Palestra',
         'requester_name' => 'Fernanda Silva',
@@ -151,6 +171,76 @@ test('user can search reservation by requester name', function () {
     Livewire::test(ReservationStatusCheck::class)
         ->set('searchQuery', 'Fernanda')
         ->call('search')
-        ->assertSee('Palestra')
-        ->assertSee('Fernanda Silva');
+        ->assertDontSee('Palestra')
+        ->assertSee('Nenhuma reserva encontrada');
+});
+
+test('user can search reservation by full date dd/mm/aaaa', function () {
+    $action = app(CreateReservationAction::class);
+    $date = now()->addDays(30);
+    $reservation = $action->execute([
+        'room_id' => $this->room->id,
+        'event_name' => 'Audiência Pública',
+        'requester_name' => 'Renato Alves',
+        'requester_email' => 'renato@defensoria.mt.def.br',
+        'date' => $date->toDateString(),
+        'start_time' => '13:00',
+        'end_time' => '15:00',
+        'attendees_count' => 40,
+    ]);
+
+    Livewire::test(ReservationStatusCheck::class)
+        ->set('searchQuery', $date->format('d/m/Y'))
+        ->call('search')
+        ->assertSee('Audiência Pública')
+        ->assertSee($reservation->protocol);
+});
+
+test('user can search reservation by day and month, matching any year', function () {
+    $action = app(CreateReservationAction::class);
+    $date = now()->addDays(40);
+    $reservation = $action->execute([
+        'room_id' => $this->room->id,
+        'event_name' => 'Capacitação de Servidores',
+        'requester_name' => 'Juliana Prado',
+        'requester_email' => 'juliana@defensoria.mt.def.br',
+        'date' => $date->toDateString(),
+        'start_time' => '09:00',
+        'end_time' => '17:00',
+        'attendees_count' => 60,
+    ]);
+
+    Livewire::test(ReservationStatusCheck::class)
+        ->set('searchQuery', $date->format('d/m'))
+        ->call('search')
+        ->assertSee('Capacitação de Servidores')
+        ->assertSee($reservation->protocol);
+});
+
+test('user can search reservation by day only, matching any month and year', function () {
+    $action = app(CreateReservationAction::class);
+    $date = now()->addDays(50);
+    $reservation = $action->execute([
+        'room_id' => $this->room->id,
+        'event_name' => 'Mesa Redonda',
+        'requester_name' => 'Otávio Nunes',
+        'requester_email' => 'otavio@defensoria.mt.def.br',
+        'date' => $date->toDateString(),
+        'start_time' => '16:00',
+        'end_time' => '18:00',
+        'attendees_count' => 25,
+    ]);
+
+    Livewire::test(ReservationStatusCheck::class)
+        ->set('searchQuery', (string) (int) $date->format('d'))
+        ->call('search')
+        ->assertSee('Mesa Redonda')
+        ->assertSee($reservation->protocol);
+});
+
+test('search ignores an invalid date-like query for the date filter but still matches other fields', function () {
+    Livewire::test(ReservationStatusCheck::class)
+        ->set('searchQuery', '32/13/2026')
+        ->call('search')
+        ->assertSee('Nenhuma reserva encontrada');
 });

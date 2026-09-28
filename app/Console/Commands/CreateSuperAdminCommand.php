@@ -26,8 +26,8 @@ class CreateSuperAdminCommand extends Command
     protected $signature = 'user:super-admin
         {--email= : E-mail da conta}
         {--name= : Nome exibido}
-        {--password= : Senha (evite em producao: fica no historico do shell)}
-        {--force : Executa sem pedir confirmacao em producao}';
+        {--password= : Senha (evite em produção: fica no histórico do shell)}
+        {--force : Executa sem pedir confirmação em produção}';
 
     protected $description = 'Cria ou promove um super-administrador do sistema';
 
@@ -96,14 +96,14 @@ class CreateSuperAdminCommand extends Command
         $this->info($existing ? "Conta promovida a super-administrador: {$email}" : "Super-administrador criado: {$email}");
 
         if ($user->keycloak_id === null) {
-            $this->line('  Ainda sem vinculo com o SSO. No primeiro login institucional');
-            $this->line('  com este mesmo e-mail, a conta sera pareada automaticamente.');
+            $this->line('  Ainda sem vínculo com o SSO. No primeiro login institucional');
+            $this->line('  com este mesmo e-mail, a conta será pareada automaticamente.');
         }
 
         if ($plainPassword === null && $user->password === null) {
             $this->newLine();
-            $this->warn('Esta conta nao tem senha local: so entra pelo SSO.');
-            $this->warn('Se o Keycloak ficar indisponivel, nao havera como acessar o sistema.');
+            $this->warn('Esta conta não tem senha local: só entra pelo SSO.');
+            $this->warn('Se o Keycloak ficar indisponível, não haverá como acessar o sistema.');
         }
 
         return self::SUCCESS;
@@ -135,7 +135,7 @@ class CreateSuperAdminCommand extends Command
         }
 
         if (password(label: 'Confirme a senha') !== $plainPassword) {
-            $this->error('As senhas nao conferem.');
+            $this->error('As senhas não conferem.');
 
             return $this->resolvePassword($existing);
         }

@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin;
 
 use App\Models\ActivityLog;
+use App\Models\Reservation;
+use App\Models\Room;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -65,9 +67,30 @@ class ActivityLogController extends Component
         return $this->selectedId ? ActivityLog::with('user')->find($this->selectedId) : null;
     }
 
-    public function render()
+    /**
+     * Quem nao e admin/super-admin (ex.: gerenciador) so ve o historico de
+     * salas e reservas do proprio setor — nada de contatos, grupos ou usuarios.
+     */
+    private function scopedActivityLogQuery()
     {
         $query = ActivityLog::with('user');
+
+        if (auth()->user()->is_admin) {
+            return $query;
+        }
+
+        $roomIds = auth()->user()->managedRoomIds();
+        $reservationIds = Reservation::whereIn('room_id', $roomIds)->pluck('id');
+
+        return $query->where(function ($scoped) use ($roomIds, $reservationIds) {
+            $scoped->where(fn ($q) => $q->where('subject_type', Room::class)->whereIn('subject_id', $roomIds))
+                ->orWhere(fn ($q) => $q->where('subject_type', Reservation::class)->whereIn('subject_id', $reservationIds));
+        });
+    }
+
+    public function render()
+    {
+        $query = $this->scopedActivityLogQuery();
 
         // Filtro por busca
         if (! empty($this->search)) {
@@ -79,7 +102,7 @@ class ActivityLogController extends Component
             });
         }
 
-        // Filtro por acao
+        // Filtro por ação
         if (! empty($this->actionFilter)) {
             $query->where('action', $this->actionFilter);
         }
@@ -97,12 +120,16 @@ class ActivityLogController extends Component
             $query->whereDate('created_at', '<=', $this->dateTo);
         }
 
-        // Estatisticas (today/thisWeek/reservations nao dependem dos filtros da tela, entao ficam em cache curto)
-        $fixedStats = Cache::remember('activity-log-fixed-stats', now()->addMinutes(5), fn () => [
-            'today' => ActivityLog::whereDate('created_at', today())->count(),
-            'thisWeek' => ActivityLog::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-            'reservations' => ActivityLog::where('subject_type', 'App\Models\Reservation')->count(),
-        ]);
+        // Estatísticas (today/thisWeek/reservations não dependem dos filtros da tela, então ficam em cache curto)
+        $isScoped = ! auth()->user()->is_admin;
+        $statsCacheKey = $isScoped ? 'activity-log-fixed-stats:user:'.auth()->id() : 'activity-log-fixed-stats';
+        $fixedStats = Cache::remember($statsCacheKey, now()->addMinutes(5), function () {
+            return [
+                'today' => $this->scopedActivityLogQuery()->whereDate('created_at', today())->count(),
+                'thisWeek' => $this->scopedActivityLogQuery()->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+                'reservations' => $this->scopedActivityLogQuery()->where('subject_type', Reservation::class)->count(),
+            ];
+        });
         $stats = array_merge($fixedStats, ['total' => (clone $query)->count()]);
 
         return view('livewire.admin.activity-log', [

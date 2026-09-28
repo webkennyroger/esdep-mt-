@@ -9,7 +9,7 @@
                     </svg>
                 </button>
             </div>
-            <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Cole o conteudo CSV no formato: nome,email</p>
+            <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Cole o conteúdo CSV no formato: nome,email</p>
             <form wire:submit="importContacts" class="mt-4 space-y-4">
                 <div>
                     <textarea wire:model="importCsv" rows="8" placeholder="nome,email&#10;Carlos Souza,carlos@exemplo.gov.br&#10;Maria Silva,maria@exemplo.gov.br"

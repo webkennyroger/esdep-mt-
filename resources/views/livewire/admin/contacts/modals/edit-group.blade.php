@@ -14,14 +14,14 @@
                     <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Sigla *</label>
                     <input type="text" wire:model="editGroupName" maxlength="20"
                         class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
-                    <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Sera convertida automaticamente para MAIUSCULA</p>
+                    <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Será convertida automaticamente para MAIÚSCULA</p>
                     @error('editGroupName') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Descricao</label>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Descrição</label>
                     <input type="text" wire:model="editGroupDescription"
                         class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
-                    <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Nome completo do setor (aparecera nas listagens)</p>
+                    <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Nome completo do setor (aparecerá nas listagens)</p>
                 </div>
                 <div>
                     <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Cor *</label>
@@ -62,7 +62,7 @@
             <div class="max-h-44 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-[#16352a]">
                 @forelse($contactsForGroups as $groupContact)
                     <label class="flex items-center gap-2 text-sm"><input type="checkbox" wire:model="editGroupContactIds" value="{{ $groupContact->id }}" class="rounded text-green-600"><span>{{ $groupContact->name }}</span> <small class="text-slate-400">{{ $groupContact->email }}</small></label>
-                @empty <span class="text-xs text-slate-500">Nenhum contato disponivel.</span> @endforelse
+                @empty <span class="text-xs text-slate-500">Nenhum contato disponível.</span> @endforelse
             </div>
             @error('editGroupContactIds.*') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
         </div>

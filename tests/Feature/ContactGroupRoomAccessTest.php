@@ -566,27 +566,28 @@ test('group user can persist drag and drop order only inside own scope', functio
         ->and($contactB->fresh()->sort_order)->toBe(0)->and($contactA->fresh()->sort_order)->toBe(1);
 });
 
-test('a contact cannot set their own or another contacts cargo to admin', function () {
+test('a contact setting cargo to assessor is just an informative label with no side effect', function () {
     $group = ContactGroup::create(['name' => 'GRUPO SEGURANCA', 'color' => '#008b5c']);
-    $contact = Contact::create(['name' => 'Tentativa Admin', 'email' => 'tentativa-admin@example.com', 'password' => 'password', 'is_active' => true]);
+    $contact = Contact::create(['name' => 'Contato Comum', 'email' => 'contato-comum-cargo@example.com', 'password' => 'password', 'is_active' => true]);
     $contact->groups()->attach($group);
 
     Livewire::actingAs($contact, 'contact')->test(ContactGroups::class)
         ->set('newName', 'Novo Contato')
-        ->set('newEmail', 'novo-contato-admin@example.com')
-        ->set('newTipo', 'Admin')
+        ->set('newEmail', 'novo-contato-assessor@example.com')
+        ->set('newTipo', 'Assessor')
         ->call('createContact')
-        ->assertHasErrors(['newTipo']);
+        ->assertHasNoErrors();
 
-    expect(Contact::where('email', 'novo-contato-admin@example.com')->exists())->toBeFalse();
+    $created = Contact::where('email', 'novo-contato-assessor@example.com')->firstOrFail();
+    expect($created->tipo)->toBe('Assessor')->and($created->user_id)->toBeNull();
 
     Livewire::actingAs($contact, 'contact')->test(ContactGroups::class)
         ->call('openEditModal', $contact->id)
-        ->set('editTipo', 'Admin')
+        ->set('editTipo', 'Assessor')
         ->call('updateContact')
-        ->assertHasErrors(['editTipo']);
+        ->assertHasNoErrors();
 
-    expect($contact->fresh()->tipo)->not->toBe('Admin');
+    expect($contact->fresh()->tipo)->toBe('Assessor')->and($contact->fresh()->user_id)->toBeNull();
 });
 
 test('a contact cannot edit or delete a contact linked to an admin account', function () {

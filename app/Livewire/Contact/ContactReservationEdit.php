@@ -54,8 +54,8 @@ class ContactReservationEdit extends Component
         $this->description = $res->description ?? '';
         $this->roomId = (string) $res->room_id;
         $this->date = $res->date->format('Y-m-d');
-        $this->startTime = $res->start_time;
-        $this->endTime = $res->end_time;
+        $this->startTime = $res->formattedStartTime();
+        $this->endTime = $res->formattedEndTime();
         $this->requesterName = $res->requester_name;
         $this->requesterEmail = $res->requester_email;
         $this->attendeesCount = $res->attendees_count;
@@ -124,7 +124,7 @@ class ContactReservationEdit extends Component
         ]);
 
         if ($this->conflictError) {
-            session()->flash('error', 'Existem conflitos de horario. Corrija antes de salvar.');
+            session()->flash('error', 'Existem conflitos de horário. Corrija antes de salvar.');
 
             return;
         }

@@ -14,7 +14,7 @@
                         <th class="px-4 py-3">Acesso ao sistema</th>
                         <th class="px-4 py-3">Cadastro autorizado</th>
                         @unless(auth('contact')->check())
-                        <th class="px-4 py-3 text-right">Acoes</th>
+                        <th class="px-4 py-3 text-right">Ações</th>
                         @endunless
                     </tr>
                 </thead>
@@ -31,8 +31,8 @@
                             <td class="px-4 py-3">
                                 @php($visibleGroups = $contact->groups->whereIn('id', $groups->pluck('id')))
                                 @forelse($visibleGroups as $group)
-                                    <span class="mr-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold" style="background-color: {{ $group->color }}18; color: {{ $group->color }};">
-                                        <span class="h-1.5 w-1.5 rounded-full" style="background-color: {{ $group->color }};"></span>
+                                    <span class="mr-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold" data-color="{{ $group->color }}" style="background-color: color-mix(in srgb, var(--swatch, {{ $group->color }}) 18%, transparent); color: var(--swatch, {{ $group->color }});">
+                                        <span class="h-1.5 w-1.5 rounded-full" data-color="{{ $group->color }}" style="background-color: var(--swatch, {{ $group->color }});"></span>
                                         {{ $group->name }}
                                     </span>
                                 @empty

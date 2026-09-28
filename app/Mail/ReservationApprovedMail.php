@@ -30,7 +30,7 @@ class ReservationApprovedMail extends Mailable implements ShouldQueue
     {
         return new Headers(
             text: [
-                'List-Unsubscribe: <mailto:'.config('mail.from.address').'?subject=Cancelar%20inscricao>',
+                'List-Unsubscribe: <mailto:'.config('mail.from.address').'?subject=Cancelar%20inscri%C3%A7%C3%A3o>',
                 'List-Unsubscribe-Post: List-Unsubscribe=One-Click',
                 'Precedence: bulk',
                 'X-Mailer: ESDEP-MT/1.0',

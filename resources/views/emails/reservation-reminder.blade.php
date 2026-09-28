@@ -23,13 +23,13 @@
         </div>
         <div class="content">
             <p>Prezado(a) <strong>{{ $reservation->requester_name }}</strong>,</p>
-            <p>Este e-mail e um lembrete de que voce possui uma reserva <strong style="color: #16a34a;">APROVADA</strong> para amanha!</p>
+            <p>Este e-mail é um lembrete de que você possui uma reserva <strong style="color: #16a34a;">APROVADA</strong> para amanhã!</p>
             
             <div class="info-box">
                 <p><span class="label">Evento:</span> {{ $reservation->event_name }}</p>
                 <p><span class="label">Sala:</span> {{ $reservation->room->name }}</p>
                 <p><span class="label">Data:</span> {{ \Carbon\Carbon::parse($reservation->date)->format('d/m/Y') }}</p>
-                <p><span class="label">Horario:</span> {{ $reservation->start_time }} - {{ $reservation->end_time }}</p>
+                <p><span class="label">Horário:</span> {{ $reservation->formattedStartTime() }} - {{ $reservation->formattedEndTime() }}</p>
                 <p><span class="label">Participantes:</span> {{ $reservation->attendees_count }}</p>
             </div>
 
@@ -40,11 +40,11 @@
             </div>
             @endif
 
-            <p>Por favor, chegue com antecedencia e respeite o horario agendado.</p>
+            <p>Por favor, chegue com antecedência e respeite o horário agendado.</p>
             <p>Atenciosamente,<br><strong>Equipe ESDEP-MT</strong></p>
         </div>
         <div class="footer">
-            <p>Escola Superior da Defensoria Publica do Estado de Mato Grosso</p>
+            <p>Escola Superior da Defensoria Pública do Estado de Mato Grosso</p>
         </div>
     </div>
 </body>

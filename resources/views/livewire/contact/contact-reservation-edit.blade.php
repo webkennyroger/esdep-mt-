@@ -8,7 +8,7 @@
         <form wire:submit="submit" class="space-y-6">
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
                 <label class="block">
-                    <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do responsavel</span>
+                    <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do responsável</span>
                     <input wire:model="requesterName" required placeholder="Ex.: Ana Martins"
                         class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
                     @error('requesterName') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
@@ -16,7 +16,7 @@
 
                 <label class="block">
                     <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do evento</span>
-                    <input wire:model="eventName" required placeholder="Ex.: Encontro de liderancas"
+                    <input wire:model="eventName" required placeholder="Ex.: Encontro de lideranças"
                         class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
                     @error('eventName') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </label>
@@ -50,7 +50,7 @@
                 </label>
 
                 <label class="block">
-                    <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Inicio</span>
+                    <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Início</span>
                     <input wire:model="startTime" required type="time"
                         class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5]">
                     @error('startTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
@@ -78,13 +78,13 @@
             </label>
 
             <label class="block">
-                <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Descricao (opcional)</span>
+                <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Descrição (opcional)</span>
                 <textarea wire:model="description" rows="3" placeholder="Detalhes do evento..."
                     class="w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]"></textarea>
             </label>
 
             <div>
-                <span class="mb-3 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Servicos</span>
+                <span class="mb-3 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Serviços</span>
                 <div class="flex flex-wrap gap-4">
                     <label class="flex items-center gap-2">
                         <input type="checkbox" wire:model="coffeeBreak" class="h-4 w-4 rounded border-[#b8c9c2] text-[#008b5c] focus:ring-[#008b5c] dark:border-[#2c4a3e]">
@@ -92,11 +92,11 @@
                     </label>
                     <label class="flex items-center gap-2">
                         <input type="checkbox" wire:model="sonorizacao" class="h-4 w-4 rounded border-[#b8c9c2] text-[#008b5c] focus:ring-[#008b5c] dark:border-[#2c4a3e]">
-                        <span class="text-[12px] text-[#003f32] dark:text-[#e6f2ec]">Sonorizacao</span>
+                        <span class="text-[12px] text-[#003f32] dark:text-[#e6f2ec]">Sonorização</span>
                     </label>
                     <label class="flex items-center gap-2">
                         <input type="checkbox" wire:model="transmissao" class="h-4 w-4 rounded border-[#b8c9c2] text-[#008b5c] focus:ring-[#008b5c] dark:border-[#2c4a3e]">
-                        <span class="text-[12px] text-[#003f32] dark:text-[#e6f2ec]">Transmissao</span>
+                        <span class="text-[12px] text-[#003f32] dark:text-[#e6f2ec]">Transmissão</span>
                     </label>
                     <label class="flex items-center gap-2">
                         <input type="checkbox" wire:model="projetor" class="h-4 w-4 rounded border-[#b8c9c2] text-[#008b5c] focus:ring-[#008b5c] dark:border-[#2c4a3e]">
@@ -112,7 +112,7 @@
                 </a>
                 <button type="submit" wire:loading.attr="disabled"
                     class="inline-flex items-center gap-1.5 rounded-lg bg-[#008b5c] px-6 py-2 text-xs font-bold text-white transition hover:bg-[#006e49] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
-                    <span wire:loading.remove>Salvar Alteracoes</span>
+                    <span wire:loading.remove>Salvar Alterações</span>
                     <span wire:loading>Salvando...</span>
                 </button>
             </div>

@@ -12,8 +12,8 @@ class ConflictException extends DomainException
     public static function forRoom(int $roomId): self
     {
         return new self(
-            'Conflito de horario: Esta sala ja possui uma reserva agendada '.
-            'no mesmo periodo. Escolha outro horario.'
+            'Conflito de horário: Esta sala já possui uma reserva agendada '.
+            'no mesmo período. Escolha outro horário.'
         );
     }
 }

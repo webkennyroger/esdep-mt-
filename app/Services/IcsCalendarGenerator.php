@@ -53,24 +53,24 @@ class IcsCalendarGenerator
 
         $parts[] = "Protocolo: {$reservation->protocol}";
         $parts[] = "Solicitante: {$reservation->requester_name} ({$reservation->requester_email})";
-        $parts[] = "Horario: {$reservation->start_time} - {$reservation->end_time}";
+        $parts[] = 'Horário: '.$reservation->formattedStartTime().' - '.$reservation->formattedEndTime();
 
         $services = [];
         if ($reservation->coffee_break) {
             $services[] = 'Coffee Break';
         }
         if ($reservation->sonorizacao) {
-            $services[] = 'Sonorizacao';
+            $services[] = 'Sonorização';
         }
         if ($reservation->transmissao) {
-            $services[] = 'Transmissao';
+            $services[] = 'Transmissão';
         }
         if ($reservation->projetor) {
             $services[] = 'Projetor';
         }
 
         if ($services) {
-            $parts[] = 'Servicos: '.implode(', ', $services);
+            $parts[] = 'Serviços: '.implode(', ', $services);
         }
 
         return implode('\\n', $parts);

@@ -5,6 +5,7 @@ namespace App\Livewire\Contact;
 use App\Enums\ReservationStatus;
 use App\Models\Reservation;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -49,8 +50,8 @@ class ContactCalendar extends Component
             $this->reservations[$key][] = [
                 'id' => $row->id, 'event_name' => $row->event_name, 'description' => $row->description,
                 'requester_name' => $row->requester_name, 'requester_email' => $row->requester_email,
-                'attendees_count' => $row->attendees_count, 'start_time' => Carbon::parse($row->start_time)->format('H:i'),
-                'end_time' => Carbon::parse($row->end_time)->format('H:i'), 'room_name' => $row->room->name,
+                'attendees_count' => $row->attendees_count, 'start_time' => $row->formattedStartTime(),
+                'end_time' => $row->formattedEndTime(), 'room_name' => $row->room->name,
                 'coffee_break' => (bool) $row->coffee_break, 'sonorizacao' => (bool) $row->sonorizacao,
                 'transmissao' => (bool) $row->transmissao,
             ];
@@ -88,7 +89,18 @@ class ContactCalendar extends Component
 
     public function getMonthNameProperty(): string
     {
-        return Carbon::create($this->currentYear, $this->currentMonth)->translatedFormat('F \\d\\e Y');
+        return Str::ucfirst(Carbon::create($this->currentYear, $this->currentMonth)->translatedFormat('F \\d\\e Y'));
+    }
+
+    public function getSelectedDateLabelProperty(): ?string
+    {
+        if (! $this->selectedDate) {
+            return null;
+        }
+
+        $date = Carbon::parse($this->selectedDate);
+
+        return $date->translatedFormat('l, d \\d\\e ').Str::ucfirst($date->translatedFormat('F \\d\\e Y'));
     }
 
     public function getCalendarDaysProperty(): array

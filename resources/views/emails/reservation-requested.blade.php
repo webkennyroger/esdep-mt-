@@ -30,7 +30,7 @@
                 <p><span class="label">Email:</span> {{ $reservation->requester_email }}</p>
                 <p><span class="label">Sala:</span> {{ $reservation->room->name }}</p>
                 <p><span class="label">Data:</span> {{ \Carbon\Carbon::parse($reservation->date)->format('d/m/Y') }}</p>
-                <p><span class="label">Horário:</span> {{ \Carbon\Carbon::parse($reservation->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($reservation->end_time)->format('H:i') }}</p>
+                <p><span class="label">Horário:</span> {{ $reservation->formattedStartTime() }} - {{ $reservation->formattedEndTime() }}</p>
                 <p><span class="label">Participantes:</span> {{ $reservation->attendees_count }}</p>
             </div>
 
@@ -39,6 +39,15 @@
             <div class="info-box">
                 <p>{{ $reservation->description }}</p>
             </div>
+            @endif
+
+            @if($reservation->hasAttachment())
+            <p><span class="label">Anexo enviado:</span></p>
+            @if($reservation->isAttachmentImage())
+                <p><img src="{{ $reservation->attachment_url }}" alt="{{ $reservation->attachment_name }}" style="max-width:100%;border-radius:8px;"></p>
+            @else
+                <p><a href="{{ $reservation->attachment_url }}">📎 Ver anexo enviado ({{ $reservation->attachment_name }})</a></p>
+            @endif
             @endif
 
             <p>Acesse o painel administrativo para autorizar ou rejeitar esta solicitação.</p>

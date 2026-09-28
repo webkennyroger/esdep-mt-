@@ -14,18 +14,18 @@
             </div>
            
             <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-[#16352a] dark:text-[#e6f2ec]">
-                <span class="text-xs font-semibold leading-tight">{{ $res->start_time }}</span>
+                <span class="text-xs font-semibold leading-tight">{{ $res->formattedStartTime() }}</span>
                 <span class="text-xs font-semibold leading-tight">-</span>
-                <span class="text-xs font-semibold leading-tight">{{ $res->end_time }}</span>
+                <span class="text-xs font-semibold leading-tight">{{ $res->formattedEndTime() }}</span>
             </div> 
         </div>
     @empty
         <div class="flex min-h-[270px] items-center justify-center text-center">
             <div>
                 <span class="mx-auto flex h-[46px] w-[46px] items-center justify-center border border-dashed border-[#aebfb8] text-[23px] text-[#008b5c] dark:border-[#2c4a3e] dark:text-[#4fd1a5]">+</span>
-                <strong class="mt-5 block text-[13px] text-[#003f32] dark:text-[#e6f2ec]">A agenda esta livre</strong>
+                <strong class="mt-5 block text-[13px] text-[#003f32] dark:text-[#e6f2ec]">A agenda está livre</strong>
                 <p class="mx-auto mt-2 max-w-[220px] text-[11px] leading-5 text-[#70847d]">
-                    O proximo evento confirmado aparecera aqui.
+                    O próximo evento confirmado aparecerá aqui.
                 </p>
             </div>
         </div>

@@ -21,7 +21,7 @@ class UpdateReservationAction
     public function execute(Reservation $reservation, array $data): Reservation
     {
         if (isset($data['status'])) {
-            throw new \DomainException('Alteracao de status deve utilizar as Actions correspondentes (ApproveReservationAction ou RejectReservationAction).');
+            throw new \DomainException('Alteração de status deve utilizar as Actions correspondentes (ApproveReservationAction ou RejectReservationAction).');
         }
 
         $this->validateChanges($reservation, $data);

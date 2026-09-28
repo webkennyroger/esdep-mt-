@@ -107,4 +107,13 @@ class User extends Authenticatable
     {
         return $this->hasRole('super-admin');
     }
+
+    /**
+     * Alem de admin/super-admin, o "gerenciador" tambem entra no painel — mas
+     * so alcanca as salas do proprio setor (via managedRoomIds/responsibleRoomIds).
+     */
+    public function canAccessAdminPanel(): bool
+    {
+        return $this->is_admin || $this->hasRole('gerenciador');
+    }
 }

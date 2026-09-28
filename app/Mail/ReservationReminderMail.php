@@ -18,7 +18,7 @@ class ReservationReminderMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Lembrete: {$this->reservation->event_name} - Amanha",
+            subject: "Lembrete: {$this->reservation->event_name} - Amanhã",
         );
     }
 

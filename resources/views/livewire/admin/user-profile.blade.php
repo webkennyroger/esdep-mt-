@@ -1,7 +1,7 @@
 <div>
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-[#e6f2ec]">Meu Perfil</h1>
-        <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Gerencie suas informacoes pessoais e senha.</p>
+        <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Gerencie suas informações pessoais e senha.</p>
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -13,7 +13,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                 </div>
-                <h2 class="text-lg font-semibold text-slate-900 dark:text-[#e6f2ec]">Informacoes Pessoais</h2>
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-[#e6f2ec]">Informações Pessoais</h2>
             </div>
             
             <form wire:submit="updateProfile" class="space-y-4">
@@ -92,7 +92,7 @@
                 <h2 class="text-lg font-semibold text-red-700 dark:text-red-400">Zona de Perigo</h2>
             </div>
             <p class="mb-4 text-sm text-red-600 dark:text-red-300">
-                Excluir sua conta e uma acao irreversivel. Todos os seus dados serao removidos permanentemente.
+                Excluir sua conta é uma ação irreversível. Todos os seus dados serão removidos permanentemente.
             </p>
             <button wire:click="openDeleteModal"
                 class="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800">
@@ -114,7 +114,7 @@
                     </div>
                     <h3 class="text-lg font-bold text-slate-900 dark:text-[#e6f2ec]">Excluir Conta</h3>
                     <p class="mt-2 text-sm text-slate-500 dark:text-[#8aa39a]">
-                        Tem certeza que deseja excluir sua conta? Esta acao e irreversivel e todos os seus dados serao removidos permanentemente.
+                        Tem certeza que deseja excluir sua conta? Esta ação é irreversível e todos os seus dados serão removidos permanentemente.
                     </p>
                 </div>
                 <div class="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4 dark:border-[#16352a]">

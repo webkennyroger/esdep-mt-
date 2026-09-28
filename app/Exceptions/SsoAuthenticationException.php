@@ -12,11 +12,11 @@ class SsoAuthenticationException extends RuntimeException
 {
     public static function missingEmail(): self
     {
-        return new self('Sua conta institucional nao possui e-mail cadastrado. Procure o suporte de TI.');
+        return new self('Sua conta institucional não possui e-mail cadastrado. Procure o suporte de TI.');
     }
 
     public static function providerFailure(): self
     {
-        return new self('Nao foi possivel concluir o login institucional. Tente novamente.');
+        return new self('Não foi possível concluir o login institucional. Tente novamente.');
     }
 }

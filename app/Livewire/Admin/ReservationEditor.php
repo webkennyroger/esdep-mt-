@@ -2,19 +2,23 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\CreateReservationAction;
 use App\Actions\UpdateReservationAction;
+use App\Enums\ReservationStatus;
 use App\Exceptions\ConflictException;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Services\ConflictCheckerService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class ReservationEditor extends Component
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, WithFileUploads;
 
     public bool $showModal = false;
 
@@ -46,6 +50,14 @@ class ReservationEditor extends Component
 
     public bool $projetor = false;
 
+    public $attachment = null;
+
+    public ?string $existingAttachmentPath = null;
+
+    public string $existingAttachmentName = '';
+
+    public bool $removeExistingAttachment = false;
+
     public string $conflictError = '';
 
     protected function rules(): array
@@ -64,6 +76,7 @@ class ReservationEditor extends Component
             'sonorizacao' => 'boolean',
             'transmissao' => 'boolean',
             'projetor' => 'boolean',
+            'attachment' => 'nullable|file|max:5120|mimes:pdf,png,jpg,jpeg',
         ];
     }
 
@@ -81,10 +94,13 @@ class ReservationEditor extends Component
         'requesterEmail.email' => 'Insira um e-mail válido.',
         'attendeesCount.required' => 'O número de participantes é obrigatório.',
         'attendeesCount.min' => 'Deve haver pelo menos 1 participante.',
+        'attachment.max' => 'O arquivo deve ter no máximo 5MB.',
+        'attachment.mimes' => 'O arquivo deve ser PDF, PNG ou JPG.',
     ];
 
     protected $listeners = [
         'openReservationEditor' => 'open',
+        'openReservationCreator' => 'openCreate',
     ];
 
     public function updatedDate(): void
@@ -108,6 +124,31 @@ class ReservationEditor extends Component
     public function updatedRoomId(): void
     {
         $this->checkConflict();
+    }
+
+    /**
+     * @return array{attachment_path?: string|null, attachment_name?: string|null}
+     */
+    private function resolveAttachmentData(): array
+    {
+        if ($this->attachment) {
+            if ($this->existingAttachmentPath) {
+                Storage::disk('public')->delete($this->existingAttachmentPath);
+            }
+
+            return [
+                'attachment_path' => $this->attachment->store('attachments', 'public'),
+                'attachment_name' => $this->attachment->getClientOriginalName(),
+            ];
+        }
+
+        if ($this->removeExistingAttachment && $this->existingAttachmentPath) {
+            Storage::disk('public')->delete($this->existingAttachmentPath);
+
+            return ['attachment_path' => null, 'attachment_name' => null];
+        }
+
+        return [];
     }
 
     private function checkConflict(): void
@@ -144,10 +185,48 @@ class ReservationEditor extends Component
         $this->sonorizacao = (bool) $reservation->sonorizacao;
         $this->transmissao = (bool) $reservation->transmissao;
         $this->projetor = (bool) $reservation->projetor;
+        $this->attachment = null;
+        $this->existingAttachmentPath = $reservation->attachment_path;
+        $this->existingAttachmentName = $reservation->attachment_name ?? '';
+        $this->removeExistingAttachment = false;
 
         $this->conflictError = '';
         $this->resetValidation();
         $this->showModal = true;
+    }
+
+    public function openCreate(): void
+    {
+        $this->authorize('create', Reservation::class);
+
+        $this->reservationId = 0;
+        $this->eventName = '';
+        $this->description = '';
+        $this->roomId = 0;
+        $this->date = '';
+        $this->startTime = '';
+        $this->endTime = '';
+        $this->requesterName = '';
+        $this->requesterEmail = '';
+        $this->attendeesCount = 1;
+        $this->coffeeBreak = false;
+        $this->sonorizacao = false;
+        $this->transmissao = false;
+        $this->projetor = false;
+        $this->attachment = null;
+        $this->existingAttachmentPath = null;
+        $this->existingAttachmentName = '';
+        $this->removeExistingAttachment = false;
+
+        $this->conflictError = '';
+        $this->resetValidation();
+        $this->showModal = true;
+    }
+
+    public function markAttachmentForRemoval(): void
+    {
+        $this->attachment = null;
+        $this->removeExistingAttachment = true;
     }
 
     public function close(): void
@@ -159,6 +238,12 @@ class ReservationEditor extends Component
     public function save(): void
     {
         $this->validate();
+
+        if ($this->reservationId === 0) {
+            $this->createReservation();
+
+            return;
+        }
 
         $reservation = Reservation::accessibleTo(auth()->user())->findOrFail($this->reservationId);
         $this->authorize('update', $reservation);
@@ -178,10 +263,43 @@ class ReservationEditor extends Component
                 'sonorizacao' => $this->sonorizacao,
                 'transmissao' => $this->transmissao,
                 'projetor' => $this->projetor,
+                ...$this->resolveAttachmentData(),
             ]);
 
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva atualizada com sucesso.' } }))");
             $this->dispatch('reservationUpdated');
+            $this->close();
+        } catch (\Exception $e) {
+            $safeMsg = addslashes(strip_tags($e->getMessage()));
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '{$safeMsg}' } }))");
+        }
+    }
+
+    private function createReservation(): void
+    {
+        $this->authorize('create', Reservation::class);
+
+        try {
+            app(CreateReservationAction::class)->execute([
+                'event_name' => $this->eventName,
+                'description' => $this->description ?: null,
+                'room_id' => $this->roomId,
+                'date' => $this->date,
+                'start_time' => $this->startTime,
+                'end_time' => $this->endTime,
+                'requester_name' => $this->requesterName,
+                'requester_email' => $this->requesterEmail,
+                'attendees_count' => $this->attendeesCount,
+                'coffee_break' => $this->coffeeBreak,
+                'sonorizacao' => $this->sonorizacao,
+                'transmissao' => $this->transmissao,
+                'projetor' => $this->projetor,
+                'status' => ReservationStatus::AUTHORIZED->value,
+                ...$this->resolveAttachmentData(),
+            ], notify: false);
+
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva criada com sucesso.' } }))");
+            $this->dispatch('reservationCreated');
             $this->close();
         } catch (\Exception $e) {
             $safeMsg = addslashes(strip_tags($e->getMessage()));

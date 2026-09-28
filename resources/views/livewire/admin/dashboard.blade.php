@@ -2,8 +2,8 @@
     <div class="mb-8">
         <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#e6f2ec]">Visao geral</h1>
-                <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Acompanhe as solicitacoes e reservas das salas da ESDEP-MT.</p>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#e6f2ec]">Visão geral</h1>
+                <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Acompanhe as solicitações e reservas das salas da ESDEP-MT.</p>
             </div>
             <a href="{{ route(auth('contact')->check() ? 'contact.booking' : 'reservations.create') }}"
                 class="inline-flex items-center justify-center gap-2 rounded-lg bg-green-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
@@ -28,7 +28,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="mt-4 text-xs font-medium text-amber-600 dark:text-amber-400">Aguardando analise</p>
+            <p class="mt-4 text-xs font-medium text-amber-600 dark:text-amber-400">Aguardando análise</p>
         </div>
 
         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
@@ -58,7 +58,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="mt-4 text-xs font-medium text-red-600 dark:text-red-400">Solicitacoes rejeitadas</p>
+            <p class="mt-4 text-xs font-medium text-red-600 dark:text-red-400">Solicitações rejeitadas</p>
         </div>
 
         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
@@ -73,7 +73,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="mt-4 text-xs font-medium text-blue-600 dark:text-blue-400">Disponiveis para reserva</p>
+            <p class="mt-4 text-xs font-medium text-blue-600 dark:text-blue-400">Disponíveis para reserva</p>
         </div>
     </div>
 
@@ -82,8 +82,8 @@
             <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
                 <div class="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-[#16352a]">
                     <div>
-                        <h2 class="font-bold text-slate-900 dark:text-[#e6f2ec]">Proximas reservas</h2>
-                        <p class="mt-1 text-xs text-slate-500 dark:text-[#8aa39a]">Agenda dos proximos eventos autorizados</p>
+                        <h2 class="font-bold text-slate-900 dark:text-[#e6f2ec]">Próximas reservas</h2>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-[#8aa39a]">Agenda dos próximos eventos autorizados</p>
                     </div>
                 </div>
 
@@ -99,10 +99,10 @@
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <h3 class="truncate text-sm font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $reservation['event_name'] }}</h3>
-                                    <p class="mt-1 text-xs text-slate-500 dark:text-[#8aa39a]">{{ $reservation['room']['name'] ?? 'Sala nao definida' }}</p>
+                                    <p class="mt-1 text-xs text-slate-500 dark:text-[#8aa39a]">{{ $reservation['room']['name'] ?? 'Sala não definida' }}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-sm font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $reservation['start_time'] }} - {{ $reservation['end_time'] }}</p>
+                                    <p class="text-sm font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $reservation->formattedStartTime() }} - {{ $reservation->formattedEndTime() }}</p>
                                     <span class="mt-1 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/50 dark:text-[#4fd1a5]">Autorizado</span>
                                 </div>
                             </div>
@@ -115,12 +115,12 @@
         <section>
             <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
                 <div class="border-b border-slate-200 px-6 py-5 dark:border-[#16352a]">
-                    <h2 class="font-bold text-slate-900 dark:text-[#e6f2ec]">Solicitacoes recentes</h2>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-[#8aa39a]">Aguardando moderacao</p>
+                    <h2 class="font-bold text-slate-900 dark:text-[#e6f2ec]">Solicitações recentes</h2>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-[#8aa39a]">Aguardando moderação</p>
                 </div>
 
                 @if(empty($pendingReservations))
-                    <div class="px-6 py-12 text-center text-sm text-slate-500 dark:text-[#8aa39a]">Nenhuma solicitacao pendente.</div>
+                    <div class="px-6 py-12 text-center text-sm text-slate-500 dark:text-[#8aa39a]">Nenhuma solicitação pendente.</div>
                 @else
                     <div class="divide-y divide-slate-100 dark:divide-[#16352a]">
                         @foreach($pendingReservations as $reservation)
@@ -128,7 +128,7 @@
                                 <div class="flex items-start justify-between gap-4">
                                     <div class="min-w-0">
                                         <p class="truncate text-sm font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $reservation['event_name'] }}</p>
-                                        <p class="mt-1 text-xs text-slate-500 dark:text-[#8aa39a]">{{ $reservation['room']['name'] ?? 'Sala nao definida' }} - {{ $reservation['attendees_count'] }} participantes</p>
+                                        <p class="mt-1 text-xs text-slate-500 dark:text-[#8aa39a]">{{ $reservation['room']['name'] ?? 'Sala não definida' }} - {{ $reservation['attendees_count'] }} participantes</p>
                                     </div>
                                     <span class="shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">Pendente</span>
                                 </div>

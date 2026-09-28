@@ -62,7 +62,7 @@ class UserProfile extends Component
         $user = auth()->user();
 
         if (! Hash::check($this->currentPassword, $user->password)) {
-            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', title: 'Erro', message: 'A senha atual esta incorreta.' } }))");
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', title: 'Erro', message: 'A senha atual está incorreta.' } }))");
 
             return;
         }

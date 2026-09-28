@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Senha {{ $newTipo === 'Admin' ? '*' : '(para login do contato)' }}</label>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Senha (para login do contato)</label>
                     <input type="password" wire:model="newPassword" placeholder="Deixe vazio para sem acesso"
                         class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
                     @error('newPassword') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
@@ -47,9 +47,6 @@
                             @endforeach
                         </select>
                         @error('newTipo') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-                        @if($newTipo === 'Admin')
-                            <p class="mt-1 text-[11px] text-violet-600 dark:text-violet-400">Cria um login administrativo (acesso em /login) com o e-mail e senha informados.</p>
-                        @endif
                     </div>
                     @endunless
                 </div>

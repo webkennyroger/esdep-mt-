@@ -12,6 +12,12 @@ beforeEach(function () {
     $this->actingAs(User::factory()->superAdmin()->create());
 });
 
+test('the create contact button was removed from the page, only the group button remains', function () {
+    Livewire::test(ContactManager::class)
+        ->assertDontSee('Novo contato')
+        ->assertSee('Novo Grupo');
+});
+
 test('create contact', function () {
     Livewire::test(ContactManager::class)
         ->set('newName', 'Carlos Souza')
@@ -130,97 +136,42 @@ test('a setor without cargo gerente does not grant responsibility', function () 
     expect((bool) $contact->groups()->whereKey($group->id)->firstOrFail()->pivot->is_responsible)->toBeFalse();
 });
 
-test('super-admin can create a contact with cargo admin which also creates a linked admin login', function () {
+test('cargo assessor is just an informative label with no login side effect', function () {
     Livewire::test(ContactManager::class)
-        ->set('newName', 'Nova Admin')
-        ->set('newEmail', 'nova-admin@test.com')
+        ->set('newName', 'Novo Assessor')
+        ->set('newEmail', 'novo-assessor@test.com')
         ->set('newPassword', 'senha-segura')
-        ->set('newTipo', 'Admin')
+        ->set('newTipo', 'Assessor')
         ->call('createContact')
         ->assertHasNoErrors();
 
-    $contact = Contact::where('email', 'nova-admin@test.com')->firstOrFail();
-    expect($contact->user_id)->not->toBeNull();
-
-    $user = User::find($contact->user_id);
-    expect($user)->not->toBeNull()
-        ->and($user->email)->toBe('nova-admin@test.com')
-        ->and($user->is_admin)->toBeTrue()
-        ->and($user->isSuperAdmin())->toBeFalse();
+    $contact = Contact::where('email', 'novo-assessor@test.com')->firstOrFail();
+    expect($contact->tipo)->toBe('Assessor')
+        ->and($contact->user_id)->toBeNull();
 });
 
-test('cargo admin requires a password since it creates a real login', function () {
-    Livewire::test(ContactManager::class)
-        ->set('newName', 'Sem Senha')
-        ->set('newEmail', 'sem-senha@test.com')
-        ->set('newTipo', 'Admin')
+test('any user can pick any cargo, including assessor, without the manage-users permission', function () {
+    $user = User::factory()->superAdmin()->create();
+    $user->revokePermissionTo('manage-users');
+
+    Livewire::actingAs($user)->test(ContactManager::class)
+        ->set('newName', 'Contato Comum')
+        ->set('newEmail', 'contato-comum@test.com')
+        ->set('newTipo', 'Assessor')
         ->call('createContact')
-        ->assertHasErrors(['newPassword']);
-});
-
-test('a plain admin cannot create a contact with cargo admin', function () {
-    $admin = User::factory()->admin()->create();
-
-    Livewire::actingAs($admin)->test(ContactManager::class)
-        ->set('newName', 'Tentativa')
-        ->set('newEmail', 'tentativa@test.com')
-        ->set('newPassword', 'senha-segura')
-        ->set('newTipo', 'Admin')
-        ->call('createContact');
-})->throws(Exception::class);
-
-test('changing a contact cargo to admin later creates the linked login', function () {
-    $contact = Contact::create(['name' => 'Vira Admin', 'email' => 'vira-admin@test.com', 'is_active' => true]);
-
-    Livewire::test(ContactManager::class)
-        ->call('openEditModal', $contact->id)
-        ->set('editTipo', 'Admin')
-        ->set('editPassword', 'senha-segura')
-        ->call('updateContact')
         ->assertHasNoErrors();
 
-    expect($contact->fresh()->user_id)->not->toBeNull();
-    expect(User::find($contact->fresh()->user_id)->email)->toBe('vira-admin@test.com');
+    expect(Contact::where('email', 'contato-comum@test.com')->firstOrFail()->tipo)->toBe('Assessor');
 });
 
-test('changing a contact cargo away from admin deletes the linked login', function () {
-    $contact = Contact::create(['name' => 'Deixa De Ser Admin', 'email' => 'deixa-admin@test.com', 'is_active' => true]);
+test('changing a contact cargo never creates or removes a linked login', function () {
+    $contact = Contact::create(['name' => 'Contato Qualquer', 'email' => 'contato-qualquer@test.com', 'is_active' => true]);
 
     Livewire::test(ContactManager::class)
         ->call('openEditModal', $contact->id)
-        ->set('editTipo', 'Admin')
-        ->set('editPassword', 'senha-segura')
-        ->call('updateContact')
-        ->assertHasNoErrors();
-
-    $adminUserId = $contact->fresh()->user_id;
-    expect($adminUserId)->not->toBeNull();
-
-    Livewire::test(ContactManager::class)
-        ->call('openEditModal', $contact->id)
-        ->set('editTipo', 'Gerente')
+        ->set('editTipo', 'Assessor')
         ->call('updateContact')
         ->assertHasNoErrors();
 
     expect($contact->fresh()->user_id)->toBeNull();
-    expect(User::find($adminUserId))->toBeNull();
-});
-
-test('deleting a contact with cargo admin also removes the linked login', function () {
-    $contact = Contact::create(['name' => 'Admin Para Excluir', 'email' => 'admin-excluir@test.com', 'is_active' => true]);
-
-    Livewire::test(ContactManager::class)
-        ->call('openEditModal', $contact->id)
-        ->set('editTipo', 'Admin')
-        ->set('editPassword', 'senha-segura')
-        ->call('updateContact')
-        ->assertHasNoErrors();
-
-    $adminUserId = $contact->fresh()->user_id;
-
-    Livewire::test(ContactManager::class)
-        ->call('deleteContact', $contact->id);
-
-    $this->assertDatabaseMissing('contacts', ['id' => $contact->id]);
-    expect(User::find($adminUserId))->toBeNull();
 });

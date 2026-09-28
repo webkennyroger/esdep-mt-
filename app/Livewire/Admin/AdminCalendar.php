@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Enums\ReservationStatus;
 use App\Models\Reservation;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -57,8 +58,8 @@ class AdminCalendar extends Component
                 'requester_name' => $row->requester_name,
                 'requester_email' => $row->requester_email,
                 'attendees_count' => $row->attendees_count,
-                'start_time' => Carbon::parse($row->start_time)->format('H:i'),
-                'end_time' => Carbon::parse($row->end_time)->format('H:i'),
+                'start_time' => $row->formattedStartTime(),
+                'end_time' => $row->formattedEndTime(),
                 'room_name' => $row->room->name ?? '-',
                 'coffee_break' => (bool) $row->coffee_break,
                 'sonorizacao' => (bool) $row->sonorizacao,
@@ -106,7 +107,18 @@ class AdminCalendar extends Component
 
     public function getMonthNameProperty(): string
     {
-        return Carbon::create($this->currentYear, $this->currentMonth, 1)->translatedFormat('F \\d\\e Y');
+        return Str::ucfirst(Carbon::create($this->currentYear, $this->currentMonth, 1)->translatedFormat('F \\d\\e Y'));
+    }
+
+    public function getSelectedDateLabelProperty(): ?string
+    {
+        if (! $this->selectedDate) {
+            return null;
+        }
+
+        $date = Carbon::parse($this->selectedDate);
+
+        return $date->translatedFormat('l, d \\d\\e ').Str::ucfirst($date->translatedFormat('F \\d\\e Y'));
     }
 
     public function getCalendarDaysProperty(): array

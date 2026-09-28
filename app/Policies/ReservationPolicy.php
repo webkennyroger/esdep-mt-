@@ -16,6 +16,11 @@ class ReservationPolicy
         return $user->is_admin;
     }
 
+    public function create(User $user): bool
+    {
+        return $user->is_admin;
+    }
+
     public function update(User $user): bool
     {
         return $user->is_admin;

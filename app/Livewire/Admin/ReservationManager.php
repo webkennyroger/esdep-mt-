@@ -11,7 +11,9 @@ use App\Models\Contact;
 use App\Models\ContactGroup;
 use App\Models\Reservation;
 use App\Services\ConflictCheckerService;
+use App\Services\ReservationExportService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -25,6 +27,10 @@ class ReservationManager extends Component
     public string $activeFilter = 'all';
 
     public string $search = '';
+
+    public array $selected = [];
+
+    public bool $selectAll = false;
 
     public bool $showApproveModal = false;
 
@@ -70,7 +76,7 @@ class ReservationManager extends Component
     // ─── Helpers ─────────────────────────────────────
 
     /**
-     * Escapa uma mensagem de excecao para uso seguro em JS inline via CustomEvent.
+     * Escapa uma mensagem de exceção para uso seguro em JS inline via CustomEvent.
      * Evita XSS ao remover tags e escapar aspas simples/duplas.
      */
     private function safeMessage(string $message): string
@@ -83,7 +89,38 @@ class ReservationManager extends Component
     public function setFilter(string $status): void
     {
         $this->activeFilter = $status;
+        $this->selected = [];
+        $this->selectAll = false;
         $this->resetPage();
+    }
+
+    public function updatedSearch(): void
+    {
+        $this->selected = [];
+        $this->selectAll = false;
+    }
+
+    public function updatedSelectAll(bool $value): void
+    {
+        $this->selected = $value ? $this->baseQuery()->paginate(10)->pluck('id')->all() : [];
+    }
+
+    private function baseQuery()
+    {
+        $query = Reservation::accessibleTo(auth()->user())->with('room')->orderBy('sort_order')->latest('created_at');
+
+        if ($this->activeFilter !== 'all') {
+            $query->where('status', $this->activeFilter);
+        }
+
+        if (! empty($this->search)) {
+            $query->where(function ($q) {
+                $q->where('event_name', 'like', "%{$this->search}%")
+                    ->orWhere('requester_name', 'like', "%{$this->search}%");
+            });
+        }
+
+        return $query;
     }
 
     // ─── Detail Modal ─────────────────────────────────
@@ -282,32 +319,78 @@ class ReservationManager extends Component
                 'contact_ids' => $this->announceRecipientType === 'contacts' ? $this->announceSelectedContactIds : [],
             ], auth()->user());
 
-            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Evento divulgado com sucesso! ({$announcement->total_recipients} destinatarios)' } }))");
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Evento divulgado com sucesso! ({$announcement->total_recipients} destinatários)' } }))");
             $this->closeAnnounceModal();
         } catch (\Exception $e) {
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: '".$this->safeMessage($e->getMessage())."' } }))");
         }
     }
 
+    // ─── Export ──────────────────────────────────────
+
+    /**
+     * Reservas selecionadas via checkbox, ou todas as que combinam com o
+     * filtro/busca atual quando nada estiver selecionado.
+     */
+    private function reservationsForExport(): \Illuminate\Support\Collection
+    {
+        if (! empty($this->selected)) {
+            return Reservation::accessibleTo(auth()->user())->with('room')->whereIn('id', $this->selected)->get();
+        }
+
+        return $this->baseQuery()->get();
+    }
+
+    public function exportExcel(): Response
+    {
+        $bytes = app(ReservationExportService::class)->toXlsx($this->reservationsForExport());
+
+        return response($bytes, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="reservas-'.now()->format('Y-m-d').'.xlsx"',
+        ]);
+    }
+
+    public function exportPdf(): Response
+    {
+        $bytes = app(ReservationExportService::class)->toPdf($this->reservationsForExport());
+
+        return response($bytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="reservas-'.now()->format('Y-m-d').'.pdf"',
+        ]);
+    }
+
+    public function copyText(): string
+    {
+        $service = app(ReservationExportService::class);
+        $reservations = $this->reservationsForExport();
+
+        $lines = [implode("\t", ReservationExportService::HEADERS)];
+        foreach ($service->rows($reservations) as $row) {
+            $lines[] = implode("\t", $row);
+        }
+
+        return implode("\n", $lines);
+    }
+
+    public function printHtml(): string
+    {
+        $service = app(ReservationExportService::class);
+        $reservations = $this->reservationsForExport();
+
+        return view('exports.print-table', [
+            'headers' => ReservationExportService::HEADERS,
+            'rows' => $service->rows($reservations),
+        ])->render();
+    }
+
     // ─── Render ───────────────────────────────────────
 
     public function render()
     {
-        $query = Reservation::accessibleTo(auth()->user())->with('room')->orderBy('sort_order')->latest('created_at');
-
-        if ($this->activeFilter !== 'all') {
-            $query->where('status', $this->activeFilter);
-        }
-
-        if (! empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('event_name', 'like', "%{$this->search}%")
-                    ->orWhere('requester_name', 'like', "%{$this->search}%");
-            });
-        }
-
         return view('livewire.admin.reservation-manager', [
-            'reservations' => $query->paginate(10),
+            'reservations' => $this->baseQuery()->paginate(10),
         ]);
     }
 }

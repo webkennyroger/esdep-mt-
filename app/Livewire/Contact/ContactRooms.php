@@ -193,6 +193,10 @@ class ContactRooms extends Component
             $query->where(fn ($rooms) => $rooms->where('name', 'like', "%{$this->search}%")->orWhere('code', 'like', "%{$this->search}%")->orWhere('description', 'like', "%{$this->search}%"));
         }
 
-        return view('livewire.admin.room-manager', ['rooms' => $query->paginate(10), 'contactGroups' => ContactGroup::whereIn('id', $this->responsibleGroupIds())->orderBy('name')->get(), 'colors' => ['#008b5c' => 'Verde ESDEP', '#003f32' => 'Verde Escuro', '#2563eb' => 'Azul', '#7c3aed' => 'Roxo', '#d97706' => 'Âmbar', '#dc2626' => 'Vermelho', '#0891b2' => 'Ciano', '#475569' => 'Cinza']]);
+        return view('livewire.admin.room-manager', [
+            'rooms' => $query->paginate(10),
+            'contactGroups' => ContactGroup::whereIn('id', $this->responsibleGroupIds())->orderBy('name')->get(),
+            'colors' => ['#008b5c' => 'Verde ESDEP', '#003f32' => 'Verde Escuro'] + \App\Support\TailwindColors::palette(),
+        ]);
     }
 }
