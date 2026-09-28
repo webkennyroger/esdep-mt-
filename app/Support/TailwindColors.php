@@ -9,6 +9,20 @@ namespace App\Support;
  */
 class TailwindColors
 {
+    /**
+     * Escurece uma cor hex por uma porcentagem (0 a 1), pra montar um gradiente
+     * de duas pontas a partir da unica cor cadastrada na sala.
+     */
+    public static function darken(string $hex, float $percent): string
+    {
+        $hex = ltrim($hex, '#');
+        $r = max(0, (int) round(hexdec(substr($hex, 0, 2)) * (1 - $percent)));
+        $g = max(0, (int) round(hexdec(substr($hex, 2, 2)) * (1 - $percent)));
+        $b = max(0, (int) round(hexdec(substr($hex, 4, 2)) * (1 - $percent)));
+
+        return sprintf('#%02x%02x%02x', $r, $g, $b);
+    }
+
     public static function palette(): array
     {
         return [
