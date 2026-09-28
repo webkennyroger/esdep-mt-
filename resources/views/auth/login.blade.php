@@ -63,7 +63,7 @@
         </form>
 
         <div class="mt-6 text-center">
-            <a href="{{ route('home') }}" class="text-sm text-slate-500 hover:text-slate-700 dark:text-[#8aa39a] dark:hover:text-[#4fd1a5]">Voltar para o inicio</a>
+            <a href="{{ route('home') }}" class="text-sm text-slate-500 hover:text-slate-700 dark:text-[#8aa39a] dark:hover:text-[#4fd1a5]">Voltar para o início</a>
         </div>
     </div>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aguardando liberacao | ESDEP-MT</title>
+    <title>Aguardando liberação | ESDEP-MT</title>
     <link rel="shortcut icon" href="{{ asset('favicon.svg') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script>
@@ -30,7 +30,7 @@
         </div>
 
         <h1 class="mb-2 text-center text-lg font-semibold text-slate-800 dark:text-[#e6f2ec]">
-            Acesso aguardando liberacao
+            Acesso aguardando liberação
         </h1>
 
         <p class="text-center text-sm leading-relaxed text-slate-600 dark:text-[#8aa39a]">
@@ -40,16 +40,16 @@
             @else
                 Sua
             @endif
-            identificacao institucional foi reconhecida, mas o acesso ao sistema
+            identificação institucional foi reconhecida, mas o acesso ao sistema
             ainda precisa ser liberado por um administrador.
         </p>
 
         <p class="mt-4 text-center text-sm text-slate-500 dark:text-[#8aa39a]">
-            Voce sera avisado assim que a liberacao for concluida.
+            Você será avisado assim que a liberação for concluída.
         </p>
 
         <div class="mt-6 text-center">
-            <a href="{{ route('home') }}" class="text-sm text-slate-500 hover:text-slate-700 dark:text-[#8aa39a] dark:hover:text-[#4fd1a5]">Voltar para o inicio</a>
+            <a href="{{ route('home') }}" class="text-sm text-slate-500 hover:text-slate-700 dark:text-[#8aa39a] dark:hover:text-[#4fd1a5]">Voltar para o início</a>
         </div>
     </div>
 </body>
