@@ -70,8 +70,8 @@
                 @error('roomId') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 
-            {{-- Data e Horarios --}}
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {{-- Data, Horarios e Participantes --}}
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Data do evento <span class="text-red-500">*</span></label>
                     <input wire:model.live="date" type="date"
@@ -90,6 +90,12 @@
                         class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:scheme-dark">
                     @error('endTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
+                <div>
+                    <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Previsão de público <span class="text-red-500">*</span></label>
+                    <input wire:model="attendeesCount" type="number" min="1"
+                        class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
+                    @error('attendeesCount') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             @if($conflictError)
@@ -100,15 +106,6 @@
                     {{ $conflictError }}
                 </div>
             @endif
-
-            {{-- Participantes --}}
-            <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Previsão de público <span class="text-red-500">*</span></label>
-                <input wire:model="attendeesCount" type="number" min="1"
-                    class="h-10.5 w-30 rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
-                <span class="ml-2 text-[11px] text-[#70847d] dark:text-[#8aa39a]">pessoas</span>
-                @error('attendeesCount') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-            </div>
 
             {{-- Descricao --}}
             <div>
