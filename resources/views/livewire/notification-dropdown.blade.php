@@ -24,7 +24,7 @@
     </button>
 
     <!-- Dropdown Start -->
-    <div x-show="dropdownOpen" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-4 sm:left-6 xl:left-auto xl:right-0 mt-[17px] flex max-h-[70vh] w-[calc(100vw-2rem)] max-w-[361px] flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-xl dark:border-[#16352a] dark:bg-[#0c221a]" style="display: none;">
+    <div x-show="dropdownOpen" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-4 sm:left-6 xl:left-auto xl:right-0 mt-4.25 flex max-h-[70vh] w-[calc(100vw-2rem)] max-w-90.25 flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-xl dark:border-[#16352a] dark:bg-[#0c221a]" style="display: none;">
         <!-- Dropdown Header -->
         <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-[#16352a]">
             <h5 class="text-lg font-semibold text-slate-900 dark:text-[#e6f2ec]">Notificações</h5>

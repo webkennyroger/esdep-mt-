@@ -16,7 +16,7 @@
         @foreach($rooms as $room)
             <div class="relative h-56 w-48 shrink-0 snap-start overflow-hidden rounded-2xl ring-1 ring-white/10"
                 style="background: linear-gradient(to bottom right, {{ $room->theme_color }}, {{ \App\Support\TailwindColors::darken($room->theme_color, 0.35) }});">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
                 <div class="absolute bottom-4 left-4 right-4">
                     <p class="text-base font-semibold text-white tracking-tight mb-1">{{ $room->name }}</p>
                     <p class="text-xs text-white/70">ATÉ {{ $room->capacity }} PESSOAS</p>
@@ -26,7 +26,7 @@
     </div>
 
     <div class="hidden lg:flex lg:justify-end">
-        <div class="relative flex w-full max-w-[700px] items-center justify-center" style="perspective: 1200px;">
+        <div class="relative flex w-full max-w-175 items-center justify-center" style="perspective: 1200px;">
 
             <!-- SETA ESQUERDA -->
             <button type="button" id="room-prev"
@@ -38,13 +38,13 @@
             </button>
 
             <!-- CAROUSEL -->
-            <div class="relative w-full h-[500px] flex items-center justify-center overflow-visible">
+            <div class="relative w-full h-125 flex items-center justify-center overflow-visible">
                 <div id="rooms-carousel" class="flex transition-transform duration-500 ease-out absolute top-0 right-0 bottom-0 left-0 items-center justify-center" style="transform-style: preserve-3d;">
 
                     @foreach($rooms as $room)
-                        <div class="neon-card absolute w-80 h-[460px] rounded-2xl overflow-hidden ring-1 ring-white/10 transition-all duration-500" data-index="{{ $loop->index }}">
+                        <div class="neon-card absolute w-80 h-115 rounded-2xl overflow-hidden ring-1 ring-white/10 transition-all duration-500" data-index="{{ $loop->index }}">
                             <div class="absolute inset-0" style="background: linear-gradient(to bottom right, {{ $room->theme_color }}, {{ \App\Support\TailwindColors::darken($room->theme_color, 0.35) }});"></div>
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                            <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
                             <div class="absolute top-6 left-6">
                                 <span class="font-mono text-[10px] font-bold tracking-[0.15em] text-white/70">{{ sprintf('%02d', $loop->iteration) }}</span>
                             </div>
@@ -52,9 +52,9 @@
                                 <span class="text-[15px] text-white/70">↗</span>
                             </div>
                             <div class="absolute top-16 left-6 right-6">
-                                <div class="grid grid-cols-4 gap-[7px]">
+                                <div class="grid grid-cols-4 gap-1.75">
                                     @for($i = 0; $i < 16; $i++)
-                                        <i class="h-[39px] border {{ in_array($i, [5, 8, 11, 14]) ? 'border-white/15 bg-white/20' : 'border-white/65' }}"></i>
+                                        <i class="h-9.75 border {{ in_array($i, [5, 8, 11, 14]) ? 'border-white/15 bg-white/20' : 'border-white/65' }}"></i>
                                     @endfor
                                 </div>
                             </div>

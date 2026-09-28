@@ -20,13 +20,13 @@
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do responsável <span class="text-red-500">*</span></label>
                     <input wire:model="requesterName" type="text" placeholder="Ex.: Ana Martins"
-                        class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
+                        class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
                     @error('requesterName') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do evento <span class="text-red-500">*</span></label>
                     <input wire:model="eventName" type="text" placeholder="Ex.: Encontro de lideranças"
-                        class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
+                        class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
                     @error('eventName') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
             </div>
@@ -35,7 +35,7 @@
             <div>
                 <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">E-mail do solicitante <span class="text-red-500">*</span></label>
                 <input wire:model="requesterEmail" type="email" placeholder="nome@instituicao.gov.br"
-                    class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
+                    class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
                 @error('requesterEmail') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 
@@ -46,7 +46,7 @@
                     <div class="flex transition-transform duration-300" :style="'transform: translateX(-' + (roomStep * 100) + '%)'">
                         @foreach($rooms as $index => $room)
                             <div class="w-full shrink-0 px-1 sm:w-1/3">
-                                <label class="flex items-center gap-3 border border-[#d2ded9] bg-white p-4 cursor-pointer transition-all duration-200 hover:border-[#008b5c] hover:bg-[#eef7f2] has-[:checked]:border-[#008b5c] has-[:checked]:bg-[#eef7f2] has-[:checked]:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:hover:border-[#00a477] dark:hover:bg-[#16352a] dark:has-[:checked]:border-[#00a477] dark:has-[:checked]:bg-[#0c221a]">
+                                <label class="flex items-center gap-3 border border-[#d2ded9] bg-white p-4 cursor-pointer transition-all duration-200 hover:border-[#008b5c] hover:bg-[#eef7f2] has-checked:border-[#008b5c] has-checked:bg-[#eef7f2] has-checked:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:hover:border-[#00a477] dark:hover:bg-[#16352a] dark:has-checked:border-[#00a477] dark:has-[:checked]:bg-[#0c221a]">
                                     <input wire:model.live="roomId" value="{{ $room->id }}" type="radio" name="admin_room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
                                     <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" data-color="{{ $room->theme_color }}" style="background-color: color-mix(in srgb, var(--swatch, {{ $room->theme_color }}) 20%, transparent);">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" data-color="{{ $room->theme_color }}" style="color: var(--swatch, {{ $room->theme_color }});" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -76,19 +76,19 @@
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Data do evento <span class="text-red-500">*</span></label>
                     <input wire:model.live="date" type="date"
-                        class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:[color-scheme:dark]">
+                        class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:scheme-dark">
                     @error('date') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horário de início <span class="text-red-500">*</span></label>
                     <input wire:model.live="startTime" type="time"
-                        class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:[color-scheme:dark]">
+                        class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:scheme-dark">
                     @error('startTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horário de término <span class="text-red-500">*</span></label>
                     <input wire:model.live="endTime" type="time"
-                        class="h-[42px] w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:[color-scheme:dark]">
+                        class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:scheme-dark">
                     @error('endTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
             </div>
@@ -106,7 +106,7 @@
             <div>
                 <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Previsão de público <span class="text-red-500">*</span></label>
                 <input wire:model="attendeesCount" type="number" min="1"
-                    class="h-[42px] w-[120px] rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
+                    class="h-10.5 w-30 rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
                 <span class="ml-2 text-[11px] text-[#70847d] dark:text-[#8aa39a]">pessoas</span>
                 @error('attendeesCount') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
@@ -141,7 +141,7 @@
                         x-data="{ val: @js($description) }"
                         x-init="$el.innerHTML = val"
                         @input="$wire.set('description', $el.innerHTML)"
-                        class="min-h-[60px] max-h-[150px] overflow-y-auto px-3 py-2.5 text-[13px] text-[#003f32] outline-none empty:before:text-[#70847d] empty:before:content-[attr(data-placeholder)] dark:text-[#e6f2ec] dark:empty:before:text-[#5a7068]"></div>
+                        class="min-h-15 max-h-37.5 overflow-y-auto px-3 py-2.5 text-[13px] text-[#003f32] outline-none empty:before:text-[#70847d] empty:before:content-[attr(data-placeholder)] dark:text-[#e6f2ec] dark:empty:before:text-[#5a7068]"></div>
                 </div>
             </div>
 

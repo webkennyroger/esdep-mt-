@@ -17,10 +17,8 @@
 </head>
 <body class="min-h-screen bg-slate-50 flex items-center justify-center dark:bg-[#081712]">
     <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
-        <div class="mb-6 flex items-center justify-between">
-            <span class="w-9"></span>
-            <img src="{{ asset('assets/images/logo-esdep.png') }}" alt="ESDEP-MT" class="mx-auto h-16 w-auto dark:brightness-0 dark:invert">
-            <x-dark-mode-toggle />
+        <div class="mb-6 text-center">
+            <img src="{{ asset('assets/images/logo-esdep.png') }}" alt="ESDEP-MT" class="mx-auto mb-3 h-16 w-auto dark:brightness-0 dark:invert">
         </div>
 
         @if($errors->any())
