@@ -619,11 +619,6 @@
         </div>
     @endif
 
-    {{-- Modal Edicao --}}
-    @unless(auth('contact')->check())
-        <livewire:admin.reservation-editor />
-    @endunless
-
     {{-- Modal Visualizacao de Imagem (lightbox) --}}
     <div x-show="imagePreviewUrl" x-cloak
         x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
