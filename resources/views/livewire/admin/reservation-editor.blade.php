@@ -55,7 +55,6 @@
                                     </div>
                                     <span class="flex flex-1 flex-col">
                                         <strong class="text-[13px] text-[#003f32] dark:text-[#e6f2ec]">{{ $room->name }}</strong>
-                                        <small class="mt-0.5 text-[11px] text-[#70847d] dark:text-[#8aa39a]">{{ $room->description }}</small>
                                         <small class="text-[10px] text-[#008b5c] dark:text-[#4fd1a5]">{{ $room->capacity }} pessoas</small>
                                     </span>
                                 </label>
