@@ -60,14 +60,15 @@ class ReservationStatusCheck extends Component
         if ($this->hasSearched && ! empty($this->searchQuery)) {
             $search = $this->searchQuery;
             $upper = strtoupper($search);
+            $lowerTerm = '%'.strtolower($search).'%';
             $datePart = $this->parseDateSearch($search);
 
             $results = Reservation::with('room')
-                ->where(function ($q) use ($search, $upper, $datePart) {
+                ->where(function ($q) use ($upper, $lowerTerm, $datePart) {
                     $q->where('protocol', 'like', "%{$upper}%")
-                        ->orWhere('event_name', 'like', "%{$search}%")
-                        ->orWhereHas('room', function ($rq) use ($search) {
-                            $rq->where('name', 'like', "%{$search}%");
+                        ->orWhereRaw('LOWER(event_name) LIKE ?', [$lowerTerm])
+                        ->orWhereHas('room', function ($rq) use ($lowerTerm) {
+                            $rq->whereRaw('LOWER(name) LIKE ?', [$lowerTerm]);
                         });
 
                     if ($datePart !== null) {

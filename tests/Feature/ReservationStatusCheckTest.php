@@ -27,7 +27,7 @@ test('reservation route redirects to the single public booking form', function (
 test('public user can access consultation page', function () {
     $this->get(route('reservations.check'))
         ->assertStatus(200)
-        ->assertSee('Consultar Status da disponibilidade');
+        ->assertSee('Consultar Status ou Disponibilidade de Reserva');
 });
 
 test('create reservation action automatically generates protocol', function () {
@@ -130,6 +130,26 @@ test('user can search reservation by event name', function () {
 
     Livewire::test(ReservationStatusCheck::class)
         ->set('searchQuery', 'Workshop')
+        ->call('search')
+        ->assertSee('Workshop de Python')
+        ->assertSee($reservation->protocol);
+});
+
+test('user can search reservation by event name regardless of letter case', function () {
+    $action = app(CreateReservationAction::class);
+    $reservation = $action->execute([
+        'room_id' => $this->room->id,
+        'event_name' => 'Workshop de Python',
+        'requester_name' => 'Ana Dev',
+        'requester_email' => 'ana2@defensoria.mt.def.br',
+        'date' => now()->addDays(21)->toDateString(),
+        'start_time' => '09:00',
+        'end_time' => '12:00',
+        'attendees_count' => 30,
+    ]);
+
+    Livewire::test(ReservationStatusCheck::class)
+        ->set('searchQuery', 'workshop')
         ->call('search')
         ->assertSee('Workshop de Python')
         ->assertSee($reservation->protocol);

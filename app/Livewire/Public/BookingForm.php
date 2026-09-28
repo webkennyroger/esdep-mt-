@@ -52,7 +52,7 @@ class BookingForm extends Component
 
     public string $attachmentName = '';
 
-    public bool $termsAccepted = true;
+    public bool $termsAccepted = false;
 
     public bool $showTermsModal = false;
 
@@ -223,7 +223,7 @@ class BookingForm extends Component
                 'requesterEmail', 'date', 'coffeeBreak', 'sonorizacao', 'transmissao', 'projetor',
                 'attachment', 'attachmentName',
             ]);
-            $this->termsAccepted = true;
+            $this->termsAccepted = false;
             $this->startTime = '09:00';
             $this->endTime = '10:00';
             $this->attendeesCount = 1;

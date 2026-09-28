@@ -45,3 +45,15 @@ test('changing the search term clears the current selection', function () {
 
     expect($component->get('selected'))->toBe([]);
 });
+
+test('reservation search is case insensitive', function () {
+    Reservation::factory()->create(['event_name' => 'Workshop de Direitos Humanos']);
+
+    Livewire::test(ReservationManager::class)
+        ->set('search', 'workshop')
+        ->assertSee('Workshop de Direitos Humanos');
+
+    Livewire::test(ReservationManager::class)
+        ->set('search', 'WORKSHOP')
+        ->assertSee('Workshop de Direitos Humanos');
+});

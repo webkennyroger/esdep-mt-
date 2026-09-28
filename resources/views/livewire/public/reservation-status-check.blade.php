@@ -5,7 +5,7 @@
             Autoatendimento
         </span>
         <h1 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-            Consultar Status da disponibilidade 
+            Consultar Status ou Disponibilidade de Reserva
         </h1>
         <p class="mx-auto mt-3 max-w-xl text-sm text-slate-600 dark:text-[#8aa39a]">
             Busque por código do protocolo, nome do evento, nome da sala ou data (dd/mm/aaaa).

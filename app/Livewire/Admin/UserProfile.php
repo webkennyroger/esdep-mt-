@@ -22,11 +22,19 @@ class UserProfile extends Component
 
     public bool $showDeleteModal = false;
 
+    public bool $isSsoUser = false;
+
+    public bool $canChangeLocalPassword = true;
+
     public function mount(): void
     {
         $user = auth()->user();
         $this->name = $user->name;
         $this->email = $user->email;
+        $this->isSsoUser = $user->keycloak_id !== null;
+        // Login por senha local so funciona para super-admin (break-glass); para
+        // os demais usuarios SSO, trocar a senha aqui nao teria efeito nenhum.
+        $this->canChangeLocalPassword = ! $this->isSsoUser || $user->isSuperAdmin();
     }
 
     public function updateProfile(): void
@@ -54,14 +62,16 @@ class UserProfile extends Component
 
     public function updatePassword(): void
     {
+        abort_unless($this->canChangeLocalPassword, 403);
+
         $this->validate([
             'currentPassword' => 'required',
-            'newPassword' => 'required|min:8|confirmed',
+            'newPassword' => 'required|min:8|same:newPasswordConfirmation',
         ]);
 
         $user = auth()->user();
 
-        if (! Hash::check($this->currentPassword, $user->password)) {
+        if (! $user->password || ! Hash::check($this->currentPassword, $user->password)) {
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', title: 'Erro', message: 'A senha atual está incorreta.' } }))");
 
             return;

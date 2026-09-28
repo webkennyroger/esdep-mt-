@@ -61,14 +61,13 @@ test('submit booking saves to database', function () {
     expect($reservation->status)->toBe(ReservationStatus::PENDING);
 });
 
-test('terms are selected by default and submit button is enabled', function () {
+test('terms are not selected by default and submit button is enabled', function () {
     $room = createBookingRoom();
 
     Livewire::test(BookingForm::class)
-        ->assertSet('termsAccepted', true)
+        ->assertSet('termsAccepted', false)
         ->set('roomId', (string) $room->id)
         ->assertSeeHtml('name="room"')
-        ->assertSeeHtml('checked')
         ->assertDontSee('bg-slate-400');
 });
 

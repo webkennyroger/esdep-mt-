@@ -114,9 +114,10 @@ class ReservationManager extends Component
         }
 
         if (! empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('event_name', 'like', "%{$this->search}%")
-                    ->orWhere('requester_name', 'like', "%{$this->search}%");
+            $term = '%'.strtolower($this->search).'%';
+            $query->where(function ($q) use ($term) {
+                $q->whereRaw('LOWER(event_name) LIKE ?', [$term])
+                    ->orWhereRaw('LOWER(requester_name) LIKE ?', [$term]);
             });
         }
 

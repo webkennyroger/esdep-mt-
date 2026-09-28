@@ -243,10 +243,11 @@ class RoomManager extends Component
         $query = Room::accessibleTo(auth()->user())->with('contactGroup')->withCount('reservations')->orderBy('sort_order')->orderBy('name');
 
         if (! empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', "%{$this->search}%")
-                    ->orWhere('code', 'like', "%{$this->search}%")
-                    ->orWhere('description', 'like', "%{$this->search}%");
+            $term = '%'.strtolower($this->search).'%';
+            $query->where(function ($q) use ($term) {
+                $q->whereRaw('LOWER(name) LIKE ?', [$term])
+                    ->orWhereRaw('LOWER(code) LIKE ?', [$term])
+                    ->orWhereRaw('LOWER(description) LIKE ?', [$term]);
             });
         }
 

@@ -84,6 +84,25 @@
             </label>
 
             <div>
+                <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Anexo / Recibo</span>
+                @if($hasAttachment)
+                    @if($isAttachmentImage)
+                        <a href="{{ $attachmentUrl }}" target="_blank" rel="noopener" class="inline-block">
+                            <img src="{{ $attachmentUrl }}" alt="{{ $attachmentName }}" class="h-32 w-auto rounded-lg border border-[#b8c9c2] object-cover dark:border-[#2c4a3e]">
+                        </a>
+                    @else
+                        <a href="{{ $attachmentUrl }}" target="_blank" rel="noopener"
+                            class="inline-flex items-center gap-2 text-[13px] font-semibold text-[#008b5c] hover:underline dark:text-[#4fd1a5]">
+                            <x-icons.pdf-icon class="h-5 w-5" />
+                            {{ $attachmentName ?: 'Ver anexo' }}
+                        </a>
+                    @endif
+                @else
+                    <p class="text-[13px] text-[#70847d] dark:text-[#8aa39a]">Nenhum anexo enviado.</p>
+                @endif
+            </div>
+
+            <div>
                 <span class="mb-3 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Serviços</span>
                 <div class="flex flex-wrap gap-4">
                     <label class="flex items-center gap-2">

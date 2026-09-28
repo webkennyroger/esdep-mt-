@@ -45,6 +45,14 @@ class ContactReservationEdit extends Component
 
     public string $conflictError = '';
 
+    public bool $hasAttachment = false;
+
+    public bool $isAttachmentImage = false;
+
+    public ?string $attachmentUrl = null;
+
+    public ?string $attachmentName = null;
+
     public function mount(int $reservation): void
     {
         $res = $this->accessibleReservation($reservation);
@@ -63,6 +71,10 @@ class ContactReservationEdit extends Component
         $this->sonorizacao = $res->sonorizacao;
         $this->transmissao = $res->transmissao;
         $this->projetor = $res->projetor;
+        $this->hasAttachment = $res->hasAttachment();
+        $this->isAttachmentImage = $res->isAttachmentImage();
+        $this->attachmentUrl = $res->attachment_url;
+        $this->attachmentName = $res->attachment_name;
     }
 
     public function updatedDate(): void

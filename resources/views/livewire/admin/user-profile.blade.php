@@ -50,35 +50,42 @@
                 </div>
                 <h2 class="text-lg font-semibold text-slate-900 dark:text-[#e6f2ec]">Alterar Senha</h2>
             </div>
-            
-            <form wire:submit="updatePassword" class="space-y-4">
-                <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Senha Atual</label>
-                    <input type="password" wire:model="currentPassword"
-                        class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
-                    @error('currentPassword') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                </div>
 
-                <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Nova Senha</label>
-                    <input type="password" wire:model="newPassword"
-                        class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
-                    @error('newPassword') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                </div>
+            @if($canChangeLocalPassword)
+                <form wire:submit="updatePassword" class="space-y-4">
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Senha Atual</label>
+                        <input type="password" wire:model="currentPassword"
+                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
+                        @error('currentPassword') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                    </div>
 
-                <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Confirmar Nova Senha</label>
-                    <input type="password" wire:model="newPasswordConfirmation"
-                        class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
-                </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Nova Senha</label>
+                        <input type="password" wire:model="newPassword"
+                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
+                        @error('newPassword') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                    </div>
 
-                <div class="flex justify-end">
-                    <button type="submit"
-                        class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
-                        Atualizar
-                    </button>
-                </div>
-            </form>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Confirmar Nova Senha</label>
+                        <input type="password" wire:model="newPasswordConfirmation"
+                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec]">
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit"
+                            class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
+                            Atualizar
+                        </button>
+                    </div>
+                </form>
+            @else
+                <p class="text-sm text-slate-500 dark:text-[#8aa39a]">
+                    Sua conta usa o login institucional (SSO). A senha é gerenciada pelo Keycloak — não é possível
+                    alterá-la por aqui.
+                </p>
+            @endif
         </div>
 
         {{-- Zona de Perigo --}}
@@ -93,6 +100,10 @@
             </div>
             <p class="mb-4 text-sm text-red-600 dark:text-red-300">
                 Excluir sua conta é uma ação irreversível. Todos os seus dados serão removidos permanentemente.
+                @if($isSsoUser)
+                    Como sua conta usa login institucional (SSO), isso não revoga seu acesso no Keycloak — no
+                    próximo login você será recriado sem papéis, aguardando liberação de um administrador.
+                @endif
             </p>
             <button wire:click="openDeleteModal"
                 class="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800">

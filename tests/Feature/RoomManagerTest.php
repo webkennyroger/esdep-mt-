@@ -141,6 +141,26 @@ test('can delete room without reservations', function () {
     expect(Room::where('id', $room->id)->exists())->toBeFalse();
 });
 
+test('room search is case insensitive', function () {
+    Room::create([
+        'name' => 'Sala Horizonte',
+        'code' => 'HOR-01',
+        'capacity' => 10,
+        'theme_color' => '#008b5c',
+        'is_active' => true,
+    ]);
+
+    Livewire::actingAs($this->admin)
+        ->test(RoomManager::class)
+        ->set('search', 'horizonte')
+        ->assertSee('Sala Horizonte');
+
+    Livewire::actingAs($this->admin)
+        ->test(RoomManager::class)
+        ->set('search', 'HORIZONTE')
+        ->assertSee('Sala Horizonte');
+});
+
 test('admin can define any valid room capacity when editing', function () {
     $room = Room::create([
         'name' => 'Sala com capacidade reservada',
