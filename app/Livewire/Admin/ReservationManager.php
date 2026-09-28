@@ -10,6 +10,7 @@ use App\Exceptions\ConflictException;
 use App\Models\Contact;
 use App\Models\ContactGroup;
 use App\Models\Reservation;
+use App\Rules\MultipleEmails;
 use App\Services\ConflictCheckerService;
 use App\Services\ReservationExportService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -59,6 +60,8 @@ class ReservationManager extends Component
     public array $announceSelectedGroupIds = [];
 
     public array $announceSelectedContactIds = [];
+
+    public string $announceExtraEmails = '';
 
     public $announceGroups = [];
 
@@ -289,6 +292,7 @@ class ReservationManager extends Component
         $this->announceRecipientType = '';
         $this->announceSelectedGroupIds = [];
         $this->announceSelectedContactIds = [];
+        $this->announceExtraEmails = '';
         $this->announceGroups = ContactGroup::orderBy('name')->get();
         $this->announceContacts = Contact::active()->orderBy('name')->get();
         $this->showAnnounceModal = true;
@@ -307,6 +311,7 @@ class ReservationManager extends Component
             'announceRecipientType' => 'nullable|in:groups,contacts',
             'announceSelectedGroupIds' => 'required_if:announceRecipientType,groups|array',
             'announceSelectedContactIds' => 'required_if:announceRecipientType,contacts|array',
+            'announceExtraEmails' => ['nullable', 'string', 'max:1000', new MultipleEmails],
         ]);
 
         try {
@@ -318,6 +323,7 @@ class ReservationManager extends Component
                 'recipient_type' => $this->announceRecipientType,
                 'group_ids' => $this->announceRecipientType === 'groups' ? $this->announceSelectedGroupIds : [],
                 'contact_ids' => $this->announceRecipientType === 'contacts' ? $this->announceSelectedContactIds : [],
+                'extra_emails' => $this->announceExtraEmails,
             ], auth()->user());
 
             $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Evento divulgado com sucesso! ({$announcement->total_recipients} destinatários)' } }))");

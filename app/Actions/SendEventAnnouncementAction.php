@@ -19,7 +19,8 @@ class SendEventAnnouncementAction
     {
         $this->notifyStatusChange->execute($reservation);
         $contacts = $this->resolveContacts($data);
-        $total = $contacts->count();
+        $extraEmails = $this->parseExtraEmails($data['extra_emails'] ?? '');
+        $total = $contacts->count() + count($extraEmails);
 
         $announcement = EventAnnouncement::create([
             'reservation_id' => $reservation->id,
@@ -34,9 +35,25 @@ class SendEventAnnouncementAction
             'sent_at' => null,
         ]);
 
-        SendEventAnnouncementJob::dispatch($announcement->id, $contacts->pluck('id')->all());
+        SendEventAnnouncementJob::dispatch($announcement->id, $contacts->pluck('id')->all(), $extraEmails);
 
         return $announcement;
+    }
+
+    /**
+     * Permite ao admin avisar e-mails que ainda nao tem cadastro de contato
+     * (ex.: um convidado avulso), sem precisar criar um Contact so para isso.
+     *
+     * @return array<int, string>
+     */
+    protected function parseExtraEmails(string $extraEmails): array
+    {
+        return collect(explode(',', $extraEmails))
+            ->map(fn (string $email) => trim($email))
+            ->filter(fn (string $email) => $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL))
+            ->unique()
+            ->values()
+            ->all();
     }
 
     protected function resolveContacts(array $data): Collection

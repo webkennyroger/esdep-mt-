@@ -30,6 +30,16 @@ test('admin can create a new room', function () {
         ->toBe('NOVA-SALA-DE-TREINAMENTO');
 });
 
+test('description is required when creating a room', function () {
+    Livewire::actingAs($this->admin)
+        ->test(RoomManager::class)
+        ->set('name', 'Sala Sem Descricao')
+        ->set('capacity', 10)
+        ->set('theme_color', '#008b5c')
+        ->call('createRoom')
+        ->assertHasErrors(['description' => 'required']);
+});
+
 test('room code is generated uniquely', function () {
     Room::create([
         'name' => 'Sala Existente',
@@ -52,6 +62,7 @@ test('room code is generated uniquely', function () {
         ->set('name', 'Outra Sala')
         ->set('capacity', 15)
         ->set('theme_color', '#008b5c')
+        ->set('description', 'Sala padrão para reuniões')
         ->call('createRoom')
         ->assertHasNoErrors();
 });
@@ -70,6 +81,7 @@ test('admin can update a room', function () {
         ->call('openEditModal', $room->id)
         ->set('editName', 'Sala Atualizada')
         ->set('editCapacity', 40)
+        ->set('editDescription', 'Sala com projetor e ar-condicionado')
         ->call('updateRoom')
         ->assertHasNoErrors();
 
@@ -185,6 +197,7 @@ test('admin can define any valid room capacity when editing', function () {
         ->test(RoomManager::class)
         ->call('openEditModal', $room->id)
         ->set('editCapacity', 20)
+        ->set('editDescription', 'Sala grande para eventos')
         ->call('updateRoom')
         ->assertHasNoErrors();
 

@@ -5,20 +5,24 @@ namespace App\Jobs;
 use App\Mail\EventAnnouncementMail;
 use App\Models\EventAnnouncement;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class SendEventAnnouncementJob implements ShouldQueue
+/**
+ * Envio sincrono (nao implementa ShouldQueue): QUEUE_CONNECTION=database em
+ * producao e nao ha worker configurado, entao um job enfileirado ficaria
+ * parado na tabela `jobs` para sempre e nunca seria entregue.
+ */
+class SendEventAnnouncementJob
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, Queueable, SerializesModels;
 
     public function __construct(
         private readonly int $announcementId,
         private readonly array $contactIds,
+        private readonly array $extraEmails = [],
     ) {}
 
     public function handle(): void
@@ -44,6 +48,19 @@ class SendEventAnnouncementJob implements ShouldQueue
             } catch (\Exception $e) {
                 $failed++;
                 Log::error("Erro ao enviar email para {$contact->email}: ".$e->getMessage());
+            }
+        }
+
+        foreach ($this->extraEmails as $email) {
+            try {
+                Mail::to($email)->send(
+                    new EventAnnouncementMail($announcement->reservation, $email, $announcement->message)
+                );
+
+                $sent++;
+            } catch (\Exception $e) {
+                $failed++;
+                Log::error("Erro ao enviar email para {$email}: ".$e->getMessage());
             }
         }
 

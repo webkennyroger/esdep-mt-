@@ -596,6 +596,14 @@
                         </div>
                     </div>
 
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">E-mails avulsos (opcional)</label>
+                        <p class="mb-2 text-[11px] text-slate-400 dark:text-[#5a7068]">Para avisar alguém que ainda não tem contato cadastrado. Separe múltiplos e-mails por vírgula.</p>
+                        <input type="text" wire:model="announceExtraEmails" placeholder="convidado@exemplo.com, outro@exemplo.com"
+                            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
+                        @error('announceExtraEmails') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
                     <div class="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-[#16352a]">
                         <button type="button" wire:click="closeAnnounceModal"
                             class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-[#2c4a3e] dark:text-[#8aa39a] dark:hover:bg-[#16352a]">

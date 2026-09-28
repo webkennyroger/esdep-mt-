@@ -181,7 +181,7 @@
                     </div>
 
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Descrição / Recursos</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Descrição / Recursos *</label>
                         <textarea wire:model="description" rows="3" placeholder="Ex: Equipado com projetor 4K, 2 microfones sem fio e ar-condicionado central."
                             class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]"></textarea>
                         @error('description') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
@@ -260,7 +260,7 @@
                     </div>
 
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Descrição / Recursos</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Descrição / Recursos *</label>
                         <textarea wire:model="editDescription" rows="3"
                             class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]"></textarea>
                         @error('editDescription') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
