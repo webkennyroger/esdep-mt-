@@ -2,23 +2,22 @@
 
 namespace App\Actions;
 
-use App\Mail\ReservationApprovedMail;
-use App\Mail\ReservationRejectedMail;
-use App\Enums\ReservationStatus;
 use App\Jobs\SendEventAnnouncementJob;
 use App\Models\Contact;
 use App\Models\EventAnnouncement;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class SendEventAnnouncementAction
 {
+    public function __construct(
+        private NotifyReservationStatusChangeAction $notifyStatusChange = new NotifyReservationStatusChangeAction,
+    ) {}
+
     public function execute(Reservation $reservation, array $data, User|Contact $creator): EventAnnouncement
     {
-        $this->sendStatusNotification($reservation);
+        $this->notifyStatusChange->execute($reservation);
         $contacts = $this->resolveContacts($data);
         $total = $contacts->count();
 
@@ -38,28 +37,6 @@ class SendEventAnnouncementAction
         SendEventAnnouncementJob::dispatch($announcement->id, $contacts->pluck('id')->all());
 
         return $announcement;
-    }
-
-    private function sendStatusNotification(Reservation $reservation): void
-    {
-        $status = $reservation->status->value;
-        if (! in_array($reservation->status, [ReservationStatus::AUTHORIZED, ReservationStatus::REJECTED], true)
-            || $reservation->status_notification_sent_for === $status) {
-            return;
-        }
-
-        try {
-            $mail = $reservation->status === ReservationStatus::AUTHORIZED
-                ? new ReservationApprovedMail($reservation)
-                : new ReservationRejectedMail($reservation);
-
-            $ownerEmails = $reservation->room?->ownerEmails() ?? [];
-
-            Mail::to($reservation->requester_email)->cc($ownerEmails)->send($mail);
-            $reservation->update(['status_notification_sent_for' => $status]);
-        } catch (\Throwable $exception) {
-            Log::error('Erro ao enviar notificação de status da reserva: '.$exception->getMessage());
-        }
     }
 
     protected function resolveContacts(array $data): Collection

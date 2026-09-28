@@ -269,7 +269,7 @@ test('group user can announce an authorized reservation only to contacts from ow
         ->and($announcement->created_by_contact_id)->toBe($manager->id)
         ->and($announcement->total_recipients)->toBe(2);
     Mail::assertOutgoingCount(3);
-    Mail::assertQueued(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo($reservation->requester_email));
+    Mail::assertSent(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo($reservation->requester_email));
     Mail::assertNotSent(fn (EventAnnouncementMail $mail) => $mail->hasTo($outsider->email));
 });
 
@@ -290,7 +290,7 @@ test('announcing without selecting extra recipients only notifies the requester 
     $announcement = EventAnnouncement::firstOrFail();
     expect($announcement->total_recipients)->toBe(0);
     Mail::assertOutgoingCount(1);
-    Mail::assertQueued(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo($reservation->requester_email) && $mail->hasCc('dono@example.com'));
+    Mail::assertSent(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo($reservation->requester_email) && $mail->hasCc('dono@example.com'));
 });
 
 test('status changes do not send email before the reservation is disclosed', function () {
@@ -311,7 +311,7 @@ test('status changes do not send email before the reservation is disclosed', fun
         ->call('openAnnounceModal', $reservation->id, $reservation->event_name)
         ->call('sendAnnouncement');
 
-    Mail::assertQueued(ReservationRejectedMail::class, fn (ReservationRejectedMail $mail) => $mail->hasTo($reservation->requester_email));
+    Mail::assertSent(ReservationRejectedMail::class, fn (ReservationRejectedMail $mail) => $mail->hasTo($reservation->requester_email));
 });
 
 test('group user can manage own rooms but cannot act on a room from another group', function () {

@@ -35,7 +35,7 @@ test('new request notification goes to the room owner email when set', function 
 
     app(CreateReservationAction::class)->execute(reservationRequestData($room->id));
 
-    Mail::assertQueued(ReservationRequestedMail::class, fn (ReservationRequestedMail $mail) => $mail->hasTo('dono-da-sala@example.com'));
+    Mail::assertSent(ReservationRequestedMail::class, fn (ReservationRequestedMail $mail) => $mail->hasTo('dono-da-sala@example.com'));
 });
 
 test('new request notification falls back to the group email when the room has none', function () {
@@ -46,7 +46,7 @@ test('new request notification falls back to the group email when the room has n
 
     app(CreateReservationAction::class)->execute(reservationRequestData($room->id));
 
-    Mail::assertQueued(ReservationRequestedMail::class, fn (ReservationRequestedMail $mail) => $mail->hasTo('dono-do-grupo@example.com'));
+    Mail::assertSent(ReservationRequestedMail::class, fn (ReservationRequestedMail $mail) => $mail->hasTo('dono-do-grupo@example.com'));
 });
 
 test('new request notification falls back to the default admin email when neither room nor group has one', function () {
@@ -56,7 +56,7 @@ test('new request notification falls back to the default admin email when neithe
 
     app(CreateReservationAction::class)->execute(reservationRequestData($room->id));
 
-    Mail::assertQueued(ReservationRequestedMail::class, fn (ReservationRequestedMail $mail) => $mail->hasTo(config('app.admin_email', 'admin@esdep.mt.gov.br')));
+    Mail::assertSent(ReservationRequestedMail::class, fn (ReservationRequestedMail $mail) => $mail->hasTo(config('app.admin_email', 'admin@esdep.mt.gov.br')));
 });
 
 test('new request notification goes to every email when a room lists more than one, comma separated', function () {
@@ -66,7 +66,7 @@ test('new request notification goes to every email when a room lists more than o
 
     app(CreateReservationAction::class)->execute(reservationRequestData($room->id));
 
-    Mail::assertQueued(ReservationRequestedMail::class, function (ReservationRequestedMail $mail) {
+    Mail::assertSent(ReservationRequestedMail::class, function (ReservationRequestedMail $mail) {
         return $mail->hasTo('setor1@example.com')
             && $mail->hasTo('setor2@example.com')
             && $mail->hasTo('setor3@example.com');
@@ -86,7 +86,7 @@ test('approval notification also copies the room owner email', function () {
 
     app(SendEventAnnouncementAction::class)->execute($reservation, ['recipient_type' => 'contacts', 'contact_ids' => []], $admin);
 
-    Mail::assertQueued(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo('solicitante@example.com') && $mail->hasCc('dono-da-sala@example.com'));
+    Mail::assertSent(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo('solicitante@example.com') && $mail->hasCc('dono-da-sala@example.com'));
 });
 
 test('rejection notification also copies the group owner email when the room has none', function () {
@@ -103,7 +103,7 @@ test('rejection notification also copies the group owner email when the room has
 
     app(SendEventAnnouncementAction::class)->execute($reservation, ['recipient_type' => 'contacts', 'contact_ids' => []], $admin);
 
-    Mail::assertQueued(ReservationRejectedMail::class, fn (ReservationRejectedMail $mail) => $mail->hasTo('solicitante@example.com') && $mail->hasCc('dono-do-grupo@example.com'));
+    Mail::assertSent(ReservationRejectedMail::class, fn (ReservationRejectedMail $mail) => $mail->hasTo('solicitante@example.com') && $mail->hasCc('dono-do-grupo@example.com'));
 });
 
 test('multiple-email field rejects a list containing an invalid address', function () {
