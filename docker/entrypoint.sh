@@ -15,4 +15,8 @@ fi
 su-exec www-data php artisan config:cache
 su-exec www-data php artisan view:cache
 
+if [ "${1:-}" = "php-fpm" ]; then
+    exec "$@"
+fi
+
 exec su-exec www-data "$@"

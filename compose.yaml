@@ -8,8 +8,6 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
-      DB_CONNECTION: sqlite
-      DB_DATABASE: /var/www/html/database/database.sqlite
       AUTO_MIGRATE: "true"
     volumes:
       - esdep_database:/var/www/html/database
@@ -29,8 +27,6 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
-      DB_CONNECTION: sqlite
-      DB_DATABASE: /var/www/html/database/database.sqlite
       AUTO_MIGRATE: "false"
     command: ["php", "artisan", "schedule:work"]
     volumes:
@@ -39,6 +35,30 @@ services:
     depends_on:
       app:
         condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      target: app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      AUTO_MIGRATE: "false"
+    command:
+      - php
+      - artisan
+      - queue:work
+      - --sleep=3
+      - --tries=3
+      - --timeout=120
+    volumes:
+      - esdep_storage:/var/www/html/storage
+    depends_on:
+      app:
+        condition: service_healthy
+
 
   web:
     build:
@@ -56,3 +76,10 @@ services:
 volumes:
   esdep_database:
   esdep_storage:
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
+          gateway: 172.19.0.1

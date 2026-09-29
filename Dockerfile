@@ -11,15 +11,15 @@ RUN npm run build
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --optimize-autoloader
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --optimize-autoloader --ignore-platform-req=ext-gd
 COPY . .
 RUN composer dump-autoload --no-dev --classmap-authoritative --no-interaction
 
 FROM php:8.4-fpm-alpine AS app
-RUN apk add --no-cache icu-libs libzip libpng libjpeg-turbo freetype sqlite-libs su-exec \
-    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev libzip-dev libpng-dev libjpeg-turbo-dev freetype-dev sqlite-dev \
+RUN apk add --no-cache icu-libs libzip libpng libjpeg-turbo freetype sqlite-libs libpq su-exec \
+    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev libzip-dev libpng-dev libjpeg-turbo-dev freetype-dev sqlite-dev postgresql-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) bcmath gd intl opcache pcntl pdo_mysql pdo_sqlite zip \
+    && docker-php-ext-install -j$(nproc) bcmath gd intl opcache pcntl pdo_mysql pdo_pgsql pdo_sqlite zip \
     && apk del .build-deps
 WORKDIR /var/www/html
 COPY --from=vendor --chown=www-data:www-data /app /var/www/html
