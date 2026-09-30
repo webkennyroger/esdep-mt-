@@ -35,33 +35,6 @@
             Entrar com a conta institucional
         </a>
 
-        <div class="my-6 flex items-center gap-3">
-            <span class="h-px flex-1 bg-slate-200 dark:bg-[#2c4a3e]"></span>
-            <span class="text-xs text-slate-400 dark:text-[#8aa39a]">ou</span>
-            <span class="h-px flex-1 bg-slate-200 dark:bg-[#2c4a3e]"></span>
-        </div>
-
-        <form method="POST" action="{{ route('login.post') }}" class="space-y-4">
-            @csrf
-            <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">E-mail</label>
-                <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                    class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:focus:ring-[#4fd1a5]"
-                    placeholder="seu.email@esdep.mt.gov.br">
-            </div>
-
-            <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Senha</label>
-                <input type="password" name="password" required
-                    class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:focus:ring-[#4fd1a5]"
-                    placeholder="Sua senha">
-            </div>
-
-            <button type="submit" class="w-full rounded-lg bg-[#003f32] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#008b5c] dark:bg-[#008b5c] dark:hover:bg-[#4fd1a5] dark:hover:text-[#003f32]">
-                Entrar
-            </button>
-        </form>
-
         <div class="mt-6 text-center">
             <a href="{{ route('home') }}" class="text-sm text-slate-500 hover:text-slate-700 dark:text-[#8aa39a] dark:hover:text-[#4fd1a5]">Voltar para o início</a>
         </div>

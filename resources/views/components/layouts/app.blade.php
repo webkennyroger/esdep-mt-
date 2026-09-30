@@ -115,11 +115,11 @@
                 {{-- Usuario --}}
                 <div class="border-t border-slate-200 p-4 dark:border-[#16352a]">
                     <div class="flex items-center gap-3 rounded-xl p-3 bg-green-50 dark:bg-[#16352a] dark:text-[#4fd1a5]">
-                        <a href="{{ route('admin.profile') }}" class="flex h-10 w-10 items-center justify-center rounded-full bg-green-700 text-sm font-bold text-white transition hover:bg-green-800 dark:bg-[#008b5c] dark:hover:bg-[#006e49]">
+                        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-green-700 text-sm font-bold text-white dark:bg-[#008b5c]">
                             {{ substr(Auth::user()->name ?? 'A', 0, 2) }}
-                        </a>
+                        </span>
                         <div class="min-w-0 flex-1">
-                            <a href="{{ route('admin.profile') }}" class="block truncate text-sm font-semibold text-slate-900 transition hover:text-green-700 dark:text-[#e6f2ec] dark:hover:text-[#4fd1a5]">{{ Auth::user()->name ?? 'Admin' }}</a>
+                            <p class="truncate text-sm font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ Auth::user()->name ?? 'Admin' }}</p>
                             <p class="truncate text-xs text-slate-500 dark:text-[#8aa39a]">{{ Auth::user()->roles->pluck('name')->implode(', ') ?: 'sem perfil' }}</p>
                         </div>
                         <form method="POST" action="{{ route('logout') }}">
