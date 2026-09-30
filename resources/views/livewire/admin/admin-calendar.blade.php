@@ -52,7 +52,7 @@
                         <div class="mt-1 space-y-0.5 overflow-hidden sm:mt-1.5">
                             @foreach(array_slice($dayRes, 0, 4) as $res)
                                 <div class="truncate rounded bg-green-100 px-1 py-px text-[9px] font-bold leading-tight text-green-800 dark:bg-[#008b5c]/20 dark:text-[#4fd1a5] sm:px-1.5 sm:py-0.5 sm:text-[10px]">
-                                    {{ $res['start_time'] }}
+                                    {{ $res['start_time'] }}–{{ $res['end_time'] }}
                                 </div>
                             @endforeach
                             @if(count($dayRes) > 4)

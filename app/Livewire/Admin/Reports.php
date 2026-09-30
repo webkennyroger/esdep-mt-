@@ -33,7 +33,8 @@ class Reports extends Component
     public function getStatsProperty(): array
     {
         $query = Reservation::accessibleTo(auth()->user())
-            ->whereBetween('date', [$this->startDate, $this->endDate]);
+            ->whereDate('date', '>=', $this->startDate)
+            ->whereDate('date', '<=', $this->endDate);
 
         if ($this->roomId) {
             $query->where('room_id', $this->roomId);
@@ -48,7 +49,8 @@ class Reports extends Component
         $byRoom = Room::accessibleTo(auth()->user())
             ->when($this->roomId, fn ($rooms) => $rooms->whereKey($this->roomId))
             ->withCount(['reservations as total' => fn ($reservations) => $reservations
-                ->whereBetween('date', [$this->startDate, $this->endDate])])
+                ->whereDate('date', '>=', $this->startDate)
+                ->whereDate('date', '<=', $this->endDate)])
             ->get()
             ->map(fn (Room $room) => [
                 'name' => $room->name,
@@ -82,7 +84,8 @@ class Reports extends Component
     private function reservationsForExport(): Collection
     {
         $query = Reservation::accessibleTo(auth()->user())->with('room')
-            ->whereBetween('date', [$this->startDate, $this->endDate])
+            ->whereDate('date', '>=', $this->startDate)
+            ->whereDate('date', '<=', $this->endDate)
             ->orderBy('date');
 
         if ($this->roomId) {

@@ -27,11 +27,19 @@
 
     <div class="hidden lg:flex lg:justify-end">
         <div class="relative flex w-full max-w-175 items-center justify-center" style="perspective: 1200px;">
-
             <!-- SETA ESQUERDA -->
             <button type="button" id="room-prev"
                 class="absolute left-2 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 ring-1 ring-white/10 hover:bg-white/5 transition dark:bg-white/10"
                 title="Anterior">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#4fd1a5]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+            <!-- SETA DIREITA -->
+            <button type="button" id="room-next"
+                class="absolute right-2 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 ring-1 ring-white/10 hover:bg-white/5 transition dark:bg-white/10"
+                title="Próximo">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#4fd1a5]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -67,16 +75,6 @@
 
                 </div>
             </div>
-
-            <!-- SETA DIREITA -->
-            <button type="button" id="room-next"
-                class="absolute right-2 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 ring-1 ring-white/10 hover:bg-white/5 transition dark:bg-white/10"
-                title="Próximo">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#4fd1a5]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-            </button>
-
         </div>
     </div>
 

@@ -25,11 +25,21 @@ class ContactReports extends Component
         $this->endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
     }
 
+    /**
+     * whereBetween compara a string da data diretamente contra a coluna, que
+     * guarda um datetime ("Y-m-d H:i:s"); no limite superior isso exclui
+     * reservas datadas exatamente no ultimo dia do intervalo. whereDate
+     * extrai so a parte da data antes de comparar.
+     */
+    private function applyDateRange($query)
+    {
+        return $query->whereDate('date', '>=', $this->startDate)->whereDate('date', '<=', $this->endDate);
+    }
+
     public function exportCsv(): StreamedResponse
     {
         $roomIds = auth('contact')->user()->managedRoomIds();
-        $rows = Reservation::with('room')->whereIn('room_id', $roomIds)
-            ->whereBetween('date', [$this->startDate, $this->endDate])
+        $rows = $this->applyDateRange(Reservation::with('room')->whereIn('room_id', $roomIds))
             ->when($this->roomId, fn ($query) => $query->where('room_id', $this->roomId))
             ->orderBy('date')->get();
 
@@ -46,13 +56,20 @@ class ContactReports extends Component
     public function render()
     {
         $ids = auth('contact')->user()->managedRoomIds();
-        $query = Reservation::whereIn('room_id', $ids)->whereBetween('date', [$this->startDate, $this->endDate])->when($this->roomId, fn ($q) => $q->where('room_id', $this->roomId));
+        $query = $this->applyDateRange(Reservation::whereIn('room_id', $ids))->when($this->roomId, fn ($q) => $q->where('room_id', $this->roomId));
         $total = (clone $query)->count();
         $approved = (clone $query)->where('status', ReservationStatus::AUTHORIZED)->count();
-        $stats = ['total' => $total, 'approved' => $approved, 'rejected' => (clone $query)->where('status', ReservationStatus::REJECTED)->count(), 'pending' => (clone $query)->where('status', ReservationStatus::PENDING)->count(), 'totalAttendees' => (clone $query)->sum('attendees_count'),
-            'byRoom' => Room::whereIn('id', $ids)->withCount(['reservations as total' => fn ($q) => $q->whereBetween('date', [$this->startDate, $this->endDate])])->get()->map(fn ($r) => ['name' => $r->name, 'total' => (int) $r->getAttribute('total')])->filter(fn ($r) => $r['total'] > 0)->toArray(),
+        $rejected = (clone $query)->where('status', ReservationStatus::REJECTED)->count();
+        $pending = (clone $query)->where('status', ReservationStatus::PENDING)->count();
+        $stats = ['total' => $total, 'approved' => $approved, 'rejected' => $rejected, 'pending' => $pending, 'totalAttendees' => (clone $query)->sum('attendees_count'),
+            'byRoom' => Room::whereIn('id', $ids)->withCount(['reservations as total' => fn ($q) => $this->applyDateRange($q)])->get()->map(fn ($r) => ['name' => $r->name, 'total' => (int) $r->getAttribute('total')])->filter(fn ($r) => $r['total'] > 0)->toArray(),
             'byService' => ['coffee_break' => (clone $query)->where('coffee_break', true)->count(), 'sonorizacao' => (clone $query)->where('sonorizacao', true)->count(), 'transmissao' => (clone $query)->where('transmissao', true)->count(), 'projetor' => (clone $query)->where('projetor', true)->count()],
-            'occupancyRate' => $total ? round($approved / $total * 100, 1) : 0];
+            'occupancyRate' => $total ? round($approved / $total * 100, 1) : 0,
+            'statusBreakdown' => [
+                'approved' => ['label' => 'Autorizada', 'value' => $approved, 'pct' => $total > 0 ? round(($approved / $total) * 100, 1) : 0],
+                'pending' => ['label' => 'Pendente', 'value' => $pending, 'pct' => $total > 0 ? round(($pending / $total) * 100, 1) : 0],
+                'rejected' => ['label' => 'Rejeitada', 'value' => $rejected, 'pct' => $total > 0 ? round(($rejected / $total) * 100, 1) : 0],
+            ]];
 
         return view('livewire.admin.reports', ['rooms' => Room::whereIn('id', $ids)->orderBy('name')->get(), 'stats' => $stats]);
     }

@@ -43,7 +43,8 @@ class ContactCalendar extends Component
         $start = Carbon::create($this->currentYear, $this->currentMonth, 1)->startOfMonth()->toDateString();
         $end = Carbon::create($this->currentYear, $this->currentMonth, 1)->endOfMonth()->toDateString();
         $rows = Reservation::with('room')->whereIn('room_id', $contact->managedRoomIds())
-            ->whereBetween('date', [$start, $end])->where('status', ReservationStatus::AUTHORIZED)->get();
+            ->whereDate('date', '>=', $start)->whereDate('date', '<=', $end)
+            ->where('status', ReservationStatus::AUTHORIZED)->get();
         $this->reservations = [];
         foreach ($rows as $row) {
             $key = $row->date->format('Y-m-d');
