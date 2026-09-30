@@ -94,6 +94,21 @@ class ContactGroups extends ContactManager
         $this->toast('Contato criado com sucesso.');
     }
 
+    /**
+     * Um contato recem-criado ainda nao pertence a nenhum grupo, entao nao
+     * passaria pelo abort_if de allowedContactIds em createGroup/updateGroup.
+     * Vincula ele a um grupo que o gestor ja acessa para que a selecao no
+     * modal (groupContactIds/editGroupContactIds) seja aceita.
+     */
+    protected function afterQuickContactCreated(Contact $contact): void
+    {
+        $groupId = $this->allowedGroupIds()->first();
+
+        if ($groupId) {
+            $contact->groups()->attach($groupId, ['is_responsible' => false]);
+        }
+    }
+
     public function openEditModal(int $id): void
     {
         $contact = $this->allowedContact($id);
@@ -236,6 +251,7 @@ class ContactGroups extends ContactManager
         $this->editGroupColor = $group->color;
         $this->editGroupRoomIds = $group->rooms->pluck('id')->all();
         $this->editGroupContactIds = $group->contacts->pluck('id')->all();
+        $this->reset(['quickContactName', 'quickContactEmail']);
         $this->resetValidation();
         $this->showEditGroupModal = true;
     }

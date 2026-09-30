@@ -32,6 +32,48 @@ test('create contact', function () {
     ]);
 });
 
+test('can quick-create a contact from inside the create-group modal and it gets checked in the list', function () {
+    $component = Livewire::test(ContactManager::class)
+        ->call('openGroupModal')
+        ->set('quickContactName', 'Contato Rapido')
+        ->set('quickContactEmail', 'rapido@test.com')
+        ->call('addQuickContact', 'groupContactIds')
+        ->assertHasNoErrors();
+
+    $contact = Contact::where('email', 'rapido@test.com')->firstOrFail();
+
+    expect($component->get('groupContactIds'))->toBe([$contact->id])
+        ->and($component->get('quickContactName'))->toBe('')
+        ->and($component->get('quickContactEmail'))->toBe('');
+
+    $component->assertSee('Contato Rapido');
+});
+
+test('quick-created contact ends up selected and can be saved with the group', function () {
+    Livewire::test(ContactManager::class)
+        ->call('openGroupModal')
+        ->set('groupName', 'GRP')
+        ->set('quickContactName', 'Fulano da Silva')
+        ->set('quickContactEmail', 'fulano@test.com')
+        ->call('addQuickContact', 'groupContactIds')
+        ->call('createGroup')
+        ->assertHasNoErrors();
+
+    $contact = Contact::where('email', 'fulano@test.com')->firstOrFail();
+    $group = ContactGroup::where('name', 'GRP')->firstOrFail();
+
+    expect($group->contacts()->whereKey($contact->id)->exists())->toBeTrue();
+});
+
+test('quick-add rejects an unknown target property', function () {
+    Livewire::test(ContactManager::class)
+        ->call('openGroupModal')
+        ->set('quickContactName', 'Alguem')
+        ->set('quickContactEmail', 'alguem@test.com')
+        ->call('addQuickContact', 'someOtherProperty')
+        ->assertForbidden();
+});
+
 test('cannot create duplicate email', function () {
     Contact::create([
         'name' => 'Carlos',

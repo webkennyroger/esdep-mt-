@@ -366,6 +366,32 @@ test('group user has full contact tools scoped to own groups', function () {
         ->toThrow(ModelNotFoundException::class);
 });
 
+test('group user can quick-create a contact from inside a group modal without hitting the scope guard', function () {
+    $group = ContactGroup::create(['name' => 'GRUPO RAPIDO', 'color' => '#008b5c']);
+    $manager = Contact::create(['name' => 'Gestor Rapido', 'email' => 'gestor-rapido@example.com', 'password' => 'password', 'is_active' => true]);
+    $manager->groups()->attach($group, ['is_responsible' => true]);
+    $group->update(['owner_contact_id' => $manager->id]);
+
+    $component = Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
+        ->call('openEditGroupModal', $group->id)
+        ->set('quickContactName', 'Contato Novo do Gestor')
+        ->set('quickContactEmail', 'contato-novo-gestor@example.com')
+        ->call('addQuickContact', 'editGroupContactIds')
+        ->assertHasNoErrors();
+
+    $contact = Contact::where('email', 'contato-novo-gestor@example.com')->firstOrFail();
+
+    // O contato recem-criado precisa ja pertencer a um grupo que o gestor
+    // acessa, senao o abort_if de updateGroup rejeitaria a propria selecao
+    // que o quick-add acabou de marcar.
+    expect($contact->groups()->whereKey($group->id)->exists())->toBeTrue()
+        ->and($component->get('editGroupContactIds'))->toContain($contact->id);
+
+    $component->call('updateGroup')->assertHasNoErrors();
+
+    expect($group->contacts()->whereKey($contact->id)->exists())->toBeTrue();
+});
+
 test('group user cannot delete a contact that owns another private group', function () {
     $manager = Contact::create(['name' => 'Gestor', 'email' => 'gestor-dono@example.com', 'password' => 'password', 'is_active' => true]);
     $ownedGroup = ContactGroup::create(['name' => 'GRUPO PRIMARIO', 'color' => '#008b5c']);

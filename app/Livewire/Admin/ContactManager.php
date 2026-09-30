@@ -129,6 +129,11 @@ class ContactManager extends Component
 
     public string $editGroupNotificationEmail = '';
 
+    // Quick contact (criado direto de dentro do modal de grupo)
+    public string $quickContactName = '';
+
+    public string $quickContactEmail = '';
+
     protected $listeners = [
         'contactCreated' => '$refresh',
         'contactUpdated' => '$refresh',
@@ -183,6 +188,38 @@ class ContactManager extends Component
         $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Contato criado com sucesso.' } }))");
         $this->dispatch('contactCreated');
         $this->closeCreateModal();
+    }
+
+    /**
+     * Cria um contato direto de dentro do modal de grupo (criar ou editar),
+     * ja marcando a caixinha dele na lista de contatos do grupo.
+     */
+    public function addQuickContact(string $target): void
+    {
+        abort_unless(in_array($target, ['groupContactIds', 'editGroupContactIds'], true), 403);
+
+        $this->validate([
+            'quickContactName' => 'required|string|max:255',
+            'quickContactEmail' => ['required', 'email', 'max:255', 'unique:contacts,email'],
+        ]);
+
+        $contact = Contact::create([
+            'name' => $this->quickContactName,
+            'email' => strtolower(trim($this->quickContactEmail)),
+            'is_active' => true,
+            'subscribed_at' => now(),
+        ]);
+
+        $this->afterQuickContactCreated($contact);
+
+        $this->{$target}[] = $contact->id;
+        $this->quickContactName = '';
+        $this->quickContactEmail = '';
+    }
+
+    protected function afterQuickContactCreated(Contact $contact): void
+    {
+        // Admin: o contato ja fica disponivel pra qualquer grupo, nada a fazer.
     }
 
     public function openEditModal(int $id): void
@@ -352,7 +389,7 @@ class ContactManager extends Component
 
     public function openGroupModal(): void
     {
-        $this->reset(['groupName', 'groupDescription', 'groupColor', 'groupRoomIds', 'groupContactIds', 'groupNotificationEmail']);
+        $this->reset(['groupName', 'groupDescription', 'groupColor', 'groupRoomIds', 'groupContactIds', 'groupNotificationEmail', 'quickContactName', 'quickContactEmail']);
         $this->groupColor = '#059669';
         $this->resetValidation();
         $this->showGroupModal = true;
@@ -410,6 +447,7 @@ class ContactManager extends Component
         $this->editGroupRoomIds = $group->rooms->pluck('id')->all();
         $this->editGroupContactIds = $group->contacts->pluck('id')->all();
         $this->editGroupNotificationEmail = $group->notification_email ?? '';
+        $this->reset(['quickContactName', 'quickContactEmail']);
         $this->resetValidation();
         $this->showEditGroupModal = true;
     }

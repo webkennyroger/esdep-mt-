@@ -59,10 +59,20 @@
         </div>
         <div>
             <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Contatos do grupo</label>
+            <div class="mb-2 flex flex-wrap gap-2">
+                <input type="text" wire:model="quickContactName" placeholder="Nome do novo contato"
+                    class="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
+                <input type="email" wire:model="quickContactEmail" placeholder="E-mail"
+                    class="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-[#16352a] dark:bg-[#0a1a14] dark:text-[#e6f2ec]" />
+                <button type="button" wire:click="addQuickContact('groupContactIds')"
+                    class="shrink-0 rounded-lg bg-slate-700 px-3 text-xs font-semibold text-white hover:bg-slate-800 dark:bg-[#16352a] dark:hover:bg-[#1e4433]">+ Adicionar</button>
+            </div>
+            @error('quickContactName') <p class="mb-1 text-xs text-red-500">{{ $message }}</p> @enderror
+            @error('quickContactEmail') <p class="mb-1 text-xs text-red-500">{{ $message }}</p> @enderror
             <div class="max-h-44 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-[#16352a]">
                 @forelse($contactsForGroups as $groupContact)
                     <label class="flex items-center gap-2 text-sm"><input type="checkbox" wire:model="groupContactIds" value="{{ $groupContact->id }}" class="rounded text-green-600"><span>{{ $groupContact->name }}</span> <small class="text-slate-400">{{ $groupContact->email }}</small></label>
-                @empty <span class="text-xs text-slate-500">Nenhum contato disponível.</span> @endforelse
+                @empty <span class="text-xs text-slate-500">Nenhum contato disponível ainda. Use o campo acima para criar um.</span> @endforelse
             </div>
             @error('groupContactIds.*') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
         </div>

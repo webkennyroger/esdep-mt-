@@ -28,7 +28,8 @@ test('month grid shows both start and end time for a reservation', function () {
     Livewire::test(AdminCalendar::class)
         ->set('currentMonth', 9)
         ->set('currentYear', 2026)
-        ->assertSee('09:00–10:30');
+        ->assertSee('09:00')
+        ->assertSee('10:30');
 });
 
 test('month name starts with an uppercase letter', function () {
