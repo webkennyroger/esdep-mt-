@@ -65,6 +65,36 @@ test('quick-created contact ends up selected and can be saved with the group', f
     expect($group->contacts()->whereKey($contact->id)->exists())->toBeTrue();
 });
 
+test('admin can link a contact to an existing user picked from Usuarios & Acessos', function () {
+    $existingUser = User::factory()->admin()->create(['name' => 'Fulano Servidor', 'email' => 'fulano.servidor@example.com']);
+
+    $component = Livewire::test(ContactManager::class)
+        ->call('openGroupModal')
+        ->assertSee('Fulano Servidor')
+        ->set('quickContactUserId', $existingUser->id)
+        ->call('addContactFromUser', 'groupContactIds')
+        ->assertHasNoErrors();
+
+    $contact = Contact::where('email', 'fulano.servidor@example.com')->firstOrFail();
+
+    expect($contact->name)->toBe('Fulano Servidor')
+        ->and($contact->user_id)->toBe($existingUser->id)
+        ->and($component->get('groupContactIds'))->toBe([$contact->id])
+        ->and($component->get('quickContactUserId'))->toBeNull();
+});
+
+test('a user that already has a linked contact does not show up in the picker again', function () {
+    $existingUser = User::factory()->admin()->create(['email' => 'ja-vinculado@example.com']);
+    Contact::create(['name' => 'Ja Vinculado', 'email' => 'ja-vinculado@example.com', 'user_id' => $existingUser->id, 'is_active' => true]);
+
+    Livewire::test(ContactManager::class)
+        ->call('openGroupModal')
+        // O contato ja existe e aparece na lista de selecao (checkbox) normalmente;
+        // o que nao pode acontecer e o usuario aparecer de novo no <select> do topo,
+        // que so lista quem ainda nao tem contato (opcao renderizada como "Nome (email)").
+        ->assertDontSee('(ja-vinculado@example.com)');
+});
+
 test('quick-add rejects an unknown target property', function () {
     Livewire::test(ContactManager::class)
         ->call('openGroupModal')
