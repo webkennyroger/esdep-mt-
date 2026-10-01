@@ -44,18 +44,62 @@
                     <h4 class="text-[13px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Sala e horário</h4>
                 </div>
 
-                <label class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Escolha a sala <span class="text-red-500">*</span></label>
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    @foreach($rooms as $room)
-                        <label class="flex items-center gap-3 rounded-lg border border-[#d2ded9] bg-white p-3 cursor-pointer transition-all duration-200 hover:border-[#008b5c] hover:bg-[#eef7f2] has-checked:border-[#008b5c] has-checked:bg-[#eef7f2] has-checked:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:hover:border-[#00a477] dark:hover:bg-[#16352a] dark:has-checked:border-[#00a477] dark:has-checked:bg-[#0c221a]">
-                            <input wire:model.live="roomId" value="{{ $room->id }}" type="radio" name="admin_room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
-                            <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: {{ $room->theme_color }};"></span>
-                            <span class="flex flex-1 flex-col">
-                                <strong class="text-[13px] text-[#003f32] dark:text-[#e6f2ec]">{{ $room->name }}</strong>
-                                <small class="text-[10px] text-[#008b5c] dark:text-[#4fd1a5]">{{ $room->capacity }} pessoas</small>
-                            </span>
-                        </label>
-                    @endforeach
+                {{-- Slide de salas, igual ao formulario publico de reserva --}}
+                <div x-data="{
+                    roomStep: 0,
+                    totalRooms: {{ count($rooms) }},
+                    perPage: 3,
+                    get maxStep() { return Math.ceil(this.totalRooms / this.perPage) - 1 },
+                    prev() { this.roomStep = this.roomStep > 0 ? this.roomStep - 1 : this.maxStep },
+                    next() { this.roomStep = this.roomStep < this.maxStep ? this.roomStep + 1 : 0 }
+                }">
+                    <label class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Escolha a sala <span class="text-red-500">*</span></label>
+
+                    <div class="relative">
+                        <button type="button" @click="prev"
+                            class="absolute -left-4 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[#d2ded9] bg-white text-[#003f32] shadow-sm transition hover:border-[#008b5c] hover:bg-[#eef7f2] dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:text-[#e6f2ec] dark:hover:border-[#00a477] dark:hover:bg-[#16352a]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button type="button" @click="next"
+                            class="absolute -right-4 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[#d2ded9] bg-white text-[#003f32] shadow-sm transition hover:border-[#008b5c] hover:bg-[#eef7f2] dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:text-[#e6f2ec] dark:hover:border-[#00a477] dark:hover:bg-[#16352a]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+
+                        <div class="overflow-hidden">
+                            <div class="flex transition-transform duration-300" :style="'transform: translateX(-' + (roomStep * 100) + '%)'">
+                                @foreach($rooms as $index => $room)
+                                    @if($index % 3 === 0)
+                                        <div class="w-full shrink-0 px-1">
+                                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                    @endif
+                                                <label class="flex items-center gap-3 rounded-lg border border-[#d2ded9] bg-white p-3 cursor-pointer transition-all duration-200 hover:border-[#008b5c] hover:bg-[#eef7f2] has-checked:border-[#008b5c] has-checked:bg-[#eef7f2] has-checked:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:hover:border-[#00a477] dark:hover:bg-[#16352a] dark:has-checked:border-[#00a477] dark:has-checked:bg-[#0c221a]">
+                                                    <input wire:model.live="roomId" value="{{ $room->id }}" type="radio" name="admin_room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
+                                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" data-color="{{ $room->theme_color }}" style="background-color: color-mix(in srgb, var(--swatch, {{ $room->theme_color }}) 20%, transparent);">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" data-color="{{ $room->theme_color }}" style="color: var(--swatch, {{ $room->theme_color }});" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                        </svg>
+                                                    </div>
+                                                    <span class="flex flex-1 flex-col">
+                                                        <strong class="text-[13px] text-[#003f32] dark:text-[#e6f2ec]">{{ $room->name }}</strong>
+                                                        <small class="text-[10px] text-[#008b5c] dark:text-[#4fd1a5]">{{ $room->capacity }} pessoas</small>
+                                                    </span>
+                                                </label>
+                                    @if($index % 3 === 2 || $loop->last)
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    @if(count($rooms) > 3)
+                        <div class="mt-3 flex items-center justify-center gap-2">
+                            @foreach(range(0, ceil(count($rooms) / 3) - 1) as $i)
+                                <button type="button" @click="roomStep = {{ $i }}" class="h-2 w-2 rounded-full transition-all" :class="roomStep === {{ $i }} ? 'bg-[#008b5c] w-6' : 'bg-[#d2ded9] dark:bg-[#2c4a3e]'"></button>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
                 @error('roomId') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
 
@@ -265,7 +309,7 @@
     {{-- Acoes --}}
     <div class="flex justify-end gap-3 border-t border-[#d6e1dc] px-6 py-4 dark:border-[#16352a]">
         @if($mode === 'page')
-            <a href="{{ route('admin.reservations.index') }}" wire:navigate
+            <a href="{{ route('admin.reservations.index') }}"
                 class="rounded-lg border border-[#b8c9c2] px-4 py-2 text-sm font-medium text-[#003f32] hover:bg-slate-50 dark:border-[#2c4a3e] dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#e6f2ec]">
                 Cancelar
             </a>

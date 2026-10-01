@@ -53,7 +53,7 @@
                             </svg>
                             Agenda
                         </a>
-                        <a href="{{ route('admin.reservations.create') }}" wire:navigate class="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]">
+                        <a href="{{ route('admin.reservations.create') }}" class="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
@@ -184,7 +184,7 @@
 
     </div>
 
-    @unless(auth('contact')->check())
+    @unless(auth('contact')->check() || request()->routeIs('admin.reservations.create'))
         <livewire:admin.reservation-editor />
     @endunless
 

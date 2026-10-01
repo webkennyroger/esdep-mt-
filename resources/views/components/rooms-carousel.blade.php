@@ -11,18 +11,39 @@
         <p class="text-sm text-white/60">Nenhuma sala disponível no momento.</p>
     </div>
 @else
-    {{-- Versao mobile: lista com rolagem horizontal, sem o efeito 3D --}}
-    <div class="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory lg:hidden">
-        @foreach($rooms as $room)
-            <div class="relative h-56 w-48 shrink-0 snap-start overflow-hidden rounded-2xl ring-1 ring-white/10"
-                style="background: linear-gradient(to bottom right, {{ $room->theme_color }}, {{ \App\Support\TailwindColors::darken($room->theme_color, 0.35) }});">
-                <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
-                <div class="absolute bottom-4 left-4 right-4">
-                    <p class="text-base font-semibold text-white tracking-tight mb-1">{{ $room->name }}</p>
-                    <p class="text-xs text-white/70">ATÉ {{ $room->capacity }} PESSOAS</p>
+    {{-- Versao mobile: lista com rolagem horizontal + setas, sem o efeito 3D --}}
+    <div class="w-full min-w-0 lg:hidden">
+        <div id="rooms-mobile-scroll" class="flex w-full min-w-0 gap-4 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
+            @foreach($rooms as $room)
+                <div class="relative h-56 w-full shrink-0 snap-center overflow-hidden rounded-2xl ring-1 ring-white/10"
+                    style="background: linear-gradient(to bottom right, {{ $room->theme_color }}, {{ \App\Support\TailwindColors::darken($room->theme_color, 0.35) }});">
+                    <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
+                    <div class="absolute bottom-4 left-4 right-4">
+                        <p class="text-base font-semibold text-white tracking-tight mb-1">{{ $room->name }}</p>
+                        <p class="text-xs text-white/70">ATÉ {{ $room->capacity }} PESSOAS</p>
+                    </div>
                 </div>
+            @endforeach
+        </div>
+
+        @if($rooms->count() > 1)
+            <div class="mt-3 flex items-center justify-center gap-3">
+                <button type="button" id="rooms-mobile-prev"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/50 ring-1 ring-white/10 transition hover:bg-white/5"
+                    title="Anterior">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#4fd1a5]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <button type="button" id="rooms-mobile-next"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/50 ring-1 ring-white/10 transition hover:bg-white/5"
+                    title="Próximo">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#4fd1a5]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
             </div>
-        @endforeach
+        @endif
     </div>
 
     <div class="hidden lg:flex lg:justify-end">
@@ -80,6 +101,25 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var mobileScroll = document.getElementById('rooms-mobile-scroll');
+            var mobilePrevBtn = document.getElementById('rooms-mobile-prev');
+            var mobileNextBtn = document.getElementById('rooms-mobile-next');
+
+            if (mobileScroll && mobilePrevBtn && mobileNextBtn) {
+                var scrollStep = function() {
+                    var card = mobileScroll.querySelector(':scope > div');
+                    return card ? card.offsetWidth + 16 : mobileScroll.clientWidth;
+                };
+
+                mobilePrevBtn.addEventListener('click', function() {
+                    mobileScroll.scrollBy({ left: -scrollStep(), behavior: 'smooth' });
+                });
+
+                mobileNextBtn.addEventListener('click', function() {
+                    mobileScroll.scrollBy({ left: scrollStep(), behavior: 'smooth' });
+                });
+            }
+
             var carousel = document.getElementById('rooms-carousel');
             var prevBtn = document.getElementById('room-prev');
             var nextBtn = document.getElementById('room-next');
