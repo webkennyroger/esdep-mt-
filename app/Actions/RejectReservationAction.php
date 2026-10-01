@@ -24,6 +24,8 @@ class RejectReservationAction
 
         event(new ReservationRejected($reservation));
 
+        (new NotifyReservationStatusChangeAction)->execute($reservation);
+
         return $reservation;
     }
 }

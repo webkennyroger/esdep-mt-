@@ -24,7 +24,6 @@ class UserManager extends Component
      */
     public const ASSIGNABLE_ROLES = [
         '' => 'Sem perfil',
-        'gerenciador' => 'Gerenciador de setor',
         'admin' => 'Administrador',
         'super-admin' => 'Super administrador',
     ];

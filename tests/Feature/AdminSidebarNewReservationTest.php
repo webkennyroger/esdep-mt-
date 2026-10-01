@@ -3,20 +3,14 @@
 use App\Models\Contact;
 use App\Models\User;
 
-test('sidebar "Nova Reserva" opens the quick-create modal instead of navigating to the public form', function () {
+test('sidebar "Nova Reserva" links to the dedicated create-reservation page', function () {
     $admin = User::factory()->superAdmin()->create();
 
     $response = $this->actingAs($admin)->get(route('dashboard'));
 
     $response->assertOk()
-        // O botao dispara o mesmo evento de navegador usado pelo botao da pagina
-        // "Gerenciar Reservas"; nao deve mais ser um <a> para reservations.create.
-        ->assertSee("window.dispatchEvent(new CustomEvent('openReservationCreator'))", false)
-        ->assertDontSee('href="'.route('reservations.create').'"', false);
-
-    // O componente que escuta esse evento agora esta disponivel em qualquer
-    // pagina do layout admin, nao so em "Gerenciar Reservas".
-    $response->assertSeeLivewire('admin.reservation-editor');
+        ->assertSee('href="'.route('admin.reservations.create').'"', false)
+        ->assertDontSee("window.dispatchEvent(new CustomEvent('openReservationCreator'))", false);
 });
 
 test('contact dashboard "Nova reserva" still links to their own booking page', function () {

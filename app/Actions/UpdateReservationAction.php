@@ -3,11 +3,14 @@
 namespace App\Actions;
 
 use App\Events\ReservationUpdated;
+use App\Mail\ReservationUpdatedMail;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Services\ActivityLogger;
 use App\Services\ConflictCheckerService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class UpdateReservationAction
 {
@@ -37,6 +40,14 @@ class UpdateReservationAction
             ActivityLogger::reservationUpdated($reservation, $changes);
 
             event(new ReservationUpdated($reservation));
+
+            try {
+                $ownerEmails = $reservation->room?->ownerEmails() ?? [];
+
+                Mail::to($reservation->requester_email)->cc($ownerEmails)->send(new ReservationUpdatedMail($reservation));
+            } catch (\Throwable $exception) {
+                Log::error('Erro ao enviar notificação de atualização da reserva: '.$exception->getMessage());
+            }
         });
 
         return $reservation;

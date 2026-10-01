@@ -4,10 +4,13 @@ namespace App\Livewire\Contact;
 
 use App\Enums\ReservationStatus;
 use App\Models\Reservation;
+use App\Models\Room;
+use App\Services\IcsCalendarGenerator;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Layout('components.layouts.contact', ['title' => 'Agenda das Salas — ESDEP-MT'])]
 class ContactCalendar extends Component
@@ -21,6 +24,8 @@ class ContactCalendar extends Component
     public string $selectedDate = '';
 
     public array $dayReservations = [];
+
+    public ?int $roomId = null;
 
     protected $listeners = [
         'reservationCreated' => 'loadReservations',
@@ -44,7 +49,9 @@ class ContactCalendar extends Component
         $end = Carbon::create($this->currentYear, $this->currentMonth, 1)->endOfMonth()->toDateString();
         $rows = Reservation::with('room')->whereIn('room_id', $contact->managedRoomIds())
             ->whereDate('date', '>=', $start)->whereDate('date', '<=', $end)
-            ->where('status', ReservationStatus::AUTHORIZED)->get();
+            ->where('status', ReservationStatus::AUTHORIZED)
+            ->when($this->roomId, fn ($query) => $query->where('room_id', $this->roomId))
+            ->get();
         $this->reservations = [];
         foreach ($rows as $row) {
             $key = $row->date->format('Y-m-d');
@@ -55,8 +62,28 @@ class ContactCalendar extends Component
                 'end_time' => $row->formattedEndTime(), 'room_name' => $row->room->name,
                 'coffee_break' => (bool) $row->coffee_break, 'sonorizacao' => (bool) $row->sonorizacao,
                 'transmissao' => (bool) $row->transmissao,
+                'google_calendar_url' => app(IcsCalendarGenerator::class)->googleCalendarUrl($row),
             ];
         }
+    }
+
+    public function downloadIcs(int $reservationId): StreamedResponse
+    {
+        $contact = auth('contact')->user();
+        $reservation = Reservation::with('room')->whereIn('room_id', $contact->managedRoomIds())->findOrFail($reservationId);
+        $generator = app(IcsCalendarGenerator::class);
+
+        return response()->streamDownload(
+            fn () => print($generator->generate($reservation)),
+            $generator->getFilename($reservation),
+            ['Content-Type' => 'text/calendar']
+        );
+    }
+
+    public function updatedRoomId(): void
+    {
+        $this->clearSelection();
+        $this->loadReservations();
     }
 
     public function previousMonth(): void
@@ -119,6 +146,8 @@ class ContactCalendar extends Component
 
     public function render()
     {
-        return view('livewire.admin.admin-calendar');
+        return view('livewire.admin.admin-calendar', [
+            'rooms' => Room::whereIn('id', auth('contact')->user()->managedRoomIds())->orderBy('name')->get(),
+        ]);
     }
 }

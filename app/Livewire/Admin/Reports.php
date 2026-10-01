@@ -7,8 +7,8 @@ use App\Models\Reservation;
 use App\Models\Room;
 use App\Services\ReservationExportService;
 use Carbon\Carbon;
-use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -75,9 +75,38 @@ class Reports extends Component
             'rejected' => ['label' => 'Rejeitada', 'value' => $rejected, 'pct' => $total > 0 ? round(($rejected / $total) * 100, 1) : 0],
         ];
 
+        // Periodo anterior: mesma quantidade de dias, imediatamente antes do inicio do periodo atual.
+        $days = Carbon::parse($this->startDate)->diffInDays(Carbon::parse($this->endDate)) + 1;
+        $prevEnd = Carbon::parse($this->startDate)->subDay();
+        $prevStart = $prevEnd->copy()->subDays($days - 1);
+
+        $prevQuery = Reservation::accessibleTo(auth()->user())
+            ->whereDate('date', '>=', $prevStart->format('Y-m-d'))
+            ->whereDate('date', '<=', $prevEnd->format('Y-m-d'));
+
+        if ($this->roomId) {
+            $prevQuery->where('room_id', $this->roomId);
+        }
+
+        $prevTotal = (clone $prevQuery)->count();
+        $prevApproved = (clone $prevQuery)->where('status', ReservationStatus::AUTHORIZED)->count();
+        $prevRejected = (clone $prevQuery)->where('status', ReservationStatus::REJECTED)->count();
+        $prevTotalAttendees = (clone $prevQuery)->sum('attendees_count');
+
+        $pct = fn (int|float $current, int|float $previous): int => $previous > 0
+            ? (int) round((($current - $previous) / $previous) * 100)
+            : ($current > 0 ? 100 : 0);
+
+        $trends = [
+            'total' => $pct($total, $prevTotal),
+            'approved' => $pct($approved, $prevApproved),
+            'rejected' => $pct($rejected, $prevRejected),
+            'totalAttendees' => $pct($totalAttendees, $prevTotalAttendees),
+        ];
+
         return compact(
             'total', 'approved', 'rejected', 'pending',
-            'totalAttendees', 'byRoom', 'byService', 'occupancyRate', 'statusBreakdown'
+            'totalAttendees', 'byRoom', 'byService', 'occupancyRate', 'statusBreakdown', 'trends'
         );
     }
 
@@ -95,24 +124,30 @@ class Reports extends Component
         return $query->get();
     }
 
-    public function exportExcel(): Response
+    public function exportExcel(): StreamedResponse
     {
         $bytes = app(ReservationExportService::class)->toXlsx($this->reservationsForExport());
 
-        return response($bytes, 200, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="relatorio-reservas-'.$this->startDate.'-'.$this->endDate.'.xlsx"',
-        ]);
+        // O Livewire so intercepta o download (pra nao tentar colocar bytes
+        // binarios dentro do payload JSON da acao) quando o retorno e um
+        // StreamedResponse/BinaryFileResponse - um Response comum quebra com
+        // "Malformed UTF-8 characters".
+        return response()->streamDownload(
+            fn () => print($bytes),
+            'relatorio-reservas-'.$this->startDate.'-'.$this->endDate.'.xlsx',
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+        );
     }
 
-    public function exportPdf(): Response
+    public function exportPdf(): StreamedResponse
     {
         $bytes = app(ReservationExportService::class)->toPdf($this->reservationsForExport());
 
-        return response($bytes, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="relatorio-reservas-'.$this->startDate.'-'.$this->endDate.'.pdf"',
-        ]);
+        return response()->streamDownload(
+            fn () => print($bytes),
+            'relatorio-reservas-'.$this->startDate.'-'.$this->endDate.'.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
     }
 
     public function copyText(): string

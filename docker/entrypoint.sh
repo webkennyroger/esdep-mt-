@@ -12,7 +12,11 @@ if [ "${AUTO_MIGRATE:-false}" = "true" ]; then
     su-exec www-data php artisan migrate --force
 fi
 
-su-exec www-data php artisan config:cache
+if [ ! -e public/storage ]; then
+    su-exec www-data php artisan storage:link
+fi
+
+su-exec www-data php artisan config:clear
 su-exec www-data php artisan view:cache
 
 if [ "${1:-}" = "php-fpm" ]; then

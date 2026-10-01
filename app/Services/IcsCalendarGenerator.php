@@ -43,6 +43,27 @@ class IcsCalendarGenerator
         return "reserva-{$reservation->protocol}-{$safeName}.ics";
     }
 
+    /**
+     * Link de "adicionar evento" do Google Agenda, sem precisar de OAuth —
+     * so abre a tela de criacao de evento do Google ja preenchida.
+     */
+    public function googleCalendarUrl(Reservation $reservation): string
+    {
+        $dtStart = Carbon::parse($reservation->date)->setTimeFromTimeString($reservation->start_time);
+        $dtEnd = Carbon::parse($reservation->date)->setTimeFromTimeString($reservation->end_time);
+
+        $params = [
+            'action' => 'TEMPLATE',
+            'text' => $reservation->event_name,
+            'dates' => $dtStart->format('Ymd\THis').'/'.$dtEnd->format('Ymd\THis'),
+            'details' => str_replace('\\n', "\n", $this->buildDescription($reservation)),
+            'location' => $reservation->room->name ?? 'ESDEP-MT',
+            'ctz' => config('app.timezone'),
+        ];
+
+        return 'https://calendar.google.com/calendar/render?'.http_build_query($params);
+    }
+
     private function buildDescription(Reservation $reservation): string
     {
         $parts = [];

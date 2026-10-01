@@ -44,6 +44,8 @@ class ApproveReservationAction
 
         event(new ReservationApproved($reservation));
 
+        (new NotifyReservationStatusChangeAction)->execute($reservation);
+
         return $reservation;
     }
 }

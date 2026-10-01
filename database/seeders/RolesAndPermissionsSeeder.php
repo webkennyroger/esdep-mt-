@@ -22,10 +22,5 @@ class RolesAndPermissionsSeeder extends Seeder
         // "super-admin": tudo que "admin" tem, mais gestao de usuarios.
         Role::findOrCreate('super-admin', 'web')
             ->syncPermissions([$accessContacts, $accessReports, $accessActivityLog, $manageUsers]);
-
-        // "gerenciador": relatorios e historico, mas restritos ao proprio setor
-        // (o escopo vem do Contact vinculado, nao da permissao em si).
-        Role::findOrCreate('gerenciador', 'web')
-            ->syncPermissions([$accessReports, $accessActivityLog]);
     }
 }

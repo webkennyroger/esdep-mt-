@@ -34,8 +34,6 @@ class ContactManager extends Component
 
     public bool $showEditModal = false;
 
-    public bool $showViewModal = false;
-
     public bool $showDeleteContactModal = false;
 
     public int $deleteContactId = 0;
@@ -97,9 +95,6 @@ class ContactManager extends Component
 
     /** @deprecated Mantido apenas para compatibilidade com chamadas antigas. */
     public array $editResponsibleGroupIds = [];
-
-    // View contact
-    public ?Contact $viewContact = null;
 
     // Create Group fields
     public string $groupName = '';
@@ -283,26 +278,18 @@ class ContactManager extends Component
         $contact = Contact::findOrFail($this->editContactId);
 
         $this->validate([
-            'editName' => 'required|string|max:255',
-            'editEmail' => ['required', 'email', 'max:255', Rule::unique('contacts', 'email')->ignore($this->editContactId)],
-            'editPassword' => 'nullable|string|min:8',
             'editSetor' => ['nullable', 'string', Rule::exists('contact_groups', 'name')->whereNull('owner_contact_id')],
             'editTipo' => ['nullable', 'string', Rule::in($this->allowedCargos())],
         ]);
 
         $oldValues = $contact->toArray();
 
+        // Nome e e-mail nao sao editaveis por aqui - somente exibidos.
         $data = [
-            'name' => $this->editName,
-            'email' => strtolower(trim($this->editEmail)),
             'cpf' => $this->editCpf ?: null,
             'tipo' => $this->editTipo ?: null,
             'setor' => $this->editSetor ?: null,
         ];
-
-        if ($this->editPassword) {
-            $data['password'] = bcrypt($this->editPassword);
-        }
 
         $legacyGroupsChanged = $this->editSetor === '' && ($this->editGroupIds !== [] || $contact->groups->whereNull('owner_contact_id')->isNotEmpty());
         DB::transaction(function () use ($contact, $data, $legacyGroupsChanged): void {
@@ -357,18 +344,6 @@ class ContactManager extends Component
         $contact->groups()->syncWithoutDetaching($selected->mapWithKeys(fn ($id) => [
             $id => ['is_responsible' => in_array($id, $responsibleIds)],
         ])->all());
-    }
-
-    public function openViewModal(int $id): void
-    {
-        $this->viewContact = Contact::with('groups')->findOrFail($id);
-        $this->showViewModal = true;
-    }
-
-    public function closeViewModal(): void
-    {
-        $this->showViewModal = false;
-        $this->viewContact = null;
     }
 
     public function confirmDeleteContact(int $id): void

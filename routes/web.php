@@ -6,6 +6,7 @@ use App\Livewire\Admin\AdminCalendar;
 use App\Livewire\Admin\ContactManager;
 use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\Reports;
+use App\Livewire\Admin\ReservationEditor;
 use App\Livewire\Admin\ReservationManager;
 use App\Livewire\Admin\RoomManager;
 use App\Livewire\Admin\UserManager;
@@ -34,6 +35,7 @@ Route::get('dashboard', Dashboard::class)
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('reservations', ReservationManager::class)->name('reservations.index');
+        Route::get('reservations/create', ReservationEditor::class)->name('reservations.create');
         Route::get('calendar', AdminCalendar::class)->name('calendar');
         Route::get('rooms', RoomManager::class)->name('rooms.index');
         Route::get('contacts', ContactManager::class)->name('contacts.index');

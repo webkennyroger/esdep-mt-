@@ -293,17 +293,17 @@ test('announcing without selecting extra recipients only notifies the requester 
     Mail::assertSent(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo($reservation->requester_email) && $mail->hasCc('dono@example.com'));
 });
 
-test('status changes do not send email before the reservation is disclosed', function () {
+test('approving or rejecting notifies the requester right away, and announcing later does not duplicate it', function () {
     Mail::fake();
     $room = Room::factory()->create();
-    $reservation = managedReservation($room, 'Reserva sem notificação automática');
+    $reservation = managedReservation($room, 'Reserva com notificação automática');
     $admin = User::factory()->superAdmin()->create();
 
     Livewire::actingAs($admin)->test(ReservationManager::class)
         ->call('openApproveModal', $reservation->id, $reservation->event_name)
         ->call('confirmApprove');
 
-    Mail::assertNothingSent();
+    Mail::assertSent(ReservationApprovedMail::class, fn (ReservationApprovedMail $mail) => $mail->hasTo($reservation->requester_email));
 
     $reservation->refresh();
     $reservation->update(['status' => 'rejected']);
@@ -311,6 +311,10 @@ test('status changes do not send email before the reservation is disclosed', fun
         ->call('openAnnounceModal', $reservation->id, $reservation->event_name)
         ->call('sendAnnouncement');
 
+    // O status mudou de "authorized" para "rejected" fora da Action (direto no
+    // model), entao a notificacao automatica de rejeicao so dispara aqui, no
+    // fluxo de "Divulgar Evento" - que reaproveita a mesma Action e por isso
+    // nao duplica o aviso de aprovacao ja enviado antes.
     Mail::assertSent(ReservationRejectedMail::class, fn (ReservationRejectedMail $mail) => $mail->hasTo($reservation->requester_email));
 });
 

@@ -45,13 +45,10 @@ test('as migrations criam os papeis canonicos sem depender de seeder', function 
     // banco recem-migrado precisa ja vir com a estrutura pronta.
     expect(Role::where('name', 'admin')->exists())->toBeTrue()
         ->and(Role::where('name', 'super-admin')->exists())->toBeTrue()
-        ->and(Role::where('name', 'gerenciador')->exists())->toBeTrue()
         ->and(Role::findByName('admin', 'web')->permissions->pluck('name')->sort()->values()->all())
         ->toBe(['access-activity-log', 'access-contacts', 'access-reports'])
         ->and(Role::findByName('super-admin', 'web')->permissions->pluck('name')->sort()->values()->all())
-        ->toBe(['access-activity-log', 'access-contacts', 'access-reports', 'manage-users'])
-        ->and(Role::findByName('gerenciador', 'web')->permissions->pluck('name')->sort()->values()->all())
-        ->toBe(['access-activity-log', 'access-reports']);
+        ->toBe(['access-activity-log', 'access-contacts', 'access-reports', 'manage-users']);
 });
 
 test('admin role can manage rooms, reservations, contacts, reports and activity log but not users', function () {
@@ -63,18 +60,6 @@ test('admin role can manage rooms, reservations, contacts, reports and activity 
     $this->actingAs($admin)->get(route('admin.reports'))->assertOk();
     $this->actingAs($admin)->get(route('admin.activity'))->assertOk();
     $this->actingAs($admin)->get(route('admin.users.index'))->assertForbidden();
-});
-
-test('gerenciador so acessa reservas, relatorios e historico — nunca salas, contatos ou usuarios', function () {
-    $gerenciador = User::factory()->create();
-    $gerenciador->assignRole('gerenciador');
-
-    $this->actingAs($gerenciador)->get(route('admin.reservations.index'))->assertOk();
-    $this->actingAs($gerenciador)->get(route('admin.reports'))->assertOk();
-    $this->actingAs($gerenciador)->get(route('admin.activity'))->assertOk();
-    $this->actingAs($gerenciador)->get(route('admin.rooms.index'))->assertForbidden();
-    $this->actingAs($gerenciador)->get(route('admin.contacts.index'))->assertForbidden();
-    $this->actingAs($gerenciador)->get(route('admin.users.index'))->assertForbidden();
 });
 
 test('super-admin can access every admin area including contacts, reports and activity log', function () {
@@ -92,9 +77,9 @@ test('roles and permissions seeder creates the expected structure', function () 
 
     expect(Role::where('name', 'admin')->exists())->toBeTrue()
         ->and(Role::where('name', 'super-admin')->exists())->toBeTrue()
-        ->and(Role::where('name', 'gerenciador')->exists())->toBeTrue()
         ->and(Role::findByName('admin', 'web')->permissions->pluck('name')->sort()->values()->all())
         ->toBe(['access-activity-log', 'access-contacts', 'access-reports'])
         ->and(Role::findByName('super-admin', 'web')->permissions->pluck('name')->sort()->values()->all())
         ->toBe(['access-activity-log', 'access-contacts', 'access-reports', 'manage-users']);
 });
+

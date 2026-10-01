@@ -4,10 +4,13 @@ namespace App\Livewire\Admin;
 
 use App\Enums\ReservationStatus;
 use App\Models\Reservation;
+use App\Models\Room;
+use App\Services\IcsCalendarGenerator;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Layout('components.layouts.app')]
 class AdminCalendar extends Component
@@ -21,6 +24,8 @@ class AdminCalendar extends Component
     public string $selectedDate = '';
 
     public array $dayReservations = [];
+
+    public ?int $roomId = null;
 
     protected $listeners = [
         'reservationCreated' => 'loadReservations',
@@ -46,6 +51,7 @@ class AdminCalendar extends Component
             ->whereDate('date', '>=', $start)
             ->whereDate('date', '<=', $end)
             ->where('status', ReservationStatus::AUTHORIZED)
+            ->when($this->roomId, fn ($query) => $query->where('room_id', $this->roomId))
             ->get();
 
         $this->reservations = [];
@@ -64,8 +70,28 @@ class AdminCalendar extends Component
                 'coffee_break' => (bool) $row->coffee_break,
                 'sonorizacao' => (bool) $row->sonorizacao,
                 'transmissao' => (bool) $row->transmissao,
+                'google_calendar_url' => app(IcsCalendarGenerator::class)->googleCalendarUrl($row),
             ];
         }
+    }
+
+    public function downloadIcs(int $reservationId): StreamedResponse
+    {
+        $reservation = Reservation::accessibleTo(auth()->user())->with('room')->findOrFail($reservationId);
+        $generator = app(IcsCalendarGenerator::class);
+
+        return response()->streamDownload(
+            fn () => print($generator->generate($reservation)),
+            $generator->getFilename($reservation),
+            ['Content-Type' => 'text/calendar']
+        );
+    }
+
+    public function updatedRoomId(): void
+    {
+        $this->selectedDate = '';
+        $this->dayReservations = [];
+        $this->loadReservations();
     }
 
     public function previousMonth(): void
@@ -140,6 +166,8 @@ class AdminCalendar extends Component
 
     public function render()
     {
-        return view('livewire.admin.admin-calendar');
+        return view('livewire.admin.admin-calendar', [
+            'rooms' => Room::accessibleTo(auth()->user())->orderBy('name')->get(),
+        ]);
     }
 }

@@ -36,15 +36,6 @@
                 </svg>
             </button>
 
-            <!-- SETA DIREITA -->
-            <button type="button" id="room-next"
-                class="absolute right-2 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 ring-1 ring-white/10 hover:bg-white/5 transition dark:bg-white/10"
-                title="Próximo">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#4fd1a5]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-            </button>
-
             <!-- CAROUSEL -->
             <div class="relative w-full h-125 flex items-center justify-center overflow-visible">
                 <div id="rooms-carousel" class="flex transition-transform duration-500 ease-out absolute top-0 right-0 bottom-0 left-0 items-center justify-center" style="transform-style: preserve-3d;">
@@ -75,6 +66,15 @@
 
                 </div>
             </div>
+
+            <!-- SETA DIREITA -->
+            <button type="button" id="room-next"
+                class="absolute right-2 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 ring-1 ring-white/10 hover:bg-white/5 transition dark:bg-white/10"
+                title="Próximo">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#4fd1a5]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
         </div>
     </div>
 

@@ -13,12 +13,16 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
+#[Layout('components.layouts.app')]
 class ReservationEditor extends Component
 {
     use AuthorizesRequests, WithFileUploads;
+
+    public bool $isPageMode = false;
 
     public bool $showModal = false;
 
@@ -102,6 +106,14 @@ class ReservationEditor extends Component
         'openReservationEditor' => 'open',
         'openReservationCreator' => 'openCreate',
     ];
+
+    public function mount(): void
+    {
+        if (request()->routeIs('admin.reservations.create')) {
+            $this->isPageMode = true;
+            $this->openCreate();
+        }
+    }
 
     public function updatedDate(): void
     {
@@ -298,8 +310,15 @@ class ReservationEditor extends Component
                 ...$this->resolveAttachmentData(),
             ], notify: false);
 
-            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva criada com sucesso.' } }))");
             $this->dispatch('reservationCreated');
+
+            if ($this->isPageMode) {
+                $this->redirect(route('admin.reservations.index'));
+
+                return;
+            }
+
+            $this->js("window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Reserva criada com sucesso.' } }))");
             $this->close();
         } catch (\Exception $e) {
             $safeMsg = addslashes(strip_tags($e->getMessage()));

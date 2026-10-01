@@ -396,8 +396,16 @@ class ReservationManager extends Component
 
     public function render()
     {
+        $countsQuery = Reservation::accessibleTo(auth()->user());
+
         return view('livewire.admin.reservation-manager', [
             'reservations' => $this->baseQuery()->paginate(10),
+            'filterCounts' => [
+                'all' => (clone $countsQuery)->count(),
+                'pending' => (clone $countsQuery)->where('status', ReservationStatus::PENDING)->count(),
+                'authorized' => (clone $countsQuery)->where('status', ReservationStatus::AUTHORIZED)->count(),
+                'rejected' => (clone $countsQuery)->where('status', ReservationStatus::REJECTED)->count(),
+            ],
         ]);
     }
 }

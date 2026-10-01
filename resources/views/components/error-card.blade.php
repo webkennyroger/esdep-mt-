@@ -31,8 +31,15 @@
         </p>
 
         @if($action)
+            @php
+                $homeUrl = match (true) {
+                    auth()->check() => route('dashboard'),
+                    auth('contact')->check() => route('contact.dashboard'),
+                    default => route('home'),
+                };
+            @endphp
             <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <a href="{{ route('home') }}"
+                <a href="{{ $homeUrl }}"
                     class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#006b48] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#00553a] dark:bg-[#008b5c] dark:hover:bg-[#006e49]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2v4l2 2m4-8h8M5 12l2-2v4l2 2" />

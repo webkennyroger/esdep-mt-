@@ -10,8 +10,14 @@ services:
       APP_DEBUG: "false"
       AUTO_MIGRATE: "true"
     volumes:
-      - esdep_database:/var/www/html/database
       - esdep_storage:/var/www/html/storage
+      - ./app:/var/www/html/app
+      - ./resources:/var/www/html/resources
+      - ./routes:/var/www/html/routes
+      - ./config:/var/www/html/config
+      - ./database/migrations:/var/www/html/database/migrations
+      - ./database/seeders:/var/www/html/database/seeders
+      - ./public/build:/var/www/html/public/build
     healthcheck:
       test: ["CMD-SHELL", "php-fpm -t || exit 1"]
       interval: 30s
@@ -30,8 +36,13 @@ services:
       AUTO_MIGRATE: "false"
     command: ["php", "artisan", "schedule:work"]
     volumes:
-      - esdep_database:/var/www/html/database
       - esdep_storage:/var/www/html/storage
+      - ./app:/var/www/html/app
+      - ./resources:/var/www/html/resources
+      - ./routes:/var/www/html/routes
+      - ./config:/var/www/html/config
+      - ./database/migrations:/var/www/html/database/migrations
+      - ./database/seeders:/var/www/html/database/seeders
     depends_on:
       app:
         condition: service_healthy
@@ -55,6 +66,12 @@ services:
       - --timeout=120
     volumes:
       - esdep_storage:/var/www/html/storage
+      - ./app:/var/www/html/app
+      - ./resources:/var/www/html/resources
+      - ./routes:/var/www/html/routes
+      - ./config:/var/www/html/config
+      - ./database/migrations:/var/www/html/database/migrations
+      - ./database/seeders:/var/www/html/database/seeders
     depends_on:
       app:
         condition: service_healthy
@@ -72,9 +89,24 @@ services:
         condition: service_healthy
     volumes:
       - esdep_storage:/var/www/html/storage:ro
+      - ./public/build:/var/www/html/public/build
+
+  vite:
+    build:
+      context: .
+      target: frontend
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "1000"
+    command: ["npm", "run", "build", "--", "--watch"]
+    volumes:
+      - ./resources:/app/resources
+      - ./public/build:/app/public/build
+      - ./vite.config.js:/app/vite.config.js
 
 volumes:
-  esdep_database:
   esdep_storage:
 
 networks:

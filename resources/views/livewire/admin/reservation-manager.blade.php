@@ -1,26 +1,29 @@
 <div x-data="{ imagePreviewUrl: null, imagePreviewName: '' }" @keydown.escape.window="imagePreviewUrl = null">
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-[#e6f2ec]">Gerenciar Reservas</h1>
-            <p class="mt-1 text-sm text-slate-500 dark:text-[#8aa39a]">Aprove, rejeite ou gerencie as solicitações de reserva.</p>
+    <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-3">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-700 text-white dark:bg-[#00a477]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-[#e6f2ec]">Eventos / Reservas</h1>
+                <p class="mt-0.5 text-sm text-slate-500 dark:text-[#8aa39a]">Gerencie todos os eventos, salas e reservas do sistema.</p>
+            </div>
         </div>
 
-    </div>
-
-    {{-- Filtros --}}
-    <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
-        <div class="flex flex-wrap items-end gap-4">
-            <div class="flex-1 min-w-50">
-                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Buscar</label>
+        <div class="flex flex-wrap items-center gap-3 lg:flex-1 lg:justify-end">
+            <div class="relative w-full sm:w-64 lg:max-w-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-[#5a7068]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+                </svg>
                 <input type="text" wire:model.live.debounce.400ms="search" placeholder="Procure por evento, sala ou solicitante..."
-                    class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d]">
+                    class="w-full rounded-full border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d]">
             </div>
 
-
-        <div class="flex flex-wrap items-center gap-3">
-            <div class="relative" x-data="{ open: false }" @click.away="open = false">
+            <div class="relative shrink-0" x-data="{ open: false }" @click.away="open = false">
                 <button type="button" @click="open = !open"
-                    class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:hover:bg-[#16352a]">
+                    class="inline-flex h-10 items-center gap-1.5 rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:hover:bg-[#16352a]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
                     </svg>
@@ -59,33 +62,31 @@
             </div>
 
             @unless(auth('contact')->check())
-                <button type="button" wire:click="$dispatch('openReservationCreator')"
-                    class="inline-flex h-10 items-center gap-1.5 rounded-xl bg-green-700 px-4 text-sm font-semibold text-white shadow-sm hover:bg-green-800 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
+                <a href="{{ route('admin.reservations.create') }}" wire:navigate
+                    class="inline-flex h-10 items-center gap-1.5 rounded-full bg-green-700 px-4 text-sm font-semibold text-white shadow-sm hover:bg-green-800 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
                     Nova Reserva
-                </button>
+                </a>
             @endunless
         </div>
+    </div>
 
-
-
-
-        </div>
-
-        {{-- Filtros de Status --}}
-        <div class="mt-4 flex flex-wrap gap-2">
-            @php
-                $filters = ['all' => 'Todas', 'pending' => 'Pendentes', 'authorized' => 'Autorizadas', 'rejected' => 'Rejeitadas'];
-            @endphp
-            @foreach($filters as $key => $label)
-                <button type="button" wire:click="setFilter('{{ $key }}')"
-                    class="rounded-lg px-3 py-1.5 text-sm font-medium {{ $activeFilter === $key ? 'bg-green-100 text-green-700 dark:bg-[#16352a] dark:text-[#4fd1a5]' : 'text-slate-600 hover:bg-slate-100 dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#e6f2ec]' }}">
-                    {{ $label }}
-                </button>
-            @endforeach
-        </div>
+    {{-- Filtros de Status --}}
+    <div class="mb-6 flex flex-wrap gap-2">
+        @php
+            $filters = ['all' => 'Todas', 'pending' => 'Pendentes', 'authorized' => 'Autorizadas', 'rejected' => 'Rejeitadas'];
+        @endphp
+        @foreach($filters as $key => $label)
+            <button type="button" wire:click="setFilter('{{ $key }}')"
+                class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors {{ $activeFilter === $key ? 'bg-green-700 text-white shadow-sm dark:bg-[#00a477]' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-[#16352a] dark:bg-[#0c221a] dark:text-[#8aa39a] dark:hover:bg-[#16352a]' }}">
+                {{ $label }}
+                <span class="inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-bold {{ $activeFilter === $key ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 dark:bg-[#16352a] dark:text-[#8aa39a]' }}">
+                    {{ $filterCounts[$key] ?? 0 }}
+                </span>
+            </button>
+        @endforeach
     </div>
 
     <div class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-[#16352a] dark:bg-[#0c221a]">
@@ -96,21 +97,37 @@
         @else
             <div class="overflow-x-auto">
                 <table class="min-w-full">
-                    <thead>
+                    <thead class="bg-slate-50 dark:bg-[#0a1a14]">
                         <tr class="border-b border-slate-200 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:border-[#16352a] dark:text-[#8aa39a]">
                             <th class="w-10 px-6 py-3">
                                 <input type="checkbox" wire:model.live="selectAll"
                                     class="rounded border-slate-300 text-green-600 focus:ring-green-600 dark:border-[#2c4a3e] dark:bg-[#081712]">
                             </th>
                             <th class="px-6 py-3"></th>
-                            <th class="px-6 py-3">Anexo</th>
-                            <th class="px-6 py-3">Evento</th>
-                            <th class="px-6 py-3">Sala</th>
-                            <th class="px-6 py-3">Data e Horário</th>
-                            <th class="px-6 py-3">Solicitante</th>
-                            <th class="px-6 py-3">Serviços</th>
-                            <th class="px-6 py-3">Status</th>
-                            <th class="px-6 py-3 text-center">Ações</th>
+                            <th class="px-6 py-3">
+                                <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.415-6.585a4 4 0 10-5.657-5.657l-6.415 6.585a6 6 0 108.485 8.485L20.5 13" /></svg>Anexo</span>
+                            </th>
+                            <th class="px-6 py-3">
+                                <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>Evento</span>
+                            </th>
+                            <th class="px-6 py-3">
+                                <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>Sala</span>
+                            </th>
+                            <th class="px-6 py-3">
+                                <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>Data e Horário</span>
+                            </th>
+                            <th class="px-6 py-3">
+                                <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>Solicitante</span>
+                            </th>
+                            <th class="px-6 py-3">
+                                <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>Serviços</span>
+                            </th>
+                            <th class="px-6 py-3">
+                                <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Status</span>
+                            </th>
+                            <th class="px-6 py-3 text-center">
+                                <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>Ações</span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-[#16352a]" x-data="dragDrop($wire, 'reorderReservations')">
@@ -167,16 +184,23 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-600 dark:text-[#8aa39a]">{{ $reservation->room?->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm {{ $isRejected ? 'line-through' : '' }}">
-                                    @php
-                                        $rowDate = \Carbon\Carbon::parse($reservation->date)->locale('pt_BR');
-                                    @endphp
-                                    <span class="font-medium text-slate-900 dark:text-[#e6f2ec]">{{ $rowDate->format('d') }} {{ \Illuminate\Support\Str::ucfirst($rowDate->translatedFormat('M')) }} {{ $rowDate->format('Y') }}</span>
-                                    <span class="text-slate-400 dark:text-[#5a7068]">·</span>
-                                    <span class="text-slate-500 dark:text-[#8aa39a]">{{ $startTime }} - {{ $endTime }}</span>
+                                    <div class="flex flex-col gap-0.5">
+                                        @php
+                                            $rowDate = \Carbon\Carbon::parse($reservation->date)->locale('pt_BR');
+                                        @endphp
+                                        <span class="inline-flex items-center gap-1.5 whitespace-nowrap font-medium text-slate-900 dark:text-[#e6f2ec]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-[#5a7068]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                            {{ $rowDate->format('d') }} {{ \Illuminate\Support\Str::ucfirst($rowDate->translatedFormat('M')) }} {{ $rowDate->format('Y') }}
+                                        </span>
+                                        <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-slate-500 dark:text-[#8aa39a]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-[#5a7068]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            {{ $startTime }} - {{ $endTime }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-600 dark:text-[#8aa39a]">{{ $reservation->requester_name }}</td>
                                 <td class="px-6 py-4">
-                                    <div class="flex max-w-44 flex-wrap gap-1">
+                                    <div class="grid grid-cols-2 gap-1">
                                         @if($reservation->coffee_break)
                                             <span class="inline-flex items-center whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">Coffee Break</span>
                                         @endif
@@ -203,8 +227,15 @@
                                             \App\Enums\ReservationStatus::REJECTED => 'bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400',
                                             default => 'bg-slate-100 text-slate-600 dark:bg-[#16352a] dark:text-[#8aa39a]',
                                         };
+                                        $dotColor = match($status) {
+                                            \App\Enums\ReservationStatus::PENDING => 'bg-amber-500',
+                                            \App\Enums\ReservationStatus::AUTHORIZED => 'bg-emerald-500',
+                                            \App\Enums\ReservationStatus::REJECTED => 'bg-red-500',
+                                            default => 'bg-slate-400',
+                                        };
                                     @endphp
-                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {{ $sc }}">
+                                    <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $sc }}">
+                                        <span class="h-1.5 w-1.5 shrink-0 rounded-full {{ $dotColor }}"></span>
                                         {{ $status->label() }}
                                     </span>
                                 </td>
@@ -372,28 +403,28 @@
                     {{-- Servicos --}}
                     <div class="mt-5">
                         <h4 class="mb-2.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#5a7068]">Serviços Solicitados</h4>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="grid grid-cols-2 gap-2">
                             @if($detailReservation->coffee_break)
-                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-100 px-3 py-2 text-sm font-medium text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 1v3M10 1v3M14 1v3" /></svg>
+                                <span class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-100 px-3 py-2 text-sm font-medium text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 1v3M10 1v3M14 1v3" /></svg>
                                     Coffee Break
                                 </span>
                             @endif
                             @if($detailReservation->sonorizacao)
-                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-blue-100 px-3 py-2 text-sm font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+                                <span class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-100 px-3 py-2 text-sm font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
                                     Sonorização
                                 </span>
                             @endif
                             @if($detailReservation->transmissao)
-                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 dark:bg-purple-950/50 dark:text-purple-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                <span class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 dark:bg-purple-950/50 dark:text-purple-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                                     Transmissão
                                 </span>
                             @endif
                             @if($detailReservation->projetor)
-                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-cyan-100 px-3 py-2 text-sm font-medium text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                <span class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-cyan-100 px-3 py-2 text-sm font-medium text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                                     Projetor
                                 </span>
                             @endif
