@@ -1,0 +1,23 @@
+stages:
+  - build
+
+variables:
+  AWS_REGION: sa-east-1
+  ECR_REGISTRY: 561291098716.dkr.ecr.sa-east-1.amazonaws.com
+  APP_IMAGE: $ECR_REGISTRY/appsexternos/agoradp-app
+  WEB_IMAGE: $ECR_REGISTRY/appsexternos/agoradp-web
+
+build_and_push:
+  stage: build
+  tags:
+    - appsexternos
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+    - docker build --target app -t "$APP_IMAGE:$CI_COMMIT_SHORT_SHA" .
+    - docker build --target web -t "$WEB_IMAGE:$CI_COMMIT_SHORT_SHA" .
+    - docker push "$APP_IMAGE:$CI_COMMIT_SHORT_SHA"
+    - docker push "$WEB_IMAGE:$CI_COMMIT_SHORT_SHA"
+  after_script:
+    - docker logout "$ECR_REGISTRY" || true
