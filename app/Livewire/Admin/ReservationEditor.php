@@ -44,6 +44,8 @@ class ReservationEditor extends Component
 
     public string $requesterEmail = '';
 
+    public string $requesterSector = '';
+
     public int $attendeesCount = 1;
 
     public bool $coffeeBreak = false;
@@ -75,6 +77,7 @@ class ReservationEditor extends Component
             'endTime' => 'required|after:startTime',
             'requesterName' => 'required|string|max:255',
             'requesterEmail' => 'required|email|max:255',
+            'requesterSector' => 'required|string|max:255',
             'attendeesCount' => 'required|integer|min:1',
             'coffeeBreak' => 'boolean',
             'sonorizacao' => 'boolean',
@@ -96,6 +99,7 @@ class ReservationEditor extends Component
         'requesterName.required' => 'O nome do solicitante é obrigatório.',
         'requesterEmail.required' => 'O e-mail é obrigatório.',
         'requesterEmail.email' => 'Insira um e-mail válido.',
+        'requesterSector.required' => 'O setor/núcleo do solicitante é obrigatório.',
         'attendeesCount.required' => 'O número de participantes é obrigatório.',
         'attendeesCount.min' => 'Deve haver pelo menos 1 participante.',
         'attachment.max' => 'O arquivo deve ter no máximo 5MB.',
@@ -192,6 +196,7 @@ class ReservationEditor extends Component
         $this->endTime = Carbon::parse($reservation->end_time)->format('H:i');
         $this->requesterName = $reservation->requester_name;
         $this->requesterEmail = $reservation->requester_email;
+        $this->requesterSector = $reservation->requester_sector ?? '';
         $this->attendeesCount = $reservation->attendees_count;
         $this->coffeeBreak = (bool) $reservation->coffee_break;
         $this->sonorizacao = (bool) $reservation->sonorizacao;
@@ -220,6 +225,7 @@ class ReservationEditor extends Component
         $this->endTime = '';
         $this->requesterName = '';
         $this->requesterEmail = '';
+        $this->requesterSector = '';
         $this->attendeesCount = 1;
         $this->coffeeBreak = false;
         $this->sonorizacao = false;
@@ -270,6 +276,7 @@ class ReservationEditor extends Component
                 'end_time' => $this->endTime,
                 'requester_name' => $this->requesterName,
                 'requester_email' => $this->requesterEmail,
+                'requester_sector' => $this->requesterSector,
                 'attendees_count' => $this->attendeesCount,
                 'coffee_break' => $this->coffeeBreak,
                 'sonorizacao' => $this->sonorizacao,
@@ -301,6 +308,7 @@ class ReservationEditor extends Component
                 'end_time' => $this->endTime,
                 'requester_name' => $this->requesterName,
                 'requester_email' => $this->requesterEmail,
+                'requester_sector' => $this->requesterSector,
                 'attendees_count' => $this->attendeesCount,
                 'coffee_break' => $this->coffeeBreak,
                 'sonorizacao' => $this->sonorizacao,

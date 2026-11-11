@@ -30,6 +30,13 @@
             </label>
 
             <label class="block">
+                <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Setor / Núcleo</span>
+                <input wire:model="requesterSector" required type="text" placeholder="Ex.: Núcleo Cível, 2ª DPE..."
+                    class="h-11.5 w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
+                @error('requesterSector') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </label>
+
+            <label class="block">
                 <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Sala</span>
                 <select wire:model="roomId" required
                     class="h-11.5 w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5]">

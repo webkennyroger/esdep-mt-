@@ -18,31 +18,51 @@
     <form wire:submit="submit" class="space-y-6">
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
             <label class="block">
-                <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do responsável</span>
+                <span class="mb-2 block text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do responsável</span>
                 <input wire:model="requesterName" required placeholder="Ex.: Ana Martins"
-                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
+                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[15px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
                     @error('requesterName') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </label>
 
             <label class="block">
-                <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do evento</span>
+                <span class="mb-2 block text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Nome do evento</span>
                 <input wire:model="eventName" required placeholder="Ex.: Encontro de lideranças"
-                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
+                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[15px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
                     @error('eventName') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </label>
         </div>
 
-        <label class="block">
-            <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">E-mail do solicitante</span>
-            <input wire:model="requesterEmail" required type="email" placeholder="nome@instituicao.gov.br"
-                class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
-                @error('requesterEmail') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-        </label>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
+            <label class="block">
+                <span class="mb-2 block text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">E-mail do solicitante</span>
+                <input wire:model="requesterEmail" required type="email" placeholder="nome@instituicao.gov.br"
+                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[15px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
+                    @error('requesterEmail') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </label>
+
+            <label class="block">
+                <span class="mb-2 block text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Setor / Núcleo</span>
+                <input wire:model="requesterSector" required type="text" placeholder="Ex.: Núcleo Cível, 2ª DPE..."
+                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent px-0 text-[15px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
+                    @error('requesterSector') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </label>
+        </div>
 
         {{-- Sala Slider --}}
         <fieldset>
-            <legend class="mb-4 text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Escolha a sala</legend>
+            <legend class="mb-4 text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Escolha a sala</legend>
 
+            @if($rooms->isEmpty())
+                <div class="flex items-center gap-3 rounded-xl border border-dashed border-amber-300 bg-amber-50 p-4 text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                    <div>
+                        <p class="text-[14px] font-semibold">Nenhuma sala disponível</p>
+                        <p class="text-[13px]">Não há salas disponíveis para reserva no momento. Tente novamente mais tarde.</p>
+                    </div>
+                </div>
+            @else
             <div class="relative">
                 <button type="button" @click="prev"
                     class="absolute -left-4 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[#d2ded9] bg-white text-[#003f32] shadow-sm transition hover:bg-[#eef7f2] hover:border-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:text-[#e6f2ec] dark:hover:bg-[#16352a] dark:hover:border-[#00a477]">
@@ -62,15 +82,19 @@
                             @endif
                                         <label class="flex items-center gap-3 rounded-xl border border-[#d2ded9] bg-white p-4 cursor-pointer transition-all duration-200 has-[:checked]:border-[#008b5c] has-[:checked]:bg-[#eef7f2] has-[:checked]:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:has-[:checked]:border-[#00a477] dark:has-[:checked]:bg-[#0c221a]">
                                             <input wire:model.live="roomId" value="{{ $room->id }}" type="radio" name="room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
-                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" data-color="{{ $room->theme_color }}" style="background-color: color-mix(in srgb, var(--swatch, {{ $room->theme_color }}) 20%, transparent);">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" data-color="{{ $room->theme_color }}" style="color: var(--swatch, {{ $room->theme_color }});" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                                </svg>
-                                            </div>
+                                            @if($room->image_path)
+                                                <img src="{{ $room->imageUrl() }}" class="h-10 w-10 shrink-0 rounded-lg object-cover">
+                                            @else
+                                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#008b5c]/20">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#008b5c]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                    </svg>
+                                                </div>
+                                            @endif
                                             <span class="flex flex-1 flex-col">
-                                                <strong class="text-[13px] text-[#003f32] dark:text-[#e6f2ec]">{{ $room->name }}</strong>
-                                                <small class="mt-0.5 text-[11px] text-[#70847d] dark:text-[#8aa39a]">{{ $room->description }}</small>
-                                                <small class="text-[10px] text-[#008b5c] dark:text-[#4fd1a5]">{{ $room->capacity }} pessoas</small>
+                                                <strong class="text-[15px] text-[#003f32] dark:text-[#e6f2ec]">{{ $room->name }}</strong>
+                                                <small class="mt-0.5 text-[13px] text-[#70847d] dark:text-[#8aa39a]">{{ $room->description }}</small>
+                                                <small class="text-[12px] text-[#008b5c] dark:text-[#4fd1a5]">{{ $room->capacity }} pessoas</small>
                                             </span>
                                         </label>
                             @if($index % 3 === 2 || $loop->last)
@@ -87,44 +111,45 @@
                     <button type="button" @click="roomStep = {{ $i }}" class="h-2 w-2 rounded-full transition-all" :class="roomStep === {{ $i }} ? 'bg-[#008b5c] w-6' : 'bg-[#d2ded9] dark:bg-[#2c4a3e]'"></button>
                 @endforeach
             </div>
+            @endif
         </fieldset>
 
         {{-- Data, Horarios, Publico --}}
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-4 sm:gap-4">
             <label>
-                <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Data do evento</span>
+                <span class="mb-2 block text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Data do evento</span>
                 <input wire:model.live="date" type="date"
-                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:[color-scheme:dark]">
+                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent text-[15px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:[color-scheme:dark]">
                 @error('date') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </label>
 
             <label>
-                <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horário de início</span>
+                <span class="mb-2 block text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horário de início</span>
                 <input wire:model.live="startTime" type="time"
-                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:[color-scheme:dark]">
+                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent text-[15px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:[color-scheme:dark]">
                 @error('startTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </label>
 
             <label>
-                <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horário de término</span>
+                <span class="mb-2 block text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Horário de término</span>
                 <input wire:model.live="endTime" type="time"
-                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:[color-scheme:dark]">
+                    class="h-[46px] w-full border-b border-[#b8c9c2] bg-transparent text-[15px] text-[#003f32] outline-none focus:border-[#008b5c] dark:border-[#2c4a3e] dark:text-[#e6f2ec] dark:focus:border-[#4fd1a5] dark:[color-scheme:dark]">
                 @error('endTime') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </label>
 
             <label>
-                <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Previsão de público</span>
+                <span class="mb-2 block text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Previsão de público</span>
                 <span class="flex h-[46px] items-center border-b border-[#b8c9c2] dark:border-[#2c4a3e]">
                     <input wire:model.live="attendeesCount" type="number" min="1"
                         @if($roomId) max="{{ $rooms->firstWhere('id', $roomId)?->capacity ?? 999 }}" @endif
                         value="1"
                         class="h-full w-[70px] bg-transparent text-[15px] text-[#003f32] outline-none dark:text-[#e6f2ec]">
-                    <small class="pr-2 text-[11px] text-[#70847d] dark:text-[#8aa39a]">pessoas</small>
+                    <small class="pr-2 text-[13px] text-[#70847d] dark:text-[#8aa39a]">pessoas</small>
                 </span>
                 @if($roomId)
                     @php $selectedRoom = $rooms->firstWhere('id', $roomId); @endphp
                     @if($selectedRoom)
-                        <small class="mt-1 block text-[10px] text-[#70847d] dark:text-[#8aa39a]">Capacidade máxima: {{ $selectedRoom->capacity }} pessoas</small>
+                        <small class="mt-1 block text-[12px] text-[#70847d] dark:text-[#8aa39a]">Capacidade máxima: {{ $selectedRoom->capacity }} pessoas</small>
                     @endif
                 @endif
                 @error('attendeesCount') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
@@ -144,20 +169,20 @@
         @endif
 
         <label class="block">
-            <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Descrição do evento</span>
+            <span class="mb-2 block text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Descrição do evento</span>
             <textarea wire:model="description" rows="3" placeholder="Descrição do evento (opcional)"
-                class="w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 py-2.5 text-[13px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#5a7068] dark:focus:border-[#4fd1a5]"></textarea>
+                class="w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 py-2.5 text-[15px] text-[#003f32] outline-none focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#5a7068] dark:focus:border-[#4fd1a5]"></textarea>
         </label>
 
         <div class="block">
-            <span class="mb-2 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Anexo (opcional)</span>
-            <span class="mb-2 block text-[11px] text-[#70847d] dark:text-[#8aa39a]">Ofício de solicitação ou cronograma do evento (PDF, PNG, JPG - máx 5MB)</span>
+            <span class="mb-2 block text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Anexo (opcional)</span>
+            <span class="mb-2 block text-[13px] text-[#70847d] dark:text-[#8aa39a]">Ofício de solicitação ou cronograma do evento (PDF, PNG, JPG - máx 5MB)</span>
             <div class="flex items-center gap-3">
                 <label class="flex h-[46px] cursor-pointer items-center gap-2 rounded-lg border border-[#b8c9c2] bg-transparent px-3 transition-colors hover:border-[#008b5c] dark:border-[#2c4a3e] dark:hover:border-[#4fd1a5]">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#70847d] dark:text-[#8aa39a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
-                    <span class="text-[13px] text-[#003f32] dark:text-[#e6f2ec]">{{ $attachmentName ?: 'Selecionar arquivo' }}</span>
+                    <span class="text-[15px] text-[#003f32] dark:text-[#e6f2ec]">{{ $attachmentName ?: 'Selecionar arquivo' }}</span>
                     <input type="file" wire:model="attachment" accept=".pdf,.png,.jpg,.jpeg" class="hidden">
                 </label>
                 @if($attachment)
@@ -172,39 +197,39 @@
         </div>
 
         <fieldset>
-            <legend class="mb-5 text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">
+            <legend class="mb-5 text-[14px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">
                 Serviços adicionais
                 <small class="ml-2 font-normal text-[#70847d] dark:text-[#8aa39a]">resposta obrigatória</small>
             </legend>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
                 <fieldset class="border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#0c221a]/40 sm:p-5">
-                    <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Coffee break</legend>
-                    <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
+                    <legend class="px-2 text-[13px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Coffee break</legend>
+                    <div class="mt-2 flex gap-4 text-[13px] text-[#003f32] dark:text-[#e6f2ec]">
                         <label class="flex items-center gap-2 cursor-pointer"><input wire:model="coffeeBreak" type="radio" name="coffee" value="1" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Sim</label>
                         <label class="flex items-center gap-2 cursor-pointer"><input wire:model="coffeeBreak" type="radio" name="coffee" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Não</label>
                     </div>
                 </fieldset>
 
                 <fieldset class="border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#0c221a]/40 sm:p-5">
-                    <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Sonorização</legend>
-                    <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
+                    <legend class="px-2 text-[13px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Sonorização</legend>
+                    <div class="mt-2 flex gap-4 text-[13px] text-[#003f32] dark:text-[#e6f2ec]">
                         <label class="flex items-center gap-2 cursor-pointer"><input wire:model="sonorizacao" type="radio" name="sound" value="1" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Sim</label>
                         <label class="flex items-center gap-2 cursor-pointer"><input wire:model="sonorizacao" type="radio" name="sound" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Não</label>
                     </div>
                 </fieldset>
 
                 <fieldset class="border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#0c221a]/40 sm:p-5">
-                    <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Transmissão</legend>
-                    <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
+                    <legend class="px-2 text-[13px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Transmissão</legend>
+                    <div class="mt-2 flex gap-4 text-[13px] text-[#003f32] dark:text-[#e6f2ec]">
                         <label class="flex items-center gap-2 cursor-pointer"><input wire:model="transmissao" type="radio" name="streaming" value="1" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Sim</label>
                         <label class="flex items-center gap-2 cursor-pointer"><input wire:model="transmissao" type="radio" name="streaming" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Não</label>
                     </div>
                 </fieldset>
 
                 <fieldset class="border border-[#d6e1dc] p-4 dark:border-[#16352a] dark:bg-[#0c221a]/40 sm:p-5">
-                    <legend class="px-2 text-[11px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Projetor</legend>
-                    <div class="mt-2 flex gap-4 text-[11px] text-[#003f32] dark:text-[#e6f2ec]">
+                    <legend class="px-2 text-[13px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Projetor</legend>
+                    <div class="mt-2 flex gap-4 text-[13px] text-[#003f32] dark:text-[#e6f2ec]">
                         <label class="flex items-center gap-2 cursor-pointer"><input wire:model="projetor" type="radio" name="only_projector" value="1" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Sim</label>
                         <label class="flex items-center gap-2 cursor-pointer"><input wire:model="projetor" type="radio" name="only_projector" value="0" class="accent-[#008b5c] dark:accent-[#4fd1a5]"> Não</label>
                     </div>
@@ -216,7 +241,7 @@
             <div class="flex-1">
                 <label class="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" wire:model="termsAccepted" @checked($termsAccepted) class="mt-1 accent-[#008b5c] dark:accent-[#4fd1a5]">
-                    <span class="text-[12px] leading-5 text-[#70847d] dark:text-[#8aa39a]">
+                    <span class="text-[14px] leading-5 text-[#70847d] dark:text-[#8aa39a]">
                         Li e aceito os 
                         <button type="button" wire:click="openTermsModal" class="font-semibold text-[#008b5c] hover:underline dark:text-[#4fd1a5]">
                             Termos de Compromisso e Regras de Uso
@@ -231,7 +256,7 @@
                 wire:loading.attr="disabled"
                 wire:loading.class="opacity-60 cursor-not-allowed"
                 @if($conflictError || $capacityError) disabled @endif
-                class="flex h-[46px] w-full items-center justify-center gap-6 px-7 text-[12px] font-bold text-white transition-colors sm:w-auto @if($conflictError || $capacityError) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-[#008b5c] hover:bg-[#006e49] dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
+                class="flex h-[46px] w-full items-center justify-center gap-6 px-7 text-[14px] font-bold text-white transition-colors sm:w-auto @if($conflictError || $capacityError) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-[#008b5c] hover:bg-[#006e49] dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
                 <span wire:loading.remove>Enviar solicitação <span>&rarr;</span></span>
                 <span wire:loading>Enviando...</span>
             </button>
@@ -279,10 +304,11 @@
                                 </svg>
                                 Conservação de Equipamentos
                             </h3>
-                            <ul class="ml-7 list-disc space-y-1 text-[13px] text-[#70847d] dark:text-[#8aa39a]">
+                            <ul class="ml-7 list-disc space-y-1 text-[15px] text-[#70847d] dark:text-[#8aa39a]">
                                 <li>Os equipamentos de sonorização, projetor e outros dispositivos devem ser utilizados com cuidado.</li>
                                 <li>Qualquer dano causado por uso indevido será de responsabilidade do solicitante.</li>
                                 <li>Não é permitido desligar ou religar equipamentos sem autorização do responsável.</li>
+                                <li>"É proibido colar qualquer coisa na parede."</li>
                             </ul>
                         </div>
 
@@ -294,10 +320,12 @@
                                 </svg>
                                 Cancelamento e Remarcação
                             </h3>
-                            <ul class="ml-7 list-disc space-y-1 text-[13px] text-[#70847d] dark:text-[#8aa39a]">
+                            <ul class="ml-7 list-disc space-y-1 text-[15px] text-[#70847d] dark:text-[#8aa39a]">
                                 <li>Caso necessite cancelar, avise com no mínimo 24 horas de antecedência.</li>
                                 <li>Cancelamentos de última hora podem impedir futuras reservas.</li>
                                 <li>Remarcações estão sujeitas à disponibilidade da sala.</li>
+                                <li>Se houver lista de inscrito/presença, encaminhar para o e-mail da ESDEP com no mínimo 24h de antecedência.</li>
+                                
                             </ul>
                         </div>
 
@@ -309,7 +337,7 @@
                                 </svg>
                                 Pontualidade e Uso do Espaço
                             </h3>
-                            <ul class="ml-7 list-disc space-y-1 text-[13px] text-[#70847d] dark:text-[#8aa39a]">
+                            <ul class="ml-7 list-disc space-y-1 text-[15px] text-[#70847d] dark:text-[#8aa39a]">
                                 <li>O solicitante deve chegar no horário agendado.</li>
                                 <li>A sala deve ser entregue nas condições em que foi encontrada.</li>
                                 <li>Não é permitido exceder o horário reservado sem autorização prévia.</li>
@@ -324,10 +352,11 @@
                                 </svg>
                                 Limpeza e Organização
                             </h3>
-                            <ul class="ml-7 list-disc space-y-1 text-[13px] text-[#70847d] dark:text-[#8aa39a]">
+                            <ul class="ml-7 list-disc space-y-1 text-[15px] text-[#70847d] dark:text-[#8aa39a]">
                                 <li>Mantenha o espaço limpo e organizado durante e após o evento.</li>
                                 <li>Retire todo o lixo e materiais utilizados.</li>
                                 <li>O uso de alimentos é permitido apenas em áreas designadas.</li>
+                                <li>Desligar o ar-condicionado ao sair da sala ao final do evento.</li>
                             </ul>
                         </div>
 
@@ -339,8 +368,10 @@
                                 </svg>
                                 Coffee Break
                             </h3>
-                            <ul class="ml-7 list-disc space-y-1 text-[13px] text-[#70847d] dark:text-[#8aa39a]">
-                                <li>O serviço de coffee break deve ser solicitado com antecedência mínima de 48 horas.</li>
+                            <ul class="ml-7 list-disc space-y-1 text-[15px] text-[#70847d] dark:text-[#8aa39a]">
+                                <li>O serviço de coffee break deve ser solicitado com antecedência mínima de 7 dias úteis.</li>
+                                <li>Proibido utilizar quaisquer itens inflamáveis, combustíveis ou de outra natureza que produza fogo e/ou fumaça.</li>
+                                <li>Não é permitido remover ou realocar qualquer mobiliário das salas sem prévia autorização.</li>
                                 <li>Alterações no cardápio devem ser comunicadas com 24 horas de antecedência.</li>
                                 <li>Restrições alimentares devem ser informadas no momento da reserva.</li>
                             </ul>
@@ -348,7 +379,7 @@
 
                         {{-- Disposicoes Finais --}}
                         <div class="rounded-xl border border-[#d6e1dc] bg-[#f8faf9] p-4 dark:border-[#2c4a3e] dark:bg-[#0a1a14]">
-                            <p class="text-[12px] leading-5 text-[#70847d] dark:text-[#8aa39a]">
+                            <p class="text-[14px] leading-5 text-[#70847d] dark:text-[#8aa39a]">
                                 <strong class="text-[#003f32] dark:text-[#e6f2ec]">Disposições Finais:</strong>
                                 A ESDEP-MT reserva-se o direito de cancelar reservas em caso de necessidade institucional.
                                 O descumprimento dos termos pode resultar na negação de futuras solicitações.

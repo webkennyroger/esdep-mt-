@@ -153,3 +153,49 @@ ReservationEditor) — todos renderizam sem erro.
    admin renderizaram sem erro via tinker. **Nota**: o site local roda em
    `http://localhost:8081` (porta mapeada no `compose.yaml`), não na porta 80 —
    testar na porta 80 dá 404 de um Apache do host, não do container.
+
+## Lista de bugs/features resolvidos em 2026-10-06 (sessão separada do redesign)
+
+Lista de 8 itens que o usuário mandou de uma vez. Investigados em paralelo via
+agentes (Explore) antes de corrigir, pra não ficar chutando causa.
+
+1. **Divulgar evento sem campo de e-mail avulso** — só faltava no guard
+   `contact` (`app/Livewire/Contact/ContactReservations.php`); o admin já
+   tinha. Adicionada a propriedade `$announceExtraEmails` + validação +
+   encaminhamento pro `SendEventAnnouncementAction`, espelhando
+   `ReservationManager.php`.
+2. **E-mail de alteração de reserva não chega** — não achei bug: código correto
+   (`UpdateReservationAction` envia síncrono via SMTP, worker rodando, sem
+   erro no log). Testei direto sem exceção. Pode ser algo específico do
+   e-mail real de produção (não reproduzido aqui).
+3. **Campos de criar sala não eram todos obrigatórios** — `contactGroupId` e
+   `notificationEmail` eram `nullable`. Agora `required` só na **criação**
+   (`RoomManager::createRoom()`); edição de salas antigas sem esses campos
+   continua opcional pra não travar.
+4. **Botões de editar/autorizar/rejeitar em reservas passadas** — escondidos
+   com `$isPast` (data+hora de término já passou), tanto na tabela quanto no
+   painel de detalhes. "Divulgar" e "Reabrir" continuam disponíveis (não
+   foram pedidos pra remover).
+5. **Bolinha de notificação não some ao clicar** — `hasUnread` era só uma
+   variável Alpine reseedada a cada re-render do Livewire a partir de
+   "existe reserva pendente?" — nunca persistia que o admin já viu. Agora
+   `NotificationDropdown` guarda um timestamp "visto em" no `Cache` por
+   usuário e só mostra a bolinha se **surgiu pendência nova depois** desse
+   timestamp.
+6. **"Desative a sala" mas não existe essa função** — a função já existia
+   (`toggleActive`), só que escondida como uma pill na coluna Status, sem
+   tooltip. Adicionei um botão de ícone dedicado na coluna Ações (do lado de
+   Editar/Excluir) com tooltip claro.
+7. **PDF do relatório corta colunas** — mudado para paisagem
+   (`setPaper('a4', 'landscape')`) + `table-layout: fixed` com larguras de
+   coluna explícitas e `word-wrap` no CSS do PDF. Testado gerando um PDF real
+   e convertendo pra imagem — as 13 colunas aparecem completas.
+8. **Campo de setor/núcleo do solicitante** — nova coluna
+   `requester_sector` (migration
+   `2026_10_06_185940_add_requester_sector_to_reservations_table.php`).
+   Adicionado em: `CreateReservationAction`, formulário público
+   (`BookingForm`), editor admin (`ReservationEditor`, página E modal — é o
+   mesmo componente), edição do contato (`ContactReservationEdit`), e exibido
+   no painel de detalhes do admin. **Não** adicionado nos exports
+   (Excel/PDF) nem na coluna da tabela — só no formulário e no detalhe, pra
+   não bagunçar o layout já ajustado do PDF.

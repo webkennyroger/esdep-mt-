@@ -1,21 +1,20 @@
 <div class="relative" x-data="{
     dropdownOpen: false,
-    hasUnread: {{ $pendingCount > 0 ? 'true' : 'false' }},
     toggleDropdown() {
         this.dropdownOpen = !this.dropdownOpen;
-        this.hasUnread = false;
     },
     closeDropdown() {
         this.dropdownOpen = false;
     }
 }" @click.away="closeDropdown()">
     <!-- Notification Button -->
-    <button class="relative flex items-center justify-center text-slate-500 transition-colors bg-slate-100 border border-slate-200 rounded-full h-11 w-11 hover:bg-slate-200 hover:text-slate-700 dark:bg-[#112a21] dark:border-[#16352a] dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]" @click="toggleDropdown()" type="button">
+    <button class="relative flex items-center justify-center text-slate-500 transition-colors bg-slate-100 border border-slate-200 rounded-full h-11 w-11 hover:bg-slate-200 hover:text-slate-700 dark:bg-[#112a21] dark:border-[#16352a] dark:text-[#8aa39a] dark:hover:bg-[#16352a] dark:hover:text-[#4fd1a5]" @click="toggleDropdown()" wire:click="markAsSeen" type="button">
         <!-- Notification Badge - Orange when unread, Green when all read -->
-        <span x-show="hasUnread" class="absolute right-0 top-0.5 z-1 h-2 w-2 rounded-full bg-orange-400">
-            <span class="absolute inline-flex w-full h-full bg-orange-400 rounded-full opacity-75 -z-1 animate-ping"></span>
-        </span>
-        <span x-show="!hasUnread" class="absolute right-0 top-0.5 z-1 h-2 w-2 rounded-full bg-green-500"></span>
+        @if($hasUnread)
+            <span class="absolute right-0 top-0.5 z-1 h-2 w-2 rounded-full bg-orange-400">
+                <span class="absolute inline-flex w-full h-full bg-orange-400 rounded-full opacity-75 -z-1 animate-ping"></span>
+            </span>
+        @endif
 
         <!-- Bell Icon -->
         <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

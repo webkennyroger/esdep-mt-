@@ -27,8 +27,6 @@ class ContactRooms extends Component
 
     public int $capacity = 30;
 
-    public string $theme_color = '#008b5c';
-
     public string $description = '';
 
     public bool $is_active = true;
@@ -40,8 +38,6 @@ class ContactRooms extends Component
     public string $editName = '';
 
     public int $editCapacity = 30;
-
-    public string $editThemeColor = '#008b5c';
 
     public string $editDescription = '';
 
@@ -59,7 +55,6 @@ class ContactRooms extends Component
     {
         $this->reset(['name', 'description']);
         $this->capacity = 30;
-        $this->theme_color = '#008b5c';
         $this->is_active = true;
         $this->contactGroupId = $this->responsibleGroupIds()->first();
         $this->resetValidation();
@@ -75,11 +70,11 @@ class ContactRooms extends Component
     {
         $this->validate([
             'name' => 'required|string|max:255',
-            'capacity' => 'required|integer|min:1|max:1000', 'theme_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'capacity' => 'required|integer|min:1|max:1000',
             'description' => 'nullable|string|max:1000', 'is_active' => 'boolean',
             'contactGroupId' => ['required', 'integer', Rule::in($this->responsibleGroupIds()->all())],
         ]);
-        $room = Room::create(['contact_group_id' => $this->contactGroupId, 'name' => $this->name, 'capacity' => $this->capacity, 'theme_color' => $this->theme_color, 'description' => $this->description ?: null, 'is_active' => $this->is_active]);
+        $room = Room::create(['contact_group_id' => $this->contactGroupId, 'name' => $this->name, 'capacity' => $this->capacity, 'description' => $this->description ?: null, 'is_active' => $this->is_active]);
         ActivityLogger::roomCreated($room);
         $this->closeCreateModal();
         $this->toast('Sala criada com sucesso.');
@@ -91,7 +86,6 @@ class ContactRooms extends Component
         $this->editRoomId = $room->id;
         $this->editName = $room->name;
         $this->editCapacity = $room->capacity;
-        $this->editThemeColor = $room->theme_color ?? '#008b5c';
         $this->editDescription = $room->description ?? '';
         $this->editIsActive = $room->is_active;
         $this->editContactGroupId = $room->contact_group_id;
@@ -109,12 +103,12 @@ class ContactRooms extends Component
         $room = $this->managedRoom($this->editRoomId);
         $this->validate([
             'editName' => 'required|string|max:255',
-            'editCapacity' => 'required|integer|min:1|max:1000', 'editThemeColor' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'editCapacity' => 'required|integer|min:1|max:1000',
             'editDescription' => 'nullable|string|max:1000', 'editIsActive' => 'boolean',
             'editContactGroupId' => ['required', 'integer', Rule::in($this->responsibleGroupIds()->all())],
         ]);
         $old = $room->toArray();
-        $room->update(['contact_group_id' => $this->editContactGroupId, 'name' => $this->editName, 'capacity' => $this->editCapacity, 'theme_color' => $this->editThemeColor, 'description' => $this->editDescription ?: null, 'is_active' => $this->editIsActive]);
+        $room->update(['contact_group_id' => $this->editContactGroupId, 'name' => $this->editName, 'capacity' => $this->editCapacity, 'description' => $this->editDescription ?: null, 'is_active' => $this->editIsActive]);
         ActivityLogger::roomUpdated($room, $old);
         $this->closeEditModal();
         $this->toast('Sala atualizada com sucesso.');
@@ -196,7 +190,6 @@ class ContactRooms extends Component
         return view('livewire.admin.room-manager', [
             'rooms' => $query->paginate(10),
             'contactGroups' => ContactGroup::whereIn('id', $this->responsibleGroupIds())->orderBy('name')->get(),
-            'colors' => ['#008b5c' => 'Verde ESDEP', '#003f32' => 'Verde Escuro'] + \App\Support\TailwindColors::palette(),
         ]);
     }
 }

@@ -138,6 +138,7 @@
                                 $isRejected = $reservation->status === \App\Enums\ReservationStatus::REJECTED;
                                 $isPending = $reservation->status === \App\Enums\ReservationStatus::PENDING;
                                 $isAuthorized = $reservation->status === \App\Enums\ReservationStatus::AUTHORIZED;
+                                $isPast = \Carbon\Carbon::parse($reservation->date->format('Y-m-d').' '.$reservation->end_time)->isPast();
                             @endphp
                             <tr wire:key="reservation-{{ $reservation->id }}" draggable="false" data-sort-id="{{ $reservation->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30 {{ $isRejected ? 'opacity-60' : '' }}">
                                 <td class="px-6 py-4">
@@ -241,17 +242,19 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        @if(auth('contact')->check())
-                                        <a href="{{ route('contact.reservation.edit', $reservation) }}"
-                                            class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 dark:bg-[#16352a] dark:text-[#e6f2ec] dark:hover:bg-[#1f4a3a]">
-                                            Editar
-                                        </a>
-                                        @else
-                                        <button wire:click="$dispatch('openReservationEditor', { id: {{ $reservation->id }} })"
-                                            class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 dark:bg-[#16352a] dark:text-[#e6f2ec] dark:hover:bg-[#1f4a3a]">
-                                            Editar
-                                        </button>
-                                        @endif
+                                        @unless($isPast)
+                                            @if(auth('contact')->check())
+                                            <a href="{{ route('contact.reservation.edit', $reservation) }}"
+                                                class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 dark:bg-[#16352a] dark:text-[#e6f2ec] dark:hover:bg-[#1f4a3a]">
+                                                Editar
+                                            </a>
+                                            @else
+                                            <button wire:click="$dispatch('openReservationEditor', { id: {{ $reservation->id }} })"
+                                                class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 dark:bg-[#16352a] dark:text-[#e6f2ec] dark:hover:bg-[#1f4a3a]">
+                                                Editar
+                                            </button>
+                                            @endif
+                                        @endunless
                                         @if($isAuthorized || $isRejected)
                                             <button wire:click="openAnnounceModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
                                                 class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800">
@@ -259,24 +262,30 @@
                                             </button>
                                         @endif
                                         @if($isPending)
-                                            <button wire:click="openApproveModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
-                                                class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
-                                                Autorizar
-                                            </button>
-                                            <button wire:click="openRejectModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
-                                                class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-200 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-900/50">
-                                                Rejeitar
-                                            </button>
+                                            @unless($isPast)
+                                                <button wire:click="openApproveModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
+                                                    class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 dark:bg-[#00a477] dark:hover:bg-[#008b5c]">
+                                                    Autorizar
+                                                </button>
+                                                <button wire:click="openRejectModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
+                                                    class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-200 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-900/50">
+                                                    Rejeitar
+                                                </button>
+                                            @endunless
                                         @elseif($isAuthorized)
-                                            <button wire:click="openRejectModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
-                                                class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-200 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-900/50">
-                                                Rejeitar
-                                            </button>
+                                            @unless($isPast)
+                                                <button wire:click="openRejectModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
+                                                    class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-200 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-900/50">
+                                                    Rejeitar
+                                                </button>
+                                            @endunless
                                         @elseif($isRejected)
-                                            <button wire:click="openApproveModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
-                                                class="rounded-lg bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-950/50 dark:text-[#4fd1a5] dark:hover:bg-emerald-900/50">
-                                                Autorizar
-                                            </button>
+                                            @unless($isPast)
+                                                <button wire:click="openApproveModal({{ $reservation->id }}, '{{ addslashes($reservation->event_name) }}')"
+                                                    class="rounded-lg bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-950/50 dark:text-[#4fd1a5] dark:hover:bg-emerald-900/50">
+                                                    Autorizar
+                                                </button>
+                                            @endunless
                                             <button wire:click="reopenReservation({{ $reservation->id }})"
                                                 class="rounded-lg bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:hover:bg-amber-900/50">
                                                 Reabrir
@@ -381,6 +390,9 @@
                             </div>
                             <p class="text-sm font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $detailReservation->requester_name }}</p>
                             <p class="text-sm text-slate-600 dark:text-[#8aa39a]">{{ $detailReservation->requester_email }}</p>
+                            @if($detailReservation->requester_sector)
+                                <p class="mt-1 text-xs text-slate-500 dark:text-[#8aa39a]">{{ $detailReservation->requester_sector }}</p>
+                            @endif
                         </div>
 
                         {{-- Publico --}}
@@ -397,6 +409,18 @@
                             @else
                                 <p class="text-xs text-red-500 dark:text-red-400">Acima da capacidade</p>
                             @endif
+                        </div>
+
+                        {{-- Data de Solicitacao --}}
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-[#16352a] dark:bg-[#0a1a14]">
+                            <div class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#5a7068]">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-5 8l1.5 1.5L15 11" />
+                                </svg>
+                                Data da Solicitação
+                            </div>
+                            <p class="text-sm font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $detailReservation->created_at->format('d/m/Y \à\s H:i') }}</p>
+                            <p class="text-xs text-slate-500 dark:text-[#8aa39a]">{{ $detailReservation->created_at->diffForHumans() }}</p>
                         </div>
                     </div>
 
@@ -475,30 +499,35 @@
                     @endif
 
                     {{-- Footer --}}
+                    @php
+                        $detailIsPast = \Carbon\Carbon::parse($detailReservation->date->format('Y-m-d').' '.$detailReservation->end_time)->isPast();
+                    @endphp
                     <div class="mt-6 flex items-center justify-end gap-3 border-t border-slate-200 pt-5 dark:border-[#16352a]">
                         <button wire:click="closeDetailModal"
                             class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-[#2c4a3e] dark:text-[#8aa39a] dark:hover:bg-[#16352a]">
                             Fechar
                         </button>
-                        <button wire:click="$dispatch('openReservationEditor', { id: {{ $detailReservation->id }} })"
-                            class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600">
-                            Editar Reserva
-                        </button>
-                        @if($detailReservation->status === \App\Enums\ReservationStatus::PENDING)
-                            @if($detailConflictError)
-                                <div class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                                    </svg>
-                                    Conflito de horário detectado
-                                </div>
-                            @endif
-                            <button wire:click="openApproveModal({{ $detailReservation->id }}, '{{ addslashes($detailReservation->event_name) }}')"
-                                @if($detailConflictError) disabled @endif
-                                class="rounded-lg px-4 py-2 text-sm font-semibold text-white @if($detailConflictError) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-emerald-600 hover:bg-emerald-700 dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
-                                Autorizar
+                        @unless($detailIsPast)
+                            <button wire:click="$dispatch('openReservationEditor', { id: {{ $detailReservation->id }} })"
+                                class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600">
+                                Editar Reserva
                             </button>
-                        @endif
+                            @if($detailReservation->status === \App\Enums\ReservationStatus::PENDING)
+                                @if($detailConflictError)
+                                    <div class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                        </svg>
+                                        Conflito de horário detectado
+                                    </div>
+                                @endif
+                                <button wire:click="openApproveModal({{ $detailReservation->id }}, '{{ addslashes($detailReservation->event_name) }}')"
+                                    @if($detailConflictError) disabled @endif
+                                    class="rounded-lg px-4 py-2 text-sm font-semibold text-white @if($detailConflictError) cursor-not-allowed bg-slate-400 dark:bg-slate-600 @else bg-emerald-600 hover:bg-emerald-700 dark:bg-[#00a477] dark:hover:bg-[#008b5c] @endif">
+                                    Autorizar
+                                </button>
+                            @endif
+                        @endunless
                     </div>
                 </div>
             </div>

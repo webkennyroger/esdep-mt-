@@ -2,8 +2,7 @@
     $rooms = \App\Models\Room::where('is_active', true)
         ->orderBy('sort_order')
         ->orderBy('name')
-        ->get()
-        ->each(fn ($room) => $room->theme_color ??= '#008b5c');
+        ->get();
 @endphp
 
 @if($rooms->isEmpty())
@@ -16,7 +15,7 @@
         <div id="rooms-mobile-scroll" class="flex w-full min-w-0 gap-4 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
             @foreach($rooms as $room)
                 <div class="relative h-56 w-full shrink-0 snap-center overflow-hidden rounded-2xl ring-1 ring-white/10"
-                    style="background: linear-gradient(to bottom right, {{ $room->theme_color }}, {{ \App\Support\TailwindColors::darken($room->theme_color, 0.35) }});">
+                    style="{{ $room->image_path ? 'background-image: url(\''.$room->imageUrl().'\'); background-size: cover; background-position: center;' : 'background: linear-gradient(to bottom right, #008b5c, #003f32);' }}">
                     <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
                     <div class="absolute bottom-4 left-4 right-4">
                         <p class="text-base font-semibold text-white tracking-tight mb-1">{{ $room->name }}</p>
@@ -63,21 +62,24 @@
 
                     @foreach($rooms as $room)
                         <div class="neon-card absolute w-80 h-115 rounded-2xl overflow-hidden ring-1 ring-white/10 transition-all duration-500" data-index="{{ $loop->index }}">
-                            <div class="absolute inset-0" style="background: linear-gradient(to bottom right, {{ $room->theme_color }}, {{ \App\Support\TailwindColors::darken($room->theme_color, 0.35) }});"></div>
+                            <div class="absolute inset-0"
+                                style="{{ $room->image_path ? 'background-image: url(\''.$room->imageUrl().'\'); background-size: cover; background-position: center;' : 'background: linear-gradient(to bottom right, #008b5c, #003f32);' }}"></div>
                             <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
                             <div class="absolute top-6 left-6">
-                                <span class="font-mono text-[10px] font-bold tracking-[0.15em] text-white/70">{{ sprintf('%02d', $loop->iteration) }}</span>
+                                <span class="font-mono text-[12px] font-bold tracking-[0.15em] text-white/70">{{ sprintf('%02d', $loop->iteration) }}</span>
                             </div>
                             <div class="absolute top-6 right-6">
                                 <span class="text-[15px] text-white/70">↗</span>
                             </div>
-                            <div class="absolute top-16 left-6 right-6">
-                                <div class="grid grid-cols-4 gap-1.75">
-                                    @for($i = 0; $i < 16; $i++)
-                                        <i class="h-9.75 border {{ in_array($i, [5, 8, 11, 14]) ? 'border-white/15 bg-white/20' : 'border-white/65' }}"></i>
-                                    @endfor
+                            @unless($room->image_path)
+                                <div class="absolute top-16 left-6 right-6">
+                                    <div class="grid grid-cols-4 gap-1.75">
+                                        @for($i = 0; $i < 16; $i++)
+                                            <i class="h-9.75 border {{ in_array($i, [5, 8, 11, 14]) ? 'border-white/15 bg-white/20' : 'border-white/65' }}"></i>
+                                        @endfor
+                                    </div>
                                 </div>
-                            </div>
+                            @endunless
                             <div class="absolute bottom-8 left-8 right-8">
                                 <p class="text-xl font-semibold text-white tracking-tight mb-1">{{ $room->name }}</p>
                                 <p class="text-sm text-white/70">ATÉ {{ $room->capacity }} PESSOAS</p>

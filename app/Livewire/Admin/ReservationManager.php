@@ -14,7 +14,7 @@ use App\Rules\MultipleEmails;
 use App\Services\ConflictCheckerService;
 use App\Services\ReservationExportService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -348,24 +348,30 @@ class ReservationManager extends Component
         return $this->baseQuery()->get();
     }
 
-    public function exportExcel(): Response
+    public function exportExcel(): StreamedResponse
     {
         $bytes = app(ReservationExportService::class)->toXlsx($this->reservationsForExport());
 
-        return response($bytes, 200, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="reservas-'.now()->format('Y-m-d').'.xlsx"',
-        ]);
+        // O Livewire so intercepta o download (pra nao tentar colocar bytes
+        // binarios dentro do payload JSON da acao) quando o retorno e um
+        // StreamedResponse/BinaryFileResponse - um Response comum quebra com
+        // "Malformed UTF-8 characters".
+        return response()->streamDownload(
+            fn () => print($bytes),
+            'reservas-'.now()->format('Y-m-d').'.xlsx',
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+        );
     }
 
-    public function exportPdf(): Response
+    public function exportPdf(): StreamedResponse
     {
         $bytes = app(ReservationExportService::class)->toPdf($this->reservationsForExport());
 
-        return response($bytes, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="reservas-'.now()->format('Y-m-d').'.pdf"',
-        ]);
+        return response()->streamDownload(
+            fn () => print($bytes),
+            'reservas-'.now()->format('Y-m-d').'.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
     }
 
     public function copyText(): string

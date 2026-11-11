@@ -27,11 +27,19 @@
                     </div>
                 </div>
 
-                <div class="mt-4">
-                    <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">E-mail do solicitante <span class="text-red-500">*</span></label>
-                    <input wire:model="requesterEmail" type="email" placeholder="nome@instituicao.gov.br"
-                        class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
-                    @error('requesterEmail') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">E-mail do solicitante <span class="text-red-500">*</span></label>
+                        <input wire:model="requesterEmail" type="email" placeholder="nome@instituicao.gov.br"
+                            class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
+                        @error('requesterEmail') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-[12px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Setor / Núcleo <span class="text-red-500">*</span></label>
+                        <input wire:model="requesterSector" type="text" placeholder="Ex.: Núcleo Cível, 2ª DPE..."
+                            class="h-10.5 w-full rounded-lg border border-[#b8c9c2] bg-transparent px-3 text-[13px] text-[#003f32] outline-none placeholder:text-[#70847d] focus:border-[#008b5c] focus:ring-1 focus:ring-[#008b5c] dark:border-[#2c4a3e] dark:bg-[#081712] dark:text-[#e6f2ec] dark:placeholder:text-[#70847d] dark:focus:border-[#4fd1a5]">
+                        @error('requesterSector') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                    </div>
                 </div>
             </section>
 
@@ -44,6 +52,17 @@
                     <h4 class="text-[13px] font-semibold text-[#003f32] dark:text-[#e6f2ec]">Sala e horário</h4>
                 </div>
 
+                @if($rooms->isEmpty())
+                    <div class="flex items-center gap-3 rounded-lg border border-dashed border-amber-300 bg-amber-50 p-4 text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-semibold">Nenhuma sala disponível</p>
+                            <p class="text-xs">Não há salas ativas cadastradas no momento. Procure um administrador para ativar ou cadastrar uma sala em "Salas &amp; Espaços".</p>
+                        </div>
+                    </div>
+                @else
                 {{-- Slide de salas, igual ao formulario publico de reserva --}}
                 <div x-data="{
                     roomStep: 0,
@@ -74,11 +93,15 @@
                                     @endif
                                                 <label class="flex items-center gap-3 rounded-lg border border-[#d2ded9] bg-white p-3 cursor-pointer transition-all duration-200 hover:border-[#008b5c] hover:bg-[#eef7f2] has-checked:border-[#008b5c] has-checked:bg-[#eef7f2] has-checked:shadow-md dark:border-[#2c4a3e] dark:bg-[#0c221a] dark:hover:border-[#00a477] dark:hover:bg-[#16352a] dark:has-checked:border-[#00a477] dark:has-checked:bg-[#0c221a]">
                                                     <input wire:model.live="roomId" value="{{ $room->id }}" type="radio" name="admin_room" class="accent-[#008b5c] dark:accent-[#4fd1a5]">
-                                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" data-color="{{ $room->theme_color }}" style="background-color: color-mix(in srgb, var(--swatch, {{ $room->theme_color }}) 20%, transparent);">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" data-color="{{ $room->theme_color }}" style="color: var(--swatch, {{ $room->theme_color }});" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                                        </svg>
-                                                    </div>
+                                                    @if($room->image_path)
+                                                        <img src="{{ $room->imageUrl() }}" class="h-10 w-10 shrink-0 rounded-lg object-cover">
+                                                    @else
+                                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#008b5c]/20">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#008b5c]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                            </svg>
+                                                        </div>
+                                                    @endif
                                                     <span class="flex flex-1 flex-col">
                                                         <strong class="text-[13px] text-[#003f32] dark:text-[#e6f2ec]">{{ $room->name }}</strong>
                                                         <small class="text-[10px] text-[#008b5c] dark:text-[#4fd1a5]">{{ $room->capacity }} pessoas</small>
@@ -101,6 +124,7 @@
                         </div>
                     @endif
                 </div>
+                @endif
                 @error('roomId') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
 
                 <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
