@@ -54,9 +54,6 @@
                                 <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 9V4a1 1 0 011-1z" /></svg>Grupo responsável</span>
                             </th>
                             <th class="px-4 py-3">
-                                <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8" /></svg>Cor no Calendário</span>
-                            </th>
-                            <th class="px-4 py-3">
                                 <span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>Reservas</span>
                             </th>
                             <th class="px-4 py-3">
@@ -70,7 +67,11 @@
                             <tr wire:key="room-{{ $room->id }}" draggable="false" data-sort-id="{{ $room->id }}" x-on:dragstart="start($event)" x-on:dragend="end($event)" x-on:dragover.prevent x-on:drop="drop($event)" class="hover:bg-slate-50/50 dark:hover:bg-[#16352a]/30">
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-3"><x-drag-handle />
-                                        <span class="h-3.5 w-3.5 shrink-0 rounded-full" data-color="{{ $room->theme_color ?? '#008b5c' }}" style="background-color: var(--swatch, {{ $room->theme_color ?? '#008b5c' }});"></span>
+                                        @if($room->image_path)
+                                            <img src="{{ $room->imageUrl() }}" class="h-10 w-10 shrink-0 rounded-lg object-cover">
+                                        @else
+                                            <span class="h-3.5 w-3.5 shrink-0 rounded-full bg-[#008b5c]"></span>
+                                        @endif
                                         <div>
                                             <p class="font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $room->name }}</p>
                                         </div>
@@ -90,17 +91,12 @@
                                     if (auth()->check() && $visibleGroup?->owner_contact_id !== null) $visibleGroup = null;
                                 @endphp
                                 <td class="px-4 py-3 text-xs text-slate-600 dark:text-[#8aa39a]">{{ $visibleGroup?->name ?? 'Não atribuído' }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center gap-2">
-                                        <span class="h-4 w-4 rounded-md" data-color="{{ $room->theme_color ?? '#008b5c' }}" style="background-color: var(--swatch, {{ $room->theme_color ?? '#008b5c' }});"></span>
-                                        <span class="font-mono text-xs text-slate-600 dark:text-[#8aa39a]">{{ $room->theme_color ?? '#008b5c' }}</span>
-                                    </div>
-                                </td>
                                 <td class="px-4 py-3 text-xs font-semibold text-slate-600 dark:text-[#8aa39a]">
                                     {{ $room->reservations_count }} registros
                                 </td>
                                 <td class="px-4 py-3">
                                     <button wire:click="toggleActive({{ $room->id }})"
+                                        title="Clique para {{ $room->is_active ? 'desativar' : 'ativar' }} esta sala"
                                         class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition
                                             {{ $room->is_active
                                                 ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400'
@@ -115,6 +111,13 @@
                                             class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 dark:text-[#5a7068] dark:hover:bg-[#16352a] dark:hover:text-blue-400">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                        </button>
+                                        <button wire:click="toggleActive({{ $room->id }})"
+                                            title="{{ $room->is_active ? 'Desativar Sala' : 'Ativar Sala' }}"
+                                            class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-amber-600 dark:text-[#5a7068] dark:hover:bg-[#16352a] dark:hover:text-amber-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"/>
                                             </svg>
                                         </button>
                                         <button wire:click="confirmDelete({{ $room->id }})" title="Excluir Sala"
@@ -150,18 +153,18 @@
                     </div>
 
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Grupo responsável</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Grupo responsável <span class="text-red-500">*</span></label>
                         <select wire:model="contactGroupId" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm dark:border-[#16352a] dark:bg-[#0a1a14]">
-                            <option value="">Não atribuído</option>
+                            <option value="" disabled selected>Selecione um grupo</option>
                             @foreach($contactGroups as $group)<option value="{{ $group->id }}">{{ $group->name }}</option>@endforeach
                         </select>
                         @error('contactGroupId') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">E-mail para notificações (dono da sala)</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">E-mail para notificações (dono da sala) <span class="text-red-500">*</span></label>
                         <x-email-tags-input model="notificationEmail" placeholder="Digite um e-mail e pressione Enter" />
-                        <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Recebe o aviso de "Nova Solicitação" para esta sala. Pode adicionar mais de um e-mail. Deixe vazio para usar o e-mail do grupo ou o padrão do sistema.</p>
+                        <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Recebe o aviso de "Nova Solicitação" para esta sala. Pode adicionar mais de um e-mail.</p>
                         @error('notificationEmail') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
@@ -181,22 +184,15 @@
                     </div>
 
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Cor no Calendário *</label>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($colors as $hex => $label)
-                                <button type="button" wire:click="$set('theme_color', '{{ $hex }}')"
-                                    class="group relative h-8 w-8 rounded-full transition-transform {{ $theme_color === $hex ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-110' }}"
-                                    style="background-color: {{ $hex }};"
-                                    title="{{ $label }}">
-                                    @if($theme_color === $hex)
-                                        <svg class="absolute inset-0 m-auto h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    @endif
-                                </button>
-                            @endforeach
-                        </div>
-                        @error('theme_color') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Imagem da sala (opcional)</label>
+                        <input type="file" wire:model="image" accept="image/*"
+                            class="w-full text-sm text-slate-700 dark:text-[#e6f2ec] file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-slate-700 file:hover:bg-slate-200 dark:file:bg-[#16352a] dark:file:text-[#e6f2ec]">
+                        <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Aparece no lugar da cor no slide de salas e na tabela. JPG ou PNG, até 4MB.</p>
+                        <div wire:loading wire:target="image" class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Enviando...</div>
+                        @if($image)
+                            <img src="{{ $image->temporaryUrl() }}" class="mt-2 h-24 w-full rounded-lg object-cover">
+                        @endif
+                        @error('image') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -260,22 +256,22 @@
                     </div>
 
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Cor no Calendário *</label>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($colors as $hex => $label)
-                                <button type="button" wire:click="$set('editThemeColor', '{{ $hex }}')"
-                                    class="group relative h-8 w-8 rounded-full transition-transform {{ $editThemeColor === $hex ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-110' }}"
-                                    style="background-color: {{ $hex }};"
-                                    title="{{ $label }}">
-                                    @if($editThemeColor === $hex)
-                                        <svg class="absolute inset-0 m-auto h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    @endif
-                                </button>
-                            @endforeach
-                        </div>
-                        @error('editThemeColor') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-[#8aa39a]">Imagem da sala (opcional)</label>
+                        @if($editExistingImagePath && ! $editRemoveImage && ! $editImage)
+                            <div class="flex items-center gap-3">
+                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($editExistingImagePath) }}" class="h-16 w-24 rounded-lg object-cover">
+                                <button type="button" wire:click="markEditImageForRemoval" class="text-xs font-semibold text-red-600 hover:underline dark:text-red-400">Remover</button>
+                            </div>
+                        @else
+                            <input type="file" wire:model="editImage" accept="image/*"
+                                class="w-full text-sm text-slate-700 dark:text-[#e6f2ec] file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-slate-700 file:hover:bg-slate-200 dark:file:bg-[#16352a] dark:file:text-[#e6f2ec]">
+                            <p class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">JPG ou PNG, até 4MB.</p>
+                            <div wire:loading wire:target="editImage" class="mt-1 text-[11px] text-slate-400 dark:text-[#5a7068]">Enviando...</div>
+                            @if($editImage)
+                                <img src="{{ $editImage->temporaryUrl() }}" class="mt-2 h-24 w-full rounded-lg object-cover">
+                            @endif
+                        @endif
+                        @error('editImage') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>

@@ -9,6 +9,7 @@ use App\Enums\ReservationStatus;
 use App\Exceptions\ConflictException;
 use App\Models\Contact;
 use App\Models\Reservation;
+use App\Rules\MultipleEmails;
 use App\Services\ConflictCheckerService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -53,6 +54,8 @@ class ContactReservations extends Component
     public array $announceSelectedGroupIds = [];
 
     public array $announceSelectedContactIds = [];
+
+    public string $announceExtraEmails = '';
 
     public $announceGroups = [];
 
@@ -156,6 +159,7 @@ class ContactReservations extends Component
         $this->announceRecipientType = '';
         $this->announceSelectedGroupIds = [];
         $this->announceSelectedContactIds = [];
+        $this->announceExtraEmails = '';
         $this->announceGroups = $contact->groups()->orderBy('name')->get();
         $this->announceContacts = Contact::active()->whereHas('groups', fn ($groups) => $groups->whereIn('contact_groups.id', $contact->groups()->select('contact_groups.id')))->orderBy('name')->get();
         $this->showAnnounceModal = true;
@@ -173,6 +177,7 @@ class ContactReservations extends Component
             'announceRecipientType' => 'nullable|in:groups,contacts',
             'announceSelectedGroupIds' => 'required_if:announceRecipientType,groups|array',
             'announceSelectedContactIds' => 'required_if:announceRecipientType,contacts|array',
+            'announceExtraEmails' => ['nullable', 'string', 'max:1000', new MultipleEmails],
         ]);
 
         $contact = auth('contact')->user();
@@ -192,6 +197,7 @@ class ContactReservations extends Component
             'message' => $this->announceMessage,
             'recipient_type' => $this->announceRecipientType,
             ...$recipients,
+            'extra_emails' => $this->announceExtraEmails,
         ], $contact);
         $this->closeAnnounceModal();
         $this->toast("Evento divulgado com sucesso para {$announcement->total_recipients} destinatário(s).");

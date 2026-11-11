@@ -5,6 +5,7 @@ use App\Livewire\Admin\AdminCalendar;
 use App\Livewire\Admin\ReservationEditor;
 use App\Livewire\Admin\ReservationManager;
 use App\Livewire\Public\BookingForm;
+use App\Mail\ReservationUpdatedMail;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\User;
@@ -22,7 +23,6 @@ function createFlowTestRoom(): Room
         'name' => 'Sala Horizonte',
         'code' => 'HORIZONTE',
         'capacity' => 60,
-        'theme_color' => '#008b5c',
         'description' => 'Sala de reuniões',
         'is_active' => true,
     ]);
@@ -38,6 +38,7 @@ test('public booking form saves all fields to database', function () {
         ->set('description', 'Evento institucional importante')
         ->set('requesterName', 'Carlos Souza')
         ->set('requesterEmail', 'carlos@esdep.mt.gov.br')
+        ->set('requesterSector', 'Setor de Teste')
         ->set('date', $date)
         ->set('startTime', '14:00')
         ->set('endTime', '16:00')
@@ -78,6 +79,7 @@ test('admin reservation editor updates all fields', function () {
         'description' => 'Desc Antiga',
         'requester_name' => 'Ana',
         'requester_email' => 'ana@esdep.mt.gov.br',
+        'requester_sector' => 'Setor de Teste',
         'date' => $date,
         'start_time' => '10:00',
         'end_time' => '11:00',
@@ -107,7 +109,7 @@ test('admin reservation editor updates all fields', function () {
     expect($fresh->sonorizacao)->toBeTrue();
     expect($fresh->transmissao)->toBeTrue();
     expect($fresh->attendees_count)->toBe(25);
-    Mail::assertNothingSent();
+    Mail::assertSent(ReservationUpdatedMail::class, fn (ReservationUpdatedMail $mail) => $mail->hasTo('ana@esdep.mt.gov.br'));
 });
 
 test('reservation editor rejects attendees above room capacity', function () {
@@ -117,6 +119,7 @@ test('reservation editor rejects attendees above room capacity', function () {
         'event_name' => 'Evento com capacidade válida',
         'requester_name' => 'Ana',
         'requester_email' => 'ana@esdep.mt.gov.br',
+        'requester_sector' => 'Setor de Teste',
         'date' => now()->addDays(3)->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
@@ -142,6 +145,7 @@ test('admin approves and reservation appears in calendar', function () {
         'description' => 'Pauta estratégica',
         'requester_name' => 'Diretor Roberto',
         'requester_email' => 'roberto@esdep.mt.gov.br',
+        'requester_sector' => 'Setor de Teste',
         'date' => $date,
         'start_time' => '09:00',
         'end_time' => '11:00',

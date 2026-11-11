@@ -26,6 +26,8 @@ class BookingForm extends Component
 
     public string $requesterEmail = '';
 
+    public string $requesterSector = '';
+
     public string $date = '';
 
     public string $startTime = '09:00';
@@ -71,6 +73,7 @@ class BookingForm extends Component
         'eventName' => 'required|string|max:255',
         'requesterName' => 'required|string|max:255',
         'requesterEmail' => 'required|email|max:255',
+        'requesterSector' => 'required|string|max:255',
         'date' => 'required|date|after_or_equal:today',
         'startTime' => 'required',
         'endTime' => 'required|after:startTime',
@@ -85,6 +88,7 @@ class BookingForm extends Component
         'requesterName.required' => 'O nome do solicitante é obrigatório.',
         'requesterEmail.required' => 'O e-mail é obrigatório.',
         'requesterEmail.email' => 'Insira um e-mail válido.',
+        'requesterSector.required' => 'O setor/núcleo é obrigatório.',
         'date.required' => 'A data é obrigatória.',
         'date.after_or_equal' => 'A data deve ser hoje ou futura.',
         'startTime.required' => 'O horário de início é obrigatório.',
@@ -196,6 +200,7 @@ class BookingForm extends Component
                 'description' => $this->description,
                 'requester_name' => $this->requesterName,
                 'requester_email' => $this->requesterEmail,
+                'requester_sector' => $this->requesterSector,
                 'date' => $this->date,
                 'start_time' => $this->startTime,
                 'end_time' => $this->endTime,
@@ -220,7 +225,7 @@ class BookingForm extends Component
             $this->dispatch('reservationCreated');
             $this->reset([
                 'roomId', 'eventName', 'description', 'requesterName',
-                'requesterEmail', 'date', 'coffeeBreak', 'sonorizacao', 'transmissao', 'projetor',
+                'requesterEmail', 'requesterSector', 'date', 'coffeeBreak', 'sonorizacao', 'transmissao', 'projetor',
                 'attachment', 'attachmentName',
             ]);
             $this->termsAccepted = false;

@@ -29,7 +29,7 @@
                 <span class="mx-3 sm:mx-4 hidden h-8.75 w-px bg-[#b9c9c2] dark:bg-[#2c4a3e] sm:block"></span>
 
                 <span
-                    class="hidden font-mono text-[10px] sm:inline sm:text-[11px] uppercase tracking-[0.12em] leading-3.75 text-[#00664f] dark:text-[#4fd1a5]">
+                    class="hidden font-mono text-[12px] sm:inline sm:text-[13px] uppercase tracking-[0.12em] leading-3.75 text-[#00664f] dark:text-[#4fd1a5]">
                     Agenda<br><strong>de salas</strong>
                 </span>
             </a>
@@ -56,7 +56,7 @@
                 </a>
 
                 <div
-                    class="hidden md:flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-[#63766f] dark:text-[#8aa39a]">
+                    class="hidden md:flex items-center gap-2 text-[13px] uppercase tracking-[0.08em] text-[#63766f] dark:text-[#8aa39a]">
                     <span
                         class="h-2 w-2 rounded-full bg-[#00b879] shadow-[0_0_0_4px_rgba(0,184,121,.10)]"></span>
                      Sistema disponível
@@ -75,7 +75,7 @@
         <!-- FOOTER -->
         <footer
             class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#d6e1dc] px-4 sm:px-[3.75vw] py-7 dark:border-[#16352a]">
-            <p class="m-0 text-[11px] text-[#70847d] dark:text-[#8aa39a]">© {{ date('Y') }} Defensoria Pública do Estado de Mato Grosso — Todos os direitos reservados.</p>
+            <p class="m-0 text-[13px] text-[#70847d] dark:text-[#8aa39a]">© {{ date('Y') }} Defensoria Pública do Estado de Mato Grosso — Todos os direitos reservados.</p>
             <a href="#inicio" class="flex items-center justify-center h-10 w-10 rounded-full bg-[#003f32] text-white transition hover:bg-[#008b5c] dark:bg-[#008b5c] dark:hover:bg-[#4fd1a5]" title="Voltar ao topo">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />

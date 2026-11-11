@@ -28,7 +28,7 @@ function managedReservation(Room $room, string $name): Reservation
 {
     return Reservation::create([
         'room_id' => $room->id, 'event_name' => $name, 'requester_name' => 'Solicitante',
-        'requester_email' => 'solicitante@example.com', 'date' => now()->addDays(2),
+        'requester_email' => 'solicitante@example.com', 'requester_sector' => 'Setor de Teste', 'date' => now()->addDays(2),
         'start_time' => '09:00', 'end_time' => '10:00', 'attendees_count' => 5, 'status' => 'pending',
     ]);
 }
@@ -101,6 +101,9 @@ test('group user can only attach contacts from their own scope when creating a p
     $ownMember = Contact::create(['name' => 'Membro do grupo', 'email' => 'membro-proprio@example.com', 'password' => 'password', 'is_active' => true]);
     $ownMember->groups()->attach($ownGroup);
     $outsider = Contact::create(['name' => 'Fora do grupo', 'email' => 'fora@example.com', 'password' => 'password', 'is_active' => true]);
+    // Contato sem grupo nenhum pode ser adicionado de proposito (ver orphanContactIds);
+    // "fora do escopo" significa pertencer a OUTRO grupo que o gestor nao acessa.
+    $outsider->groups()->attach(ContactGroup::create(['name' => 'GRUPO ALHEIO', 'color' => '#dc2626']));
 
     Livewire::actingAs($manager, 'contact')->test(ContactGroups::class)
         ->set('groupName', 'GRUPO PRIVADO NOVO')

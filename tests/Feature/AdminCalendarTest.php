@@ -18,16 +18,16 @@ test('month grid shows both start and end time for a reservation', function () {
         'event_name' => 'Evento Teste',
         'requester_name' => 'Solicitante',
         'requester_email' => 'solicitante@example.com',
-        'date' => '2026-09-15',
+        'date' => now()->startOfMonth()->addDays(14)->toDateString(),
         'start_time' => '09:00',
         'end_time' => '10:30',
         'attendees_count' => 5,
         'status' => ReservationStatus::AUTHORIZED,
     ]);
 
+    // A agenda abre no mes atual; usa uma data desse mes para o teste nao
+    // depender de quando roda.
     Livewire::test(AdminCalendar::class)
-        ->set('currentMonth', 9)
-        ->set('currentYear', 2026)
         ->assertSee('09:00')
         ->assertSee('10:30');
 });

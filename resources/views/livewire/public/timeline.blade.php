@@ -6,7 +6,7 @@
         <div class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-[#16352a] dark:bg-[#0c221a]">
             <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-green-50 text-slate-600 dark:bg-[#16352a] dark:text-[#4fd1a5]">
                 <span class="text-xs font-bold leading-tight">{{ $date->format('d') }}</span>
-                <span class="text-[10px] uppercase leading-tight">{{ $date->format('M') }}</span>
+                <span class="text-[12px] uppercase leading-tight">{{ $date->format('M') }}</span>
             </div>
             <div class="min-w-0 flex-1">
                 <h3 class="truncate text-sm font-semibold text-slate-900 dark:text-[#e6f2ec]">{{ $res->event_name }}</h3>
@@ -23,8 +23,8 @@
         <div class="flex min-h-[270px] items-center justify-center text-center">
             <div>
                 <span class="mx-auto flex h-[46px] w-[46px] items-center justify-center border border-dashed border-[#aebfb8] text-[23px] text-[#008b5c] dark:border-[#2c4a3e] dark:text-[#4fd1a5]">+</span>
-                <strong class="mt-5 block text-[13px] text-[#003f32] dark:text-[#e6f2ec]">A agenda está livre</strong>
-                <p class="mx-auto mt-2 max-w-[220px] text-[11px] leading-5 text-[#70847d]">
+                <strong class="mt-5 block text-[17px] text-[#003f32] dark:text-[#e6f2ec]">A agenda está livre</strong>
+                <p class="mx-auto mt-2 max-w-[220px] text-[15px] leading-5 text-[#70847d]">
                     O próximo evento confirmado aparecerá aqui.
                 </p>
             </div>

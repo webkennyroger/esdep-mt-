@@ -7,15 +7,17 @@ use App\Models\Room;
 use App\Rules\MultipleEmails;
 use App\Services\ActivityLogger;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 #[Layout('components.layouts.app')]
 class RoomManager extends Component
 {
-    use AuthorizesRequests, WithPagination;
+    use AuthorizesRequests, WithFileUploads, WithPagination;
 
     public function mount(): void
     {
@@ -36,8 +38,6 @@ class RoomManager extends Component
 
     public int $capacity = 30;
 
-    public string $theme_color = '#008b5c';
-
     public string $description = '';
 
     public bool $is_active = true;
@@ -46,14 +46,14 @@ class RoomManager extends Component
 
     public string $notificationEmail = '';
 
+    public $image = null;
+
     // Edit Room Fields
     public int $editRoomId = 0;
 
     public string $editName = '';
 
     public int $editCapacity = 30;
-
-    public string $editThemeColor = '#008b5c';
 
     public string $editDescription = '';
 
@@ -62,6 +62,12 @@ class RoomManager extends Component
     public ?int $editContactGroupId = null;
 
     public string $editNotificationEmail = '';
+
+    public $editImage = null;
+
+    public ?string $editExistingImagePath = null;
+
+    public bool $editRemoveImage = false;
 
     // Delete Room Fields
     public int $deleteRoomId = 0;
@@ -78,9 +84,8 @@ class RoomManager extends Component
 
     public function openCreateModal(): void
     {
-        $this->reset(['name', 'description', 'contactGroupId', 'notificationEmail']);
+        $this->reset(['name', 'description', 'contactGroupId', 'notificationEmail', 'image']);
         $this->capacity = 30;
-        $this->theme_color = '#008b5c';
         $this->is_active = true;
         $this->resetValidation();
         $this->showCreateModal = true;
@@ -98,18 +103,18 @@ class RoomManager extends Component
         $this->validate([
             'name' => 'required|string|max:255',
             'capacity' => 'required|integer|min:1|max:1000',
-            'theme_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'description' => 'required|string|max:1000',
             'is_active' => 'boolean',
-            'contactGroupId' => ['nullable', 'integer', Rule::exists('contact_groups', 'id')],
-            'notificationEmail' => ['nullable', 'string', 'max:255', new MultipleEmails],
+            'contactGroupId' => ['required', 'integer', Rule::exists('contact_groups', 'id')],
+            'notificationEmail' => ['required', 'string', 'max:255', new MultipleEmails],
+            'image' => 'nullable|image|max:4096',
         ]);
 
         $room = Room::create([
             'contact_group_id' => $this->contactGroupId,
             'name' => $this->name,
             'capacity' => $this->capacity,
-            'theme_color' => $this->theme_color,
+            'image_path' => $this->image ? $this->image->store('rooms', 'public') : null,
             'description' => $this->description ?: null,
             'is_active' => $this->is_active,
             'notification_email' => $this->notificationEmail ?: null,
@@ -129,14 +134,22 @@ class RoomManager extends Component
         $this->editRoomId = $room->id;
         $this->editName = $room->name;
         $this->editCapacity = $room->capacity;
-        $this->editThemeColor = $room->theme_color ?? '#008b5c';
         $this->editDescription = $room->description ?? '';
         $this->editIsActive = (bool) $room->is_active;
         $this->editContactGroupId = $room->contact_group_id;
         $this->editNotificationEmail = $room->notification_email ?? '';
+        $this->editImage = null;
+        $this->editExistingImagePath = $room->image_path;
+        $this->editRemoveImage = false;
 
         $this->resetValidation();
         $this->showEditModal = true;
+    }
+
+    public function markEditImageForRemoval(): void
+    {
+        $this->editImage = null;
+        $this->editRemoveImage = true;
     }
 
     public function closeEditModal(): void
@@ -152,20 +165,33 @@ class RoomManager extends Component
         $this->validate([
             'editName' => 'required|string|max:255',
             'editCapacity' => 'required|integer|min:1|max:1000',
-            'editThemeColor' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'editDescription' => 'required|string|max:1000',
             'editIsActive' => 'boolean',
             'editContactGroupId' => ['nullable', 'integer', Rule::exists('contact_groups', 'id')],
             'editNotificationEmail' => ['nullable', 'string', 'max:255', new MultipleEmails],
+            'editImage' => 'nullable|image|max:4096',
         ]);
 
         $oldValues = $room->toArray();
+
+        $imagePath = $room->image_path;
+        if ($this->editImage) {
+            if ($room->image_path) {
+                Storage::disk('public')->delete($room->image_path);
+            }
+            $imagePath = $this->editImage->store('rooms', 'public');
+        } elseif ($this->editRemoveImage) {
+            if ($room->image_path) {
+                Storage::disk('public')->delete($room->image_path);
+            }
+            $imagePath = null;
+        }
 
         $room->update([
             'contact_group_id' => $this->editContactGroupId,
             'name' => $this->editName,
             'capacity' => $this->editCapacity,
-            'theme_color' => $this->editThemeColor,
+            'image_path' => $imagePath,
             'description' => $this->editDescription ?: null,
             'is_active' => $this->editIsActive,
             'notification_email' => $this->editNotificationEmail ?: null,
@@ -221,6 +247,10 @@ class RoomManager extends Component
             return;
         }
 
+        if ($room->image_path) {
+            Storage::disk('public')->delete($room->image_path);
+        }
+
         $room->delete();
 
         ActivityLogger::roomDeleted($room);
@@ -254,10 +284,6 @@ class RoomManager extends Component
         return view('livewire.admin.room-manager', [
             'rooms' => $query->paginate(10),
             'contactGroups' => ContactGroup::whereNull('owner_contact_id')->orderBy('name')->get(),
-            'colors' => [
-                '#008b5c' => 'Verde ESDEP',
-                '#003f32' => 'Verde Escuro',
-            ] + \App\Support\TailwindColors::palette(),
         ]);
     }
 }

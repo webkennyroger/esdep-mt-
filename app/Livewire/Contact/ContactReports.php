@@ -31,9 +31,36 @@ class ContactReports extends Component
      * reservas datadas exatamente no ultimo dia do intervalo. whereDate
      * extrai so a parte da data antes de comparar.
      */
-    private function applyDateRange($query)
+    private function applyDateRange($query, ?string $start = null, ?string $end = null)
     {
-        return $query->whereDate('date', '>=', $this->startDate)->whereDate('date', '<=', $this->endDate);
+        return $query->whereDate('date', '>=', $start ?? $this->startDate)->whereDate('date', '<=', $end ?? $this->endDate);
+    }
+
+    /**
+     * Variacao percentual contra o periodo anterior (mesma quantidade de dias,
+     * imediatamente antes do inicio do periodo atual) - mesma regra do Reports do admin.
+     *
+     * @return array{total: int, approved: int, rejected: int, totalAttendees: int}
+     */
+    private function trends($ids, int $total, int $approved, int $rejected, $totalAttendees): array
+    {
+        $days = Carbon::parse($this->startDate)->diffInDays(Carbon::parse($this->endDate)) + 1;
+        $prevEnd = Carbon::parse($this->startDate)->subDay();
+        $prevStart = $prevEnd->copy()->subDays($days - 1);
+
+        $prev = $this->applyDateRange(Reservation::whereIn('room_id', $ids), $prevStart->format('Y-m-d'), $prevEnd->format('Y-m-d'))
+            ->when($this->roomId, fn ($q) => $q->where('room_id', $this->roomId));
+
+        $pct = fn (int|float $current, int|float $previous): int => $previous > 0
+            ? (int) round((($current - $previous) / $previous) * 100)
+            : ($current > 0 ? 100 : 0);
+
+        return [
+            'total' => $pct($total, (clone $prev)->count()),
+            'approved' => $pct($approved, (clone $prev)->where('status', ReservationStatus::AUTHORIZED)->count()),
+            'rejected' => $pct($rejected, (clone $prev)->where('status', ReservationStatus::REJECTED)->count()),
+            'totalAttendees' => $pct($totalAttendees, (clone $prev)->sum('attendees_count')),
+        ];
     }
 
     public function exportCsv(): StreamedResponse
@@ -61,7 +88,9 @@ class ContactReports extends Component
         $approved = (clone $query)->where('status', ReservationStatus::AUTHORIZED)->count();
         $rejected = (clone $query)->where('status', ReservationStatus::REJECTED)->count();
         $pending = (clone $query)->where('status', ReservationStatus::PENDING)->count();
-        $stats = ['total' => $total, 'approved' => $approved, 'rejected' => $rejected, 'pending' => $pending, 'totalAttendees' => (clone $query)->sum('attendees_count'),
+        $totalAttendees = (clone $query)->sum('attendees_count');
+        $stats = ['total' => $total, 'approved' => $approved, 'rejected' => $rejected, 'pending' => $pending, 'totalAttendees' => $totalAttendees,
+            'trends' => $this->trends($ids, $total, $approved, $rejected, $totalAttendees),
             'byRoom' => Room::whereIn('id', $ids)->withCount(['reservations as total' => fn ($q) => $this->applyDateRange($q)])->get()->map(fn ($r) => ['name' => $r->name, 'total' => (int) $r->getAttribute('total')])->filter(fn ($r) => $r['total'] > 0)->toArray(),
             'byService' => ['coffee_break' => (clone $query)->where('coffee_break', true)->count(), 'sonorizacao' => (clone $query)->where('sonorizacao', true)->count(), 'transmissao' => (clone $query)->where('transmissao', true)->count(), 'projetor' => (clone $query)->where('projetor', true)->count()],
             'occupancyRate' => $total ? round($approved / $total * 100, 1) : 0,

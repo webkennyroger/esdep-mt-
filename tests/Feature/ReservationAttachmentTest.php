@@ -19,7 +19,6 @@ beforeEach(function () {
         'name' => 'Sala Horizonte',
         'code' => 'HORIZONTE',
         'capacity' => 60,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 });
@@ -67,6 +66,7 @@ test('admin can attach a file while creating a reservation', function () {
         ->set('endTime', '10:00')
         ->set('requesterName', 'Fulano de Tal')
         ->set('requesterEmail', 'fulano@esdep.mt.gov.br')
+        ->set('requesterSector', 'Setor de Teste')
         ->set('attendeesCount', 10)
         ->set('attachment', UploadedFile::fake()->create('recibo.jpg', 100, 'image/jpeg'))
         ->call('save')

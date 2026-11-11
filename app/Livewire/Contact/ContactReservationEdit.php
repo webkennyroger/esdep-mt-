@@ -33,6 +33,8 @@ class ContactReservationEdit extends Component
 
     public string $requesterEmail = '';
 
+    public string $requesterSector = '';
+
     public int $attendeesCount = 1;
 
     public bool $coffeeBreak = false;
@@ -66,6 +68,7 @@ class ContactReservationEdit extends Component
         $this->endTime = $res->formattedEndTime();
         $this->requesterName = $res->requester_name;
         $this->requesterEmail = $res->requester_email;
+        $this->requesterSector = $res->requester_sector ?? '';
         $this->attendeesCount = $res->attendees_count;
         $this->coffeeBreak = $res->coffee_break;
         $this->sonorizacao = $res->sonorizacao;
@@ -128,6 +131,7 @@ class ContactReservationEdit extends Component
             'eventName' => 'required|string|max:255',
             'requesterName' => 'required|string|max:255',
             'requesterEmail' => 'required|email|max:255',
+            'requesterSector' => 'required|string|max:255',
             'date' => 'required|date|after_or_equal:today',
             'startTime' => 'required',
             'endTime' => 'required|after:startTime',
@@ -154,6 +158,7 @@ class ContactReservationEdit extends Component
                 'end_time' => $this->endTime,
                 'requester_name' => $this->requesterName,
                 'requester_email' => $this->requesterEmail,
+                'requester_sector' => $this->requesterSector,
                 'attendees_count' => $this->attendeesCount,
                 'coffee_break' => $this->coffeeBreak,
                 'sonorizacao' => $this->sonorizacao,

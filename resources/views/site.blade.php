@@ -8,7 +8,7 @@
                 <div class="mx-auto flex flex-col lg:flex-row items-center justify-between gap-10 py-12">
                     <!-- COPY -->
                     <div class="w-full text-center lg:text-left">
-                        <span class="mb-7 block font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-[#00845c]">
+                        <span class="mb-7 block font-mono text-[12px] font-bold uppercase tracking-[0.22em] text-[#00845c]">
                             ESDEP · RESERVAS DE ESPAÇOS
                         </span>
 
@@ -20,13 +20,13 @@
                         </h1>
 
                         <p
-                            class="mt-8 max-w-[580px] text-[14px] sm:text-[15px] leading-[1.8] text-[#60766e] dark:text-[#8aa39a]">
+                            class="mt-8 max-w-[580px] text-[16px] sm:text-[15px] leading-[1.8] text-[#60766e] dark:text-[#8aa39a]">
                             Organize encontros, apresentações e transmissões em poucos passos.<br>
                             Escolha a sala e deixe o restante conosco.
                         </p>
 
                         <a href="#nova-reserva"
-                            class="group mt-7 inline-flex items-center gap-4 text-[12px] font-bold text-[#003f32] dark:text-[#e6f2ec]">
+                            class="group mt-7 inline-flex items-center gap-4 text-[14px] font-bold text-[#003f32] dark:text-[#e6f2ec]">
                             Agendar agora
                             <span
                                 class="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[#003f32] text-white transition group-hover:translate-x-1 dark:bg-[#4fd1a5] dark:text-[#081712]">
@@ -51,19 +51,19 @@
         <div class="flex flex-col sm:flex-row sm:items-end justify-between border-b border-[#d6e1dc] pb-[29px] dark:border-[#16352a] gap-4">
             <div class="flex items-center gap-3">
                 <span
-                    class="flex h-[28px] w-[28px] items-center justify-center bg-[#004d3c] font-mono text-[9px] font-bold text-white">
+                    class="flex h-[28px] w-[28px] items-center justify-center bg-[#004d3c] font-mono text-[11px] font-bold text-white">
                     01
                 </span>
                 <p
-                    class="m-0 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[#006b53] dark:text-[#4fd1a5]">
+                    class="m-0 font-mono text-[14px] font-bold uppercase tracking-[0.14em] text-[#006b53] dark:text-[#4fd1a5]">
                     Novo agendamento
                 </p>
             </div>
 
             <div class="flex items-center gap-3">
                 <span
-                    class="flex h-[28px] w-[28px] items-center justify-center bg-[#00a477] font-mono text-[9px] font-bold text-white">02</span>
-                <p class="m-0 font-mono text-[10px] font-bold uppercase tracking-[0.14em]">Próximos eventos
+                    class="flex h-[28px] w-[28px] items-center justify-center bg-[#00a477] font-mono text-[11px] font-bold text-white">02</span>
+                <p class="m-0 font-mono text-[14px] font-bold uppercase tracking-[0.14em]">Próximos eventos
                 </p>
             </div>
         </div>

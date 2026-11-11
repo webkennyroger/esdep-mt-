@@ -39,7 +39,7 @@ class Room extends Model
         'name',
         'code',
         'capacity',
-        'theme_color',
+        'image_path',
         'description',
         'is_active',
         'notification_email',
@@ -53,6 +53,13 @@ class Room extends Model
     public function reservations(): HasMany
     {
         return $this->hasMany(Reservation::class);
+    }
+
+    public function imageUrl(): ?string
+    {
+        return $this->image_path
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->image_path)
+            : null;
     }
 
     public function contactGroup(): BelongsTo

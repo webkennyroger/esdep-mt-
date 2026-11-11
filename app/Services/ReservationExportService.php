@@ -57,6 +57,6 @@ class ReservationExportService
         return Pdf::loadView('exports.reservations-pdf', [
             'headers' => self::HEADERS,
             'rows' => $this->rows($reservations),
-        ])->output();
+        ])->setPaper('a4', 'landscape')->output();
     }
 }

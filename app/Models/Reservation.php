@@ -24,6 +24,7 @@ class Reservation extends Model
         'reject_reason',
         'requester_name',
         'requester_email',
+        'requester_sector',
         'date',
         'start_time',
         'end_time',
