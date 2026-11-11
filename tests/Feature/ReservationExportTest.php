@@ -14,7 +14,6 @@ beforeEach(function () {
         'name' => 'Sala Horizonte',
         'code' => 'HORIZONTE',
         'capacity' => 60,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 });

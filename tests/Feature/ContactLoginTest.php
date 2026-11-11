@@ -4,9 +4,10 @@ use App\Livewire\Admin\ContactManager;
 use App\Models\Contact;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
-test('contact updated by administrator can authenticate through main login', function () {
+test('administrator edit changes only cpf, cargo and sector - never name, email or password', function () {
     $admin = User::factory()->superAdmin()->create();
     $contact = Contact::create([
         'name' => 'Contato Antigo', 'email' => 'antigo@example.com',
@@ -18,17 +19,26 @@ test('contact updated by administrator can authenticate through main login', fun
         ->set('editName', 'Contato Atualizado')
         ->set('editEmail', 'NOVO@EXAMPLE.COM')
         ->set('editPassword', 'nova-senha-segura')
+        ->set('editCpf', '123.456.789-00')
         ->call('updateContact')
         ->assertHasNoErrors();
+
+    $fresh = $contact->fresh();
+
+    // Identidade vem do cadastro/SSO: a tela do admin nao troca nome, e-mail nem senha.
+    expect($fresh->name)->toBe('Contato Antigo')
+        ->and($fresh->email)->toBe('antigo@example.com')
+        ->and(Hash::check('senha-antiga', $fresh->password))->toBeTrue()
+        ->and($fresh->cpf)->toBe('123.456.789-00');
 
     Auth::guard('web')->logout();
 
     $this->post(route('login.post'), [
-        'email' => 'novo@example.com',
-        'password' => 'nova-senha-segura',
+        'email' => 'antigo@example.com',
+        'password' => 'senha-antiga',
     ])->assertRedirect(route('contact.dashboard'));
 
-    $this->assertAuthenticatedAs($contact->fresh(), 'contact');
+    $this->assertAuthenticatedAs($fresh, 'contact');
 });
 
 test('contact login accepts email regardless of letter case', function () {

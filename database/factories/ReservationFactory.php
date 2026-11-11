@@ -19,6 +19,7 @@ class ReservationFactory extends Factory
             'description' => $this->faker->sentence(),
             'requester_name' => $this->faker->name(),
             'requester_email' => $this->faker->safeEmail(),
+            'requester_sector' => $this->faker->randomElement(['DGDI', 'Escola', 'Gabinete', 'Administração']),
             'date' => $this->faker->dateTimeBetween('+1 week', '+1 month'),
             'start_time' => '09:00',
             'end_time' => '11:00',

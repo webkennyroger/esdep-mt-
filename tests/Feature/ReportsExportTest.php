@@ -12,7 +12,6 @@ beforeEach(function () {
         'name' => 'Sala Horizonte',
         'code' => 'HORIZONTE',
         'capacity' => 60,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 });
@@ -36,7 +35,7 @@ test('export pdf action returns a downloadable pdf response', function () {
 
 test('copy text respects the room filter', function () {
     $matching = Reservation::factory()->create(['room_id' => $this->room->id, 'event_name' => 'Evento Da Sala', 'date' => now()->startOfMonth()->addDays(2)]);
-    $otherRoom = Room::create(['name' => 'Sala Aurora', 'code' => 'AURORA', 'capacity' => 40, 'theme_color' => '#008b5c', 'is_active' => true]);
+    $otherRoom = Room::create(['name' => 'Sala Aurora', 'code' => 'AURORA', 'capacity' => 40, 'is_active' => true]);
     Reservation::factory()->create(['room_id' => $otherRoom->id, 'event_name' => 'Evento De Outra Sala', 'date' => now()->startOfMonth()->addDays(2)]);
 
     $text = Livewire::test(Reports::class)

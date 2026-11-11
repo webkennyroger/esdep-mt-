@@ -12,7 +12,6 @@ test('status breakdown reports the percentage share of each reservation status',
         'name' => 'Sala Horizonte',
         'code' => 'HORIZONTE',
         'capacity' => 60,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 
@@ -37,7 +36,6 @@ test('report includes a reservation dated on the exact last day of the range', f
         'name' => 'Sala Limite',
         'code' => 'LIMITE',
         'capacity' => 10,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 

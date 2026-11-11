@@ -10,7 +10,6 @@ beforeEach(function () {
         'name' => 'Auditório Nobre',
         'code' => 'AUD-01',
         'capacity' => 100,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 });

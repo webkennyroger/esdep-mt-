@@ -15,7 +15,6 @@ beforeEach(function () {
         'name' => 'Sala Horizonte',
         'code' => 'HORIZONTE',
         'capacity' => 60,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 });
@@ -41,6 +40,7 @@ test('admin creates a reservation that is already authorized and sends no notifi
         ->set('endTime', '10:00')
         ->set('requesterName', 'Fulano de Tal')
         ->set('requesterEmail', 'fulano@esdep.mt.gov.br')
+        ->set('requesterSector', 'Setor de Teste')
         ->set('attendeesCount', 10)
         ->call('save')
         ->assertDispatched('reservationCreated');

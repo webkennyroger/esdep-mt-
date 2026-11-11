@@ -12,7 +12,6 @@ function createEmailTestReservation(): Reservation
         'name' => 'Sala Aurora',
         'code' => 'AURORA',
         'capacity' => 40,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 

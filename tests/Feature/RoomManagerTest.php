@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\RoomManager;
+use App\Models\ContactGroup;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\User;
@@ -16,13 +17,19 @@ test('admin can access room manager page', function () {
         ->assertStatus(200);
 });
 
+function roomGroup(): ContactGroup
+{
+    return ContactGroup::create(['name' => 'GRUPO SALAS', 'color' => '#008b5c']);
+}
+
 test('admin can create a new room', function () {
     Livewire::actingAs($this->admin)
         ->test(RoomManager::class)
         ->set('name', 'Nova Sala de Treinamento')
         ->set('capacity', 25)
-        ->set('theme_color', '#2563eb')
         ->set('description', 'Sala equipada com 25 computadores')
+        ->set('contactGroupId', roomGroup()->id)
+        ->set('notificationEmail', 'sala@example.com')
         ->call('createRoom')
         ->assertHasNoErrors();
 
@@ -35,23 +42,30 @@ test('description is required when creating a room', function () {
         ->test(RoomManager::class)
         ->set('name', 'Sala Sem Descricao')
         ->set('capacity', 10)
-        ->set('theme_color', '#008b5c')
         ->call('createRoom')
         ->assertHasErrors(['description' => 'required']);
+});
+
+test('group and notification email are required when creating a room', function () {
+    Livewire::actingAs($this->admin)
+        ->test(RoomManager::class)
+        ->set('name', 'Sala Incompleta')
+        ->set('capacity', 10)
+        ->set('description', 'Descricao preenchida')
+        ->call('createRoom')
+        ->assertHasErrors(['contactGroupId' => 'required', 'notificationEmail' => 'required']);
 });
 
 test('room code is generated uniquely', function () {
     Room::create([
         'name' => 'Sala Existente',
         'capacity' => 10,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 
     $secondRoom = Room::create([
         'name' => 'Sala Existente',
         'capacity' => 15,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 
@@ -61,8 +75,9 @@ test('room code is generated uniquely', function () {
         ->test(RoomManager::class)
         ->set('name', 'Outra Sala')
         ->set('capacity', 15)
-        ->set('theme_color', '#008b5c')
         ->set('description', 'Sala padrão para reuniões')
+        ->set('contactGroupId', roomGroup()->id)
+        ->set('notificationEmail', 'outra@example.com')
         ->call('createRoom')
         ->assertHasNoErrors();
 });
@@ -72,7 +87,6 @@ test('admin can update a room', function () {
         'name' => 'Sala Antiga',
         'code' => 'ANT-01',
         'capacity' => 10,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 
@@ -95,7 +109,6 @@ test('admin can toggle room active status', function () {
         'name' => 'Sala Teste',
         'code' => 'TST-01',
         'capacity' => 10,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 
@@ -112,7 +125,6 @@ test('cannot delete room with existing reservations', function () {
         'name' => 'Sala com Reserva',
         'code' => 'RES-01',
         'capacity' => 10,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 
@@ -141,7 +153,6 @@ test('can delete room without reservations', function () {
         'name' => 'Sala Sem Reserva',
         'code' => 'LIVRE-01',
         'capacity' => 10,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 
@@ -158,7 +169,6 @@ test('room search is case insensitive', function () {
         'name' => 'Sala Horizonte',
         'code' => 'HOR-01',
         'capacity' => 10,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
 
@@ -178,7 +188,6 @@ test('admin can define any valid room capacity when editing', function () {
         'name' => 'Sala com capacidade reservada',
         'code' => 'CAP-01',
         'capacity' => 50,
-        'theme_color' => '#008b5c',
         'is_active' => true,
     ]);
     Reservation::create([
